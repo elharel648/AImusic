@@ -447,6 +447,16 @@
   .score-dial.vu .vu-needle{ stroke:var(--amber); stroke-width:2; stroke-linecap:round;
     transform-origin:64px 68px; transform:rotate(-50deg); transition:transform 1.3s cubic-bezier(.17,1.5,.35,1);
     filter:drop-shadow(0 0 4px color-mix(in srgb,var(--amber) 55%,transparent)); }
+  /* live needle: subtle continuous flutter riding ON TOP of the score rotation
+     (score stays on the needle line; two offset oscillations compose on the
+     wrapper so the rhythm never feels metronomic). Knobs stay static. */
+  .score-dial.vu .vu-live{ transform-origin:64px 68px;
+    animation:vu-flut-a 1.7s ease-in-out infinite alternate,
+              vu-flut-b .9s ease-in-out infinite alternate;
+    animation-composition:add, add; }
+  @keyframes vu-flut-a{ from{ transform:rotate(-1.4deg); } to{ transform:rotate(1.5deg); } }
+  @keyframes vu-flut-b{ from{ transform:rotate(0.9deg); } to{ transform:rotate(-1deg); } }
+  @media (prefers-reduced-motion: reduce){ .score-dial.vu .vu-live{ animation:none; } }
   .score-dial.vu .vu-pivot{ fill:var(--surface-2); stroke:var(--line-2); stroke-width:1; }
   .score-dial.vu .vu-screw{ fill:var(--ink-faint); }
   .card-body-head{ flex:1; min-width:0; }
@@ -780,7 +790,7 @@
           <svg width="128" height="78" viewBox="0 0 128 78">
             <path class="vu-scale" d="M 24 37 A 47 47 0 0 1 104 37" pathLength="100"/>
             <path class="vu-arc"   d="M 28.5 41.5 A 41 41 0 0 1 99.5 41.5"/>
-            <line class="vu-needle" id="vuNeedle" x1="64" y1="68" x2="64" y2="16"/>
+            <g class="vu-live"><line class="vu-needle" id="vuNeedle" x1="64" y1="68" x2="64" y2="16"/></g>
             <circle class="vu-pivot" cx="64" cy="68" r="4.5"/>
             <circle class="vu-screw" cx="64" cy="68" r="1.4"/>
           </svg>
