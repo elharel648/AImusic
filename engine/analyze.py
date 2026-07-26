@@ -290,6 +290,57 @@ def measure_ai_tells(mono: np.ndarray, sr: int, beats: np.ndarray, chroma_frames
     return out
 
 
+def measure_low_end(mono: np.ndarray, sr: int) -> dict:
+    """Kick-bass interaction in 40-120 Hz: how much sustained bass fills the
+    space BETWEEN kick hits (masking risk), and where the bass actually peaks."""
+    S = np.abs(librosa.stft(mono, n_fft=4096)) ** 2
+    freqs = librosa.fft_frequencies(sr=sr, n_fft=4096)
+    sel = (freqs >= 40) & (freqs <= 120)
+    if not sel.any() or S[sel].sum() == 0:
+        return {"kick_bass_overlap": 0.0, "bass_peak_hz": 60}
+    low = S[sel].sum(axis=0)                                  # low-band energy per frame
+    peak_hz = float(freqs[sel][S[sel].mean(axis=1).argmax()])
+    try:
+        on = librosa.onset.onset_detect(
+            onset_envelope=librosa.onset.onset_strength(S=librosa.power_to_db(S[sel])),
+            sr=sr, units="frames")
+    except Exception:
+        on = np.array([], dtype=int)
+    if len(on) < 8:
+        return {"kick_bass_overlap": 0.0, "bass_peak_hz": int(round(peak_hz / 5) * 5)}
+    hit = np.zeros(len(low), dtype=bool)
+    for f in on:
+        hit[max(0, f - 1):f + 3] = True                        # ~90ms around each kick
+    between, at = low[~hit], low[hit]
+    if not len(between) or not len(at) or np.median(at) == 0:
+        return {"kick_bass_overlap": 0.0, "bass_peak_hz": int(round(peak_hz / 5) * 5)}
+    ratio = float(np.median(between) / np.median(at))
+    return {"kick_bass_overlap": round(min(1.0, ratio), 2),
+            "bass_peak_hz": int(round(peak_hz / 5) * 5)}
+
+
+def measure_transients(mono: np.ndarray, sr: int) -> dict:
+    """Punch: how sharply onsets rise above the surrounding energy (crest of the
+    onset-strength envelope). Soft attack reads as a weak, washed kick/snare."""
+    env = librosa.onset.onset_strength(y=mono, sr=sr)
+    if env.size < 16 or env.mean() == 0:
+        return {"transient_strength": 0.5}
+    crest = float(np.percentile(env, 98) / (env.mean() + 1e-9))
+    return {"transient_strength": round(min(1.0, crest / 8.0), 2)}   # ~8x crest = very punchy
+
+
+def measure_vocal_bands(mono: np.ndarray, sr: int) -> dict:
+    """Mix-level vocal proxies (interpreted only when the ML layer hears vocals):
+    presence 2-5 kHz and sibilance 5.5-9 kHz as shares of total energy."""
+    S = np.abs(librosa.stft(mono)) ** 2
+    freqs = librosa.fft_frequencies(sr=sr)
+    total = S.sum()
+    if total == 0:
+        return {"presence_ratio": 0.0, "sibilance_ratio": 0.0}
+    return {"presence_ratio": round(float(S[(freqs >= 2000) & (freqs <= 5000)].sum() / total), 3),
+            "sibilance_ratio": round(float(S[(freqs >= 5500) & (freqs <= 9000)].sum() / total), 3)}
+
+
 ANALYSIS_SR = 22050  # spectral features run at 22k — 2x+ faster, no accuracy loss for these
 
 
@@ -319,6 +370,9 @@ def analyze(path: str, genre: str = "melodic techno") -> dict:
     out.update(measure_stereo(stereo, mono, sr))
     out.update(measure_ai_tells(m22, ANALYSIS_SR, beats, chroma))
     out.update(measure_energy_curve(m22, ANALYSIS_SR))
+    out.update(measure_low_end(m22, ANALYSIS_SR))
+    out.update(measure_transients(m22, ANALYSIS_SR))
+    out.update(measure_vocal_bands(m22, ANALYSIS_SR))
     out["norms"] = get_norms(genre)
     return out
 

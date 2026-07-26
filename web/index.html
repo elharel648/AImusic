@@ -1444,6 +1444,9 @@
     clip:      { fabfilter:'Pro-L 2',        ableton:'Limiter',           fl:'Fruity Limiter',         logic:'Adaptive Limiter', free:'Limiter No6' },
     decompress:{ fabfilter:'Pro-C 2',        ableton:'Compressor',        fl:'Fruity Limiter (Comp)',  logic:'Compressor',       free:'MCompressor' },
     widen:     { fabfilter:'Ozone Imager 2', ableton:'Utility (Width)',   fl:'Fruity Stereo Enhancer', logic:'Direction Mixer',  free:'A1StereoControl' },
+    sidechain: { fabfilter:'Pro-C 2 (sidechain)', ableton:'Compressor (sidechain)', fl:'Fruity Limiter (sidechain)', logic:'Compressor (sidechain)', free:'TDR Kotelnikov (SC)' },
+    transient: { fabfilter:'Any transient shaper', ableton:'Drum Buss',   fl:'Transient Processor',    logic:'Enveloper',        free:'Flux BitterSweet' },
+    deess:     { fabfilter:'Pro-DS',         ableton:'Multiband Dynamics', fl:'Maximus (HF band)',     logic:'DeEsser 2',        free:'TDR Nova (dynamic)' },
   };
   const RX_PARAMS={
     eq_cut:p=>[['Band','Bell'],['Freq',p.freq+' Hz'],['Gain',p.gain_db+' dB'],['Q',String(p.q)]],
@@ -1451,8 +1454,11 @@
     clip:p=>[['Trim',p.trim_db+' dB'],['Ceiling',p.ceiling_db+' dBTP']],
     decompress:p=>[['Ratio','≤ 2:1'],['Now',p.dr_db+' dB DR'],['Aim','≥ '+p.target_dr+' dB DR']],
     widen:p=>[['Width','+15–25%'],['Lows','mono < 120 Hz']],
+    sidechain:p=>[['Source','Kick'],['Band',p.freq+' Hz'],['Ratio','3:1'],['Release','fast']],
+    transient:p=>[['Attack','+15–20%'],['Sustain','-5%'],['Track','Drums']],
+    deess:p=>[['Center',p.freq+' Hz'],['Reduction','3–5 dB'],['Track','Vocal']],
   };
-  const RX_ORDER=['eq_cut','decompress','widen','clip','limiter'];
+  const RX_ORDER=['eq_cut','deess','sidechain','decompress','transient','widen','clip','limiter'];
   let suite=localStorage.getItem('anr_suite')||'fabfilter';
   function rxBlock(rx){
     if(!rx||!RX_PLUG[rx.type]) return '';

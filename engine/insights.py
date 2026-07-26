@@ -129,6 +129,42 @@ def build_insights(m: dict, lang: str = "en") -> dict:
             "rx": {"type": "widen", "width": w, "conf": "med"},
         })
 
+    # ── Kick-bass masking (conservative: flag only clear cases) ──
+    kb = m.get("kick_bass_overlap", 0)
+    if kb >= 0.8:
+        findings.append({
+            "id": "LowEnd", "k": L("label_LowEnd"), "score": max(45, int(100 - (kb - 0.8) * 250)), "sev": "warn",
+            "headline": L("lowend_head", hz=m.get("bass_peak_hz", 60)),
+            "why": [L("lowend_why1", pct=int(kb * 100)), L("lowend_why2")],
+            "measure": [[f"{int(kb*100)}%", L("ml_overlap")], [f"{m.get('bass_peak_hz', 60)} Hz", L("ml_bass_peak")]],
+            "fix": {"daw": L("lowend_fix_daw", hz=m.get("bass_peak_hz", 60)), "suno": L("lowend_fix_suno")},
+            "rx": {"type": "sidechain", "freq": m.get("bass_peak_hz", 60), "conf": "med"},
+        })
+
+    # ── Transient punch ──
+    ts = m.get("transient_strength", 0.5)
+    if ts < 0.25:
+        findings.append({
+            "id": "Punch", "k": L("label_Punch"), "score": max(40, int(ts * 240)), "sev": "warn",
+            "headline": L("punch_head"),
+            "why": [L("punch_why1", ts=int(ts * 100)), L("punch_why2")],
+            "measure": [[f"{int(ts*100)}/100", L("ml_punch")]],
+            "fix": {"daw": L("punch_fix_daw"), "suno": L("punch_fix_suno")},
+            "rx": {"type": "transient", "conf": "med"},
+        })
+
+    # ── Sibilance (only when the ML layer actually hears vocals) ──
+    sib = m.get("sibilance_ratio", 0)
+    if m.get("ml_voice_prob", 0) > 0.6 and sib > 0.10:
+        findings.append({
+            "id": "Sibilance", "k": L("label_Sibilance"), "score": max(45, int(100 - (sib - 0.10) * 400)), "sev": "warn",
+            "headline": L("sib_head"),
+            "why": [L("sib_why1", pct=round(sib * 100, 1)), L("sib_why2")],
+            "measure": [[f"{round(sib*100,1)}%", L("ml_sib")]],
+            "fix": {"daw": L("sib_fix_daw"), "suno": L("sib_fix_suno")},
+            "rx": {"type": "deess", "freq": 7000, "conf": "med"},
+        })
+
     # ── Tempo / key (positive anchor) ──
     blo, bhi = norms["bpm"]
     bpm_ok = blo <= m["bpm"] <= bhi
