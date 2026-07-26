@@ -153,12 +153,12 @@ def test_streaming_quiet_vs_loud():
     base = {"true_peak_db": -2.0, "clipping": False, "duration_sec": 200}
     quiet = _streaming("en", dict(base, lufs=-18.0), L)
     assert quiet["level"] in ("warn", "crit")
-    flagged = {p["name"] for p in quiet["platforms"] if p["status"] == "quiet"}
+    flagged = {p["name"] for p in quiet["platforms"] if p["mode"] == "quiet"}
     assert "YouTube" in flagged          # never boosts quiet tracks
     assert "Spotify" not in flagged      # boosts, so not flagged
     loud = _streaming("en", dict(base, lufs=-9.0), L)
     assert loud["level"] == "good"
-    assert all(p["status"] == "ok" for p in loud["platforms"])
+    assert all(p["mode"] == "down" for p in loud["platforms"])
     assert all(c["ok"] for c in loud["checks"])
 
 

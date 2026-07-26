@@ -185,18 +185,16 @@ def _streaming(lang, m, L):
     platforms, quiet = [], []
     for name, target, boosts in _PLATFORMS:
         delta = round(lufs - target, 1)
-        if delta > 0.5:
-            row = {"name": name, "target": target, "status": "ok",
-                   "d": L("st_down", d=abs(delta))}
+        if delta > 0.5:            # louder than target: platform turns it down
+            row = {"name": name, "target": target, "mode": "down", "delta": -delta}
         elif delta < -0.5 and boosts:
-            row = {"name": name, "target": target, "status": "ok",
-                   "d": L("st_boost", d=abs(delta))}
-        elif delta < -0.5:
-            row = {"name": name, "target": target, "status": "quiet",
-                   "d": L("st_quiet", d=abs(delta), name=name)}
+            row = {"name": name, "target": target, "mode": "boost", "delta": abs(delta)}
+        elif delta < -0.5:         # quiet + platform never boosts: plays weak
+            row = {"name": name, "target": target, "mode": "quiet", "delta": 0.0,
+                   "gap": abs(delta)}
             quiet.append(abs(delta))
         else:
-            row = {"name": name, "target": target, "status": "ok", "d": L("st_asis")}
+            row = {"name": name, "target": target, "mode": "asis", "delta": 0.0}
         platforms.append(row)
 
     # bool() everywhere: numpy booleans are not JSON-serializable
