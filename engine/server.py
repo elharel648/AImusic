@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 import tempfile
 import subprocess
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
@@ -30,6 +31,45 @@ app.add_middleware(
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 MAX_BYTES = 100 * 1024 * 1024  # 100 MB
 ALLOWED_EXT = {".wav", ".mp3", ".flac", ".m4a", ".aac", ".ogg"}
+
+
+# ── ML runs in a persistent side process so it overlaps the DSP pass ─────────
+# Measured on a 200s track: ThreadPoolExecutor gave NO overlap (seq 4.58s vs
+# thread-parallel 4.54s — Essentia's Python bindings hold the GIL), while a
+# warm 1-worker process pool hits 3.66s ≈ max(dsp 3.56s, ml 1.04s). The worker
+# loads the TF models once and stays warm; if it ever breaks we fall back to
+# running ml_analyze inline (correctness over speed).
+_ML_POOL: ProcessPoolExecutor | None = None
+
+
+def _ml_submit(path: str):
+    """Submit ml_analyze(path) to the warm side process. Returns a Future or None."""
+    global _ML_POOL
+    if not ml_available():
+        return None
+    try:
+        if _ML_POOL is None:
+            _ML_POOL = ProcessPoolExecutor(max_workers=1)
+        return _ML_POOL.submit(ml_analyze, path)
+    except Exception:
+        _ML_POOL = None
+        return None
+
+
+def _ml_result(fut, path: str) -> dict:
+    global _ML_POOL
+    if fut is None:
+        return ml_analyze(path) if ml_available() else {}
+    try:
+        return fut.result(timeout=300)
+    except Exception:
+        # broken/hung pool: drop it and do the work inline this once
+        try:
+            _ML_POOL.shutdown(wait=False)
+        except Exception:
+            pass
+        _ML_POOL = None
+        return ml_analyze(path) if ml_available() else {}
 
 
 def _to_wav(src: str) -> str:
@@ -115,14 +155,19 @@ async def analyze_endpoint(file: UploadFile = File(...), genre: str = Form("melo
         if ext != ".wav":
             conv = _to_wav(path)
             path = conv
-        # ML classifiers first (genre auto-detect, vocals, danceability) —
-        # so "auto" genre resolves to the detected bucket for the norms.
-        ml = ml_analyze(path) if ml_available() else {}
+        # ML classifiers (genre auto-detect, vocals, danceability) run in the
+        # warm side process WHILE the DSP pass runs here. analyze() only needs
+        # the genre for the norms overlay, so it runs against "default" and the
+        # overlay is rebuilt once the detected genre is in.
+        ml_fut = _ml_submit(path)
+        raw = analyze(path, "default")
+        ml = _ml_result(ml_fut, path)
+        raw.update(ml)
         resolved_genre = genre
         if genre == "auto":
             resolved_genre = ml.get("ml_genre_bucket", "default")
-        raw = analyze(path, resolved_genre)
-        raw.update(ml)
+        raw["genre_assumed"] = resolved_genre
+        raw["norms"] = get_norms(resolved_genre)
         report = build_insights(raw, lang)
         report["source"] = "template"
         if llm_available():
