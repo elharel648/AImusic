@@ -159,20 +159,84 @@ def build_insights(m: dict, lang: str = "en") -> dict:
         "priority": priority,
         "findings": sorted(findings, key=lambda f: (f["id"] == "Character", f["score"])),
         "ai_signals": ai,
+        "streaming": _streaming(lang, m, L),
         "suno_prompt": suno,
     }
+
+
+# Published normalization targets (verified July 2026). boost=True means the
+# platform also raises quiet tracks (Spotify with limiter, Apple Sound Check);
+# boost=False platforms only turn loud tracks down — a quiet master stays quiet.
+_PLATFORMS = [
+    ("Spotify",      -14.0, True),
+    ("Apple Music",  -16.0, True),
+    ("YouTube",      -14.0, False),
+    ("Amazon Music", -14.0, False),
+    ("TIDAL",        -14.0, False),
+    ("Deezer",       -15.0, False),
+]
+
+
+def _streaming(lang, m, L):
+    """Streaming-readiness: how this exact master behaves after each platform's
+    loudness normalization, plus hard delivery checks. Pure measurement vs
+    published specs — no 'will pass distribution' promises."""
+    lufs = m["lufs"]
+    platforms, quiet = [], []
+    for name, target, boosts in _PLATFORMS:
+        delta = round(lufs - target, 1)
+        if delta > 0.5:
+            row = {"name": name, "target": target, "status": "ok",
+                   "d": L("st_down", d=abs(delta))}
+        elif delta < -0.5 and boosts:
+            row = {"name": name, "target": target, "status": "ok",
+                   "d": L("st_boost", d=abs(delta))}
+        elif delta < -0.5:
+            row = {"name": name, "target": target, "status": "quiet",
+                   "d": L("st_quiet", d=abs(delta), name=name)}
+            quiet.append(abs(delta))
+        else:
+            row = {"name": name, "target": target, "status": "ok", "d": L("st_asis")}
+        platforms.append(row)
+
+    tp_ok = m["true_peak_db"] <= -1.0
+    checks = [
+        {"t": L("ml_true_peak"), "v": f"{m['true_peak_db']} dBTP", "ok": tp_ok,
+         "d": L("st_tp_ok") if tp_ok else L("st_tp_bad")},
+        {"t": L("label_Clipping"), "v": L("st_no") if not m["clipping"] else L("st_yes"),
+         "ok": not m["clipping"],
+         "d": L("st_clip_ok") if not m["clipping"] else L("st_clip_bad")},
+        {"t": L("st_dur"), "v": _fmt_time(m["duration_sec"]), "ok": m["duration_sec"] >= 30,
+         "d": L("st_dur_ok") if m["duration_sec"] >= 30 else L("st_dur_bad")},
+    ]
+
+    if quiet:
+        level = "crit" if max(quiet) >= 4 else "warn"
+        headline = L("st_head_quiet", n=len(quiet), d=max(quiet))
+    elif not tp_ok or m["clipping"]:
+        level = "warn"
+        headline = L("st_head_peak")
+    else:
+        level = "good"
+        headline = L("st_head_ok")
+    return {"level": level, "headline": headline, "platforms": platforms,
+            "checks": checks, "note": L("st_note")}
 
 
 def _ai_signals(lang, m, L):
     """Report acoustic signals often linked to AI production — as SIGNALS, never a fake %.
     Each detected tell carries a short label + a plain explanation."""
-    # Thresholds: measured 99th percentile of real human-made music when the
-    # calibration corpus has run (norms_data.json "human_baseline"); until then,
-    # deliberately conservative hand-set values. Better to miss a tell than to
-    # wrongly accuse a human artist.
+    # Thresholds: measured 99th percentile of real human-made music
+    # (norms_data.json "human_baseline") — adopted only when it RAISES the bar
+    # above our conservative hand-set value and isn't saturated (30s-clip corpora
+    # degenerate to 1.0 on structural tells). Never lower the bar from corpus
+    # data: flagging a human artist as AI is the worst failure mode.
     from analyze import _MEASURED
     hb = _MEASURED.get("human_baseline") or {}
-    thr = lambda k, default: (hb.get(k) or {}).get("p99", default)
+
+    def thr(k, default):
+        p99 = (hb.get(k) or {}).get("p99")
+        return p99 if p99 is not None and default < p99 < 0.999 else default
     tells = []
     if m.get("timing_rigidity", 0) >= thr("timing_rigidity", 0.92):
         tells.append({"t": L("ai_timing"), "d": L("ai_timing_d")})

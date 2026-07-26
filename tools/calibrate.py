@@ -130,6 +130,9 @@ def main():
             "lufs": [round(pct(col("lufs"), 25), 1), round(pct(col("lufs"), 75), 1)],
             "low_mid_ratio_p90": round(pct(col("low_mid_ratio"), 90), 3),
             "n": len(rows), "source": "fma_small",
+            # 30s excerpts: intro/structure stats are right-censored and often
+            # mid-song — consumers must not treat them as full-track norms.
+            "full_length": False,
         }
 
     col = lambda k: [r[k] for r in all_rows]

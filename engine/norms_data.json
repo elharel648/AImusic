@@ -92,5 +92,92 @@
       "source": "spotify-tracks-dataset"
     }
   },
-  "generated": "2026-07-26"
+  "generated": "2026-07-26",
+  "genres": {
+    "Pop": {
+      "bpm": [
+        89,
+        152
+      ],
+      "intro_sec": [
+        0.0,
+        19.6
+      ],
+      "lufs": [
+        -14.9,
+        -8.8
+      ],
+      "low_mid_ratio_p90": 0.297,
+      "n": 1000,
+      "source": "fma_small"
+    },
+    "Rock": {
+      "bpm": [
+        86,
+        161
+      ],
+      "intro_sec": [
+        0.0,
+        20.9
+      ],
+      "lufs": [
+        -13.5,
+        -7.9
+      ],
+      "low_mid_ratio_p90": 0.258,
+      "n": 999,
+      "source": "fma_small"
+    },
+    "Electronic": {
+      "bpm": [
+        89,
+        152
+      ],
+      "intro_sec": [
+        0.0,
+        17.6
+      ],
+      "lufs": [
+        -13.3,
+        -8.9
+      ],
+      "low_mid_ratio_p90": 0.215,
+      "n": 999,
+      "source": "fma_small"
+    },
+    "Hip-Hop": {
+      "bpm": [
+        86,
+        161
+      ],
+      "intro_sec": [
+        0.0,
+        17.2
+      ],
+      "lufs": [
+        -12.5,
+        -8.7
+      ],
+      "low_mid_ratio_p90": 0.174,
+      "n": 1000,
+      "source": "fma_small"
+    }
+  },
+  "human_baseline": {
+    "timing_rigidity": {
+      "p95": 0.39,
+      "p99": 0.66
+    },
+    "section_repetition": {
+      "p95": 1.0,
+      "p99": 1.0
+    },
+    "spectral_uniformity": {
+      "p95": 0.99,
+      "p99": 1.0
+    },
+    "dynamic_range_db_p05": 3.1,
+    "n": 7997
+  },
+  "intro_capped_at": 25.0
 }

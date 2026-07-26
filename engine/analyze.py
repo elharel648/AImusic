@@ -51,12 +51,15 @@ def get_norms(genre: str) -> dict:
         base["bpm"] = tuple(hits["bpm"])
         base["lufs"] = tuple(hits["lufs"])
         base["n_hits"] = hits["n"]
-    # Tier B (FMA): our genres map onto FMA's coarser families
+    # Tier B (FMA): our genres map onto FMA's coarser families.
+    # FMA-small clips are 30s excerpts (often mid-song), so their intro/structure
+    # measurements are NOT valid — we only take provenance and keep curated
+    # intro norms until a full-length corpus (MTG-Jamendo) replaces them.
     _FMA_FAMILY = {"melodic techno": "Electronic", "house": "Electronic",
                    "edm": "Electronic", "lo-fi": "Electronic",
                    "hip-hop": "Hip-Hop", "pop": "Pop", "rock": "Rock"}
     fma = (_MEASURED.get("genres") or {}).get(_FMA_FAMILY.get(genre, ""))
-    if fma:
+    if fma and fma.get("full_length"):
         base["intro_sec"] = tuple(fma["intro_sec"])
         base["n_fma"] = fma["n"]
     return base

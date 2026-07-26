@@ -103,6 +103,7 @@ def test_all_languages(tmp_path, lang):
     for f in rep["findings"]:
         assert f["k"] and f["headline"] and f["why"]
     assert rep["ai_signals"]["headline"]
+    assert rep["streaming"]["headline"] and len(rep["streaming"]["platforms"]) == 6
     # Suno prompt must stay English regardless of language
     assert "bpm" in rep["suno_prompt"]
 
@@ -130,6 +131,25 @@ def test_character_finding_excluded_from_overall(tmp_path):
     assert rep["findings"][-1]["id"] == "Character"      # always last
     assert rep["overall"] == base                        # low confidence must not drag score
     assert rep["meta"]["genre"] == "Minimal (Electronic)"
+
+
+# ── streaming readiness ──────────────────────────────────────────────────────
+
+def test_streaming_quiet_vs_loud():
+    """A quiet master must flag the down-only platforms; a loud one passes everywhere."""
+    from insights import _streaming
+    from i18n import t
+    L = lambda _s, **v: t("en", _s, **v)
+    base = {"true_peak_db": -2.0, "clipping": False, "duration_sec": 200}
+    quiet = _streaming("en", dict(base, lufs=-18.0), L)
+    assert quiet["level"] in ("warn", "crit")
+    flagged = {p["name"] for p in quiet["platforms"] if p["status"] == "quiet"}
+    assert "YouTube" in flagged          # never boosts quiet tracks
+    assert "Spotify" not in flagged      # boosts, so not flagged
+    loud = _streaming("en", dict(base, lufs=-9.0), L)
+    assert loud["level"] == "good"
+    assert all(p["status"] == "ok" for p in loud["platforms"])
+    assert all(c["ok"] for c in loud["checks"])
 
 
 def test_ml_style_bucket_mapping():
