@@ -139,6 +139,9 @@ async def analyze_endpoint(file: UploadFile = File(...), genre: str = Form("melo
     except Exception:
         # Anything the decoder/DSP chokes on (corrupt wav, exotic encoding)
         # is a bad input, not a server fault — return 422, never a raw 500.
+        # Log the real cause so bad-input bugs stay diagnosable.
+        import logging
+        logging.getLogger("anr").exception("analyze failed for %s", file.filename)
         raise HTTPException(422, "Could not analyze that file — it may be corrupt or not real audio.")
     finally:
         for p in (tmp.name, conv):

@@ -133,6 +133,16 @@ def test_character_finding_excluded_from_overall(tmp_path):
     assert rep["meta"]["genre"] == "Minimal (Electronic)"
 
 
+def test_report_json_serializable(tmp_path):
+    """The full report (with _raw) must survive stdlib json — numpy bools don't."""
+    import json
+    p = _write(tmp_path, "js.wav", make_track(dur=16))
+    raw = analyze(p)
+    rep = build_insights(raw)
+    rep["_raw"] = raw
+    json.dumps(rep)   # raises TypeError if any numpy type leaks through
+
+
 # ── streaming readiness ──────────────────────────────────────────────────────
 
 def test_streaming_quiet_vs_loud():

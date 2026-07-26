@@ -199,21 +199,24 @@ def _streaming(lang, m, L):
             row = {"name": name, "target": target, "status": "ok", "d": L("st_asis")}
         platforms.append(row)
 
-    tp_ok = m["true_peak_db"] <= -1.0
+    # bool() everywhere: numpy booleans are not JSON-serializable
+    tp_ok = bool(m["true_peak_db"] <= -1.0)
+    clip = bool(m["clipping"])
+    dur_ok = bool(m["duration_sec"] >= 30)
     checks = [
         {"t": L("ml_true_peak"), "v": f"{m['true_peak_db']} dBTP", "ok": tp_ok,
          "d": L("st_tp_ok") if tp_ok else L("st_tp_bad")},
-        {"t": L("label_Clipping"), "v": L("st_no") if not m["clipping"] else L("st_yes"),
-         "ok": not m["clipping"],
-         "d": L("st_clip_ok") if not m["clipping"] else L("st_clip_bad")},
-        {"t": L("st_dur"), "v": _fmt_time(m["duration_sec"]), "ok": m["duration_sec"] >= 30,
-         "d": L("st_dur_ok") if m["duration_sec"] >= 30 else L("st_dur_bad")},
+        {"t": L("label_Clipping"), "v": L("st_yes") if clip else L("st_no"),
+         "ok": not clip,
+         "d": L("st_clip_bad") if clip else L("st_clip_ok")},
+        {"t": L("st_dur"), "v": _fmt_time(m["duration_sec"]), "ok": dur_ok,
+         "d": L("st_dur_ok") if dur_ok else L("st_dur_bad")},
     ]
 
     if quiet:
         level = "crit" if max(quiet) >= 4 else "warn"
         headline = L("st_head_quiet", n=len(quiet), d=max(quiet))
-    elif not tp_ok or m["clipping"]:
+    elif not tp_ok or clip:
         level = "warn"
         headline = L("st_head_peak")
     else:
