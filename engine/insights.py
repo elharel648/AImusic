@@ -102,7 +102,7 @@ def build_insights(m: dict, lang: str = "en") -> dict:
             "fix": {"daw": L("mix_fix_daw"), "suno": L("mix_fix_suno")},
             # prescription: cut derived from the measured band excess (never a
             # made-up number) — clamped to a sane starting range
-            "rx": {"type": "eq_cut", "freq": 250,
+            "rx": {"type": "eq_cut", "freq": m.get("mud_peak_hz", 250),
                    "gain_db": -max(1.5, min(4.0, round(10 * math.log10(mud / 0.35) * 2, 1))),
                    "q": 1.2, "conf": "high"},
         })

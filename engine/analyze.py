@@ -213,8 +213,13 @@ def measure_mud(mono: np.ndarray, sr: int) -> dict:
     total = S.sum()
     if total == 0:
         return {"low_mid_ratio": 0.0}
-    band = S[(freqs >= 200) & (freqs <= 350)].sum()
-    return {"low_mid_ratio": round(float(band / total), 3)}
+    sel = (freqs >= 200) & (freqs <= 350)
+    band = S[sel].sum()
+    # the actual peak of the mud, not the band center — so the EQ prescription
+    # can name this track's real problem frequency
+    peak_hz = float(freqs[sel][S[sel].mean(axis=1).argmax()]) if sel.any() else 250.0
+    return {"low_mid_ratio": round(float(band / total), 3),
+            "mud_peak_hz": int(round(peak_hz / 5) * 5)}
 
 
 def measure_stereo(stereo, mono, sr) -> dict:
