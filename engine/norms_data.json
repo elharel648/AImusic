@@ -248,5 +248,16 @@
     "n": 10000,
     "source": "sonics_suno_udio"
   },
-  "ai_baseline_generated": "2026-07-27"
+  "ai_baseline_generated": "2026-07-27",
+  "key_validation": {
+    "exact": 44.2,
+    "fifth": 10.8,
+    "relative": 5.3,
+    "parallel": 13.2,
+    "mirex_weighted": 53.8,
+    "n": 604,
+    "skipped": 0,
+    "source": "giantsteps_key"
+  },
+  "key_validation_generated": "2026-07-27"
 }
