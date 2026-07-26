@@ -11232,3 +11232,5 @@ INFO:     127.0.0.1:61889 - "GET / HTTP/1.1" 200 OK
 INFO:     127.0.0.1:61898 - "GET /fonts/SFHebrew.woff2 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:61898 - "GET /fonts/Didot-Bold.woff2 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:61898 - "GET /api/demo?lang=he&v=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61913 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61916 - "GET /api/demo?lang=he&v=1 HTTP/1.1" 200 OK

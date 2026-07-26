@@ -1161,7 +1161,8 @@
     x.textAlign=B; x.fillStyle='#EDEAE4'; x.font=`400 150px ${disp}`;
     x.fillText(String(rep.overall), R, 260);
     x.fillStyle='rgba(237,234,228,0.4)'; x.font=`14px ${mono}`;
-    x.fillText('/100 · '+ui('overall').toUpperCase(), R, 292);
+    if(rtl){ x.direction='ltr'; x.fillText(ui('overall')+' · 100/', R, 292); x.direction='rtl'; }
+    else x.fillText('/100 · '+ui('overall').toUpperCase(), R, 292);
     // name + meta
     const m=rep.meta||{};
     x.textAlign=A; x.fillStyle='#EDEAE4'; x.font=`700 40px ${sans}`;
@@ -1185,7 +1186,9 @@
       const cx=72+i*(cw+18), cy=470;
       x.strokeStyle='rgba(237,234,228,0.12)'; x.strokeRect(cx,cy,cw,90);
       x.textAlign='center'; x.fillStyle=amber; x.font=`600 30px ${mono}`;
+      x.direction='ltr';                       // numbers stay LTR even in RTL cards
       x.fillText(ch[0], cx+cw/2, cy+42);
+      if(rtl) x.direction='rtl';
       x.fillStyle='rgba(237,234,228,0.4)'; x.font=`11px ${mono}`;
       x.fillText(ch[1], cx+cw/2, cy+70);
     });
