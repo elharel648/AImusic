@@ -11,6 +11,8 @@ produced in any supported language. Also builds the opening verdict, the
 single top priority, and a Suno prompt derived from the actual problems.
 """
 from __future__ import annotations
+import math
+
 from i18n import t
 
 
@@ -67,6 +69,8 @@ def build_insights(m: dict, lang: str = "en") -> dict:
             "measure": [[f"{lufs}", L("ml_your_lufs")], [f"{llo}", L("ml_target")], [f"{m['true_peak_db']} dB", L("ml_true_peak")]]
                        + ([[f"{m['lra']} LU", L("ml_lra")]] if m.get("lra") is not None else []),
             "fix": {"daw": L("master_fix_daw", llo=llo), "suno": L("master_fix_suno")},
+            "rx": {"type": "limiter", "gain_db": round(llo - lufs, 1),
+                   "ceiling_db": -1.0, "target_lufs": llo, "conf": "high"},
         })
     else:
         findings.append({
@@ -84,6 +88,7 @@ def build_insights(m: dict, lang: str = "en") -> dict:
             "headline": L("clip_head"), "why": [L("clip_why1"), L("clip_why2")],
             "measure": [[f"{m['true_peak_db']} dB", L("ml_true_peak")]],
             "fix": {"daw": L("clip_fix_daw"), "suno": L("clip_fix_suno")},
+            "rx": {"type": "clip", "trim_db": -1.0, "ceiling_db": -1.0, "conf": "high"},
         })
 
     # ── Low-mid mud ──
@@ -95,6 +100,11 @@ def build_insights(m: dict, lang: str = "en") -> dict:
             "why": [L("mix_why1", mud=int(mud * 100)), L("mix_why2"), L("mix_why3")],
             "measure": [[f"{int(mud*100)}%", L("ml_energy")]],
             "fix": {"daw": L("mix_fix_daw"), "suno": L("mix_fix_suno")},
+            # prescription: cut derived from the measured band excess (never a
+            # made-up number) — clamped to a sane starting range
+            "rx": {"type": "eq_cut", "freq": 250,
+                   "gain_db": -max(1.5, min(4.0, round(10 * math.log10(mud / 0.35) * 2, 1))),
+                   "q": 1.2, "conf": "high"},
         })
 
     # ── Dynamics ──
@@ -105,6 +115,7 @@ def build_insights(m: dict, lang: str = "en") -> dict:
             "headline": L("dyn_head"), "why": [L("dyn_why1", dr=dr), L("dyn_why2")],
             "measure": [[f"{dr} dB", L("ml_dyn_range")]],
             "fix": {"daw": L("dyn_fix_daw"), "suno": L("dyn_fix_suno")},
+            "rx": {"type": "decompress", "dr_db": dr, "target_dr": 6, "conf": "med"},
         })
 
     # ── Stereo ──
@@ -115,6 +126,7 @@ def build_insights(m: dict, lang: str = "en") -> dict:
             "headline": L("stereo_head"), "why": [L("stereo_why1")],
             "measure": [[f"{w}", L("ml_width")]],
             "fix": {"daw": L("stereo_fix_daw"), "suno": L("stereo_fix_suno")},
+            "rx": {"type": "widen", "width": w, "conf": "med"},
         })
 
     # ── Tempo / key (positive anchor) ──
