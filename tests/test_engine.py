@@ -162,6 +162,16 @@ def test_streaming_quiet_vs_loud():
     assert all(c["ok"] for c in loud["checks"])
 
 
+def test_stems_import_and_guard(monkeypatch):
+    """stems must import without demucs installed, and separate() must raise a
+    clean RuntimeError (not an ImportError from inside torch) when it's missing."""
+    import stems
+    assert isinstance(stems.stems_available(), bool)
+    monkeypatch.setattr(stems, "stems_available", lambda: False)
+    with pytest.raises(RuntimeError):
+        stems.separate("/nonexistent.wav")
+
+
 def test_ml_style_bucket_mapping():
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "engine"))
     from ml_tags import style_to_bucket

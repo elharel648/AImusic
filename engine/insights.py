@@ -154,15 +154,19 @@ def build_insights(m: dict, lang: str = "en") -> dict:
         })
 
     # ── Sibilance (only when the ML layer actually hears vocals) ──
+    # stem_level: measured on the Demucs-isolated vocal, not the full mix —
+    # the prescription is no longer a proxy, so its confidence rises to high.
     sib = m.get("sibilance_ratio", 0)
     if m.get("ml_voice_prob", 0) > 0.6 and sib > 0.10:
+        stem = bool(m.get("stem_level"))
         findings.append({
             "id": "Sibilance", "k": L("label_Sibilance"), "score": max(45, int(100 - (sib - 0.10) * 400)), "sev": "warn",
             "headline": L("sib_head"),
-            "why": [L("sib_why1", pct=round(sib * 100, 1)), L("sib_why2")],
+            "why": [L("sib_why1", pct=round(sib * 100, 1)), L("sib_why2")]
+                   + ([L("sib_why_stem")] if stem else []),
             "measure": [[f"{round(sib*100,1)}%", L("ml_sib")]],
             "fix": {"daw": L("sib_fix_daw"), "suno": L("sib_fix_suno")},
-            "rx": {"type": "deess", "freq": 7000, "conf": "med"},
+            "rx": {"type": "deess", "freq": 7000, "conf": "high" if stem else "med"},
         })
 
     # ── Tempo / key (positive anchor) ──

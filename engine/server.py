@@ -18,10 +18,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from analyze import analyze, GENRE_NORMS, get_norms
+from analyze import (analyze, GENRE_NORMS, get_norms, measure_vocal_bands,
+                     measure_mud, ANALYSIS_SR, _load)
 from insights import build_insights
 from llm import llm_available, enrich_report
 from ml_tags import ml_available, ml_analyze
+from stems import separate, stems_available
 
 app = FastAPI(title="A&R AI")
 app.add_middleware(
@@ -70,6 +72,26 @@ def _ml_result(fut, path: str) -> dict:
             pass
         _ML_POOL = None
         return ml_analyze(path) if ml_available() else {}
+
+
+def _deep_vocal_measures(path: str) -> dict:
+    """Demucs two-stem split of the first 90s, then stem-level measurements:
+    sibilance/presence on the isolated vocal, low-mid mud on the accompaniment.
+    These override the mix-level proxies; stem_level marks the provenance."""
+    import librosa
+    stems, cleanup = separate(path)
+    try:
+        out = {}
+        v, _, vsr = _load(stems["vocals"])
+        v22 = librosa.resample(v, orig_sr=vsr, target_sr=ANALYSIS_SR) if vsr != ANALYSIS_SR else v
+        out.update(measure_vocal_bands(v22, ANALYSIS_SR))
+        n, _, nsr = _load(stems["no_vocals"])
+        n22 = librosa.resample(n, orig_sr=nsr, target_sr=ANALYSIS_SR) if nsr != ANALYSIS_SR else n
+        out.update(measure_mud(n22, ANALYSIS_SR))
+        out["stem_level"] = True
+        return out
+    finally:
+        cleanup()
 
 
 def _to_wav(src: str) -> str:
@@ -135,7 +157,8 @@ def demo(lang: str = "en", v: int = 1):
 
 
 @app.post("/api/analyze")
-async def analyze_endpoint(file: UploadFile = File(...), genre: str = Form("melodic techno"), lang: str = Form("en")):
+async def analyze_endpoint(file: UploadFile = File(...), genre: str = Form("melodic techno"),
+                           lang: str = Form("en"), deep: str = Form("0")):
     ext = os.path.splitext(file.filename or "")[1].lower()
     if ext not in ALLOWED_EXT:
         raise HTTPException(400, f"Unsupported format {ext}. Use WAV, MP3, FLAC, M4A.")
@@ -168,6 +191,15 @@ async def analyze_endpoint(file: UploadFile = File(...), genre: str = Form("melo
             resolved_genre = ml.get("ml_genre_bucket", "default")
         raw["genre_assumed"] = resolved_genre
         raw["norms"] = get_norms(resolved_genre)
+        # Deep vocal analysis (opt-in, slow): separate the vocal with Demucs
+        # and re-measure sibilance/presence on the isolated vocal, mud on the
+        # accompaniment. Only when the ML layer actually hears vocals.
+        if deep == "1" and raw.get("ml_voice_prob", 0) > 0.6 and stems_available():
+            try:
+                raw.update(_deep_vocal_measures(path))
+            except Exception:
+                import logging
+                logging.getLogger("anr").exception("stem separation failed for %s", file.filename)
         report = build_insights(raw, lang)
         report["source"] = "template"
         if llm_available():
