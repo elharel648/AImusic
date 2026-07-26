@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+*.bak
+# transient data — regenerable via tools/ (see README)
+data/
+calibration/
+sample.wav
+*.conv.wav

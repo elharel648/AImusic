@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A&R AI — Your AI Music Producer</title>
+<meta name="description" content="Upload a track and get an honest A&R read — real measurements, one clear fix, and the exact Suno prompt to regenerate it better.">
+<meta property="og:title" content="A&R AI — Your AI Music Producer">
+<meta property="og:description" content="An honest read on your track, like a demo landing on an A&R's desk. Real measurements, not vibes.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0E0E0F">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230E0E0F"/><circle cx="32" cy="26" r="9" fill="%23D96055"/><rect x="14" y="42" width="7" height="10" rx="2" fill="%23E3A455"/><rect x="25" y="38" width="7" height="14" rx="2" fill="%23E3A455"/><rect x="36" y="44" width="7" height="8" rx="2" fill="%2357B98A"/><rect x="47" y="40" width="7" height="12" rx="2" fill="%23EAE8E3"/></svg>'>
+<style>
+  /* ═══════════════ FONTS (served by our app) ═══════════════ */
+  @font-face { font-family:"Didot Display"; src:url("/fonts/Didot-Regular.woff2") format("woff2"); font-weight:400; font-display:swap; }
+  @font-face { font-family:"Didot Display"; src:url("/fonts/Didot-Bold.woff2") format("woff2"); font-weight:700; font-display:swap; }
+  @font-face { font-family:"SF Hebrew App"; src:url("/fonts/SFHebrew.woff2") format("woff2"); font-display:swap; }
+  @font-face { font-family:"SF Arabic App"; src:url("/fonts/SFArabic.woff2") format("woff2"); font-display:swap; }
+
+  /* ═══════════════ TOKENS — "Control Room": neutral charcoal, VU amber, hairlines ═══════════════ */
+  :root {
+    --ground:#0E0E0F; --surface:#131314; --surface-2:#18181A; --raise:#1D1D20;
+    --line:#242426; --line-2:#39393C;
+    --ink:#EAE8E3; --ink-dim:#98968F; --ink-faint:#5F5E59;
+    --amber:#E3A455; --amber-dim:rgba(227,164,85,0.12);
+    --good:#57B98A; --good-dim:rgba(87,185,138,0.10);
+    --warn:#E3A455; --warn-dim:rgba(227,164,85,0.10);
+    --crit:#D96055; --crit-dim:rgba(217,96,85,0.10);
+    --r:8px; --r-sm:5px;
+    --ease:cubic-bezier(.4,0,.2,1); --ease-out:cubic-bezier(.16,1,.3,1);
+    --font-display:"Didot Display","Iowan Old Style",Palatino,Georgia,serif;
+    --font-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  }
+  :root[data-theme="light"]{
+    --ground:#F5F3EE; --surface:#FBFAF7; --surface-2:#FFFFFF; --raise:#FFFFFF;
+    --line:#E2DFD7; --line-2:#C9C5BA;
+    --ink:#1B1A16; --ink-dim:#6C6A61; --ink-faint:#A3A096;
+    --amber:#B87C22; --amber-dim:rgba(184,124,34,0.10);
+    --good:#2E7D5B; --good-dim:rgba(46,125,91,0.09);
+    --warn:#B87C22; --warn-dim:rgba(184,124,34,0.09);
+    --crit:#B94A40; --crit-dim:rgba(185,74,64,0.08);
+  }
+  @media (prefers-color-scheme:light){ :root:not([data-theme]){
+    --ground:#F5F3EE; --surface:#FBFAF7; --surface-2:#FFFFFF; --raise:#FFFFFF;
+    --line:#E2DFD7; --line-2:#C9C5BA;
+    --ink:#1B1A16; --ink-dim:#6C6A61; --ink-faint:#A3A096;
+    --amber:#B87C22; --amber-dim:rgba(184,124,34,0.10);
+    --good:#2E7D5B; --good-dim:rgba(46,125,91,0.09);
+    --warn:#B87C22; --warn-dim:rgba(184,124,34,0.09);
+    --crit:#B94A40; --crit-dim:rgba(185,74,64,0.08);
+  } }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--ground); color:var(--ink); line-height:1.55; overflow-x:hidden;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  /* ── light system: two soft sources + slow drift, Linear-grade depth ── */
+  body::before{ content:""; position:fixed; inset:-20%; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(42% 34% at 72% 6%, rgba(227,164,85,0.10), transparent 68%),
+      radial-gradient(36% 30% at 12% 88%, rgba(87,185,138,0.05), transparent 70%);
+    animation:lightdrift 26s ease-in-out infinite alternate; }
+  :root[data-theme="light"] body::before{ opacity:.6; }
+  @keyframes lightdrift{ from{ transform:translate3d(0,0,0);} to{ transform:translate3d(-2%,2%,0);} }
+  .wrap, header.bar{ position:relative; z-index:1; }
+  header.bar{ z-index:30; }
+  :root[lang="he"] body{ font-family:"SF Hebrew App",-apple-system,"Segoe UI",sans-serif; }
+  :root[lang="ar"] body{ font-family:"SF Arabic App",-apple-system,"Segoe UI",sans-serif; }
+
+  .display{ font-family:var(--font-display); font-weight:400; letter-spacing:-0.005em; line-height:1.06; }
+  :root[lang="he"] .display{ font-family:"SF Hebrew App",var(--font-display); font-weight:700; letter-spacing:0; line-height:1.18; }
+  :root[lang="ar"] .display{ font-family:"SF Arabic App",var(--font-display); font-weight:700; line-height:1.25; }
+  .mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+  .eyebrow{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.22em; font-size:10.5px; font-weight:500; }
+
+  a{color:inherit;} button{font-family:inherit; color:inherit;}
+  ::selection{ background:var(--amber-dim); }
+  :focus-visible{ outline:1.5px solid var(--amber); outline-offset:3px; border-radius:4px; }
+
+  /* ═══════════════ TOP BAR ═══════════════ */
+  header.bar{ position:sticky; top:0; z-index:30; background:var(--ground); border-bottom:1px solid var(--line); transition:background .3s; }
+  header.bar.scrolled{ background:color-mix(in srgb,var(--ground) 90%,transparent); backdrop-filter:blur(12px); }
+  .bar-inner{ max-width:880px; margin:0 auto; padding:0 28px; height:58px; display:flex; align-items:center; justify-content:space-between; }
+  .brand{ display:flex; align-items:center; gap:10px; cursor:pointer; background:none; border:none; padding:4px 0;
+    font-family:var(--font-mono); font-size:13px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; }
+  .brand .mark{ width:8px; height:8px; border-radius:50%; background:var(--crit); flex-shrink:0; animation:rec 2.6s infinite; }
+  @keyframes rec{ 0%,100%{opacity:1} 50%{opacity:.35} }
+  .brand small{ color:var(--ink-faint); font-weight:400; letter-spacing:0.14em; font-size:11px; }
+  .bar-right{ display:flex; align-items:center; gap:8px; }
+  .lang-picker{ background:none; border:1px solid var(--line); color:var(--ink-dim); border-radius:var(--r-sm); padding:6px 10px;
+    font-family:var(--font-mono); font-size:11px; cursor:pointer; transition:border-color .2s; letter-spacing:0.04em; }
+  .lang-picker:hover{ border-color:var(--line-2); color:var(--ink); }
+  .theme-toggle{ background:none; border:1px solid var(--line); color:var(--ink-dim); border-radius:var(--r-sm); width:31px; height:31px;
+    cursor:pointer; font-size:13px; display:grid; place-items:center; transition:border-color .2s,color .2s; }
+  .theme-toggle:hover{ border-color:var(--line-2); color:var(--ink); }
+
+  .wrap{ max-width:880px; margin:0 auto; padding:0 28px; }
+
+  /* RTL */
+  :root[dir="rtl"] body{ direction:rtl; }
+  :root[dir="rtl"] .priority{ border-left:1px solid var(--line); border-right:2px solid var(--warn); }
+  :root[dir="rtl"] .card-detail-inner{ padding:4px 96px 26px 24px; }
+  :root[dir="rtl"] .reasons li .tick, :root[dir="rtl"] .steps li::before{ transform:scaleX(-1); }
+  :root[dir="rtl"] .track .new{ margin-left:0; margin-right:auto; }
+  :root[dir="rtl"] .hero-h,:root[dir="rtl"] .hero-sub{ text-align:right; }
+  :root[dir="rtl"] .mono, :root[dir="rtl"] .suno pre{ direction:ltr; unicode-bidi:embed; }
+  :root[dir="rtl"] .a-steps{ text-align:right; }
+
+  /* screens */
+  .screen{ display:none; } .screen.active{ display:block; animation:screen-in .45s var(--ease-out); }
+  @keyframes screen-in{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
+  .stagger>*{ animation:rise .55s var(--ease-out) backwards; }
+  @keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
+
+  /* ═══════════════ UPLOAD ═══════════════ */
+  #s-upload{ min-height:84vh; display:none; flex-direction:column; justify-content:center; padding:64px 0; position:relative; }
+  #s-upload.active{ display:flex; }
+  /* living spectrum — the signature element: a sound horizon between copy and console */
+  #heroSpec{ display:block; width:100%; height:88px; margin:-4px 0 30px; opacity:.9; pointer-events:none;
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+  /* choreographed entrance: masked line reveals */
+  .reveal-line{ display:block; overflow:hidden; }
+  .reveal-line>span{ display:inline-block; transform:translateY(110%); animation:lineup .9s var(--ease-out) forwards; }
+  .rl-2>span{ animation-delay:.12s; }
+  @keyframes lineup{ to{ transform:translateY(0);} }
+  .fade-up{ opacity:0; transform:translateY(14px); animation:fadeup .8s var(--ease-out) forwards; }
+  .fd-1{ animation-delay:.25s; } .fd-2{ animation-delay:.4s; } .fd-3{ animation-delay:.55s; } .fd-4{ animation-delay:.7s; } .fd-5{ animation-delay:.85s; }
+  @keyframes fadeup{ to{ opacity:1; transform:none;} }
+  /* scroll reveals (report sections) */
+  .sr{ opacity:0; transform:translateY(18px); transition:opacity .7s var(--ease-out), transform .7s var(--ease-out); }
+  .sr.inview{ opacity:1; transform:none; }
+  /* magnetic buttons */
+  .magnetic{ transition:transform .18s var(--ease-out); will-change:transform; }
+  /* framed product preview on landing */
+  .preview-wrap{ margin-top:54px; perspective:1200px; }
+  .preview-lbl{ font-family:var(--font-mono); font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+  .preview-lbl::after{ content:""; flex:1; height:1px; background:var(--line); }
+  .preview{ border:1px solid var(--line-2); border-radius:var(--r); background:linear-gradient(180deg, color-mix(in srgb,var(--ink) 4%, var(--surface)), var(--surface) 30%);
+    padding:22px 24px; transform:rotateX(4deg); transform-origin:top; box-shadow:0 40px 90px -50px rgba(0,0,0,.95), 0 0 0 1px color-mix(in srgb,var(--amber) 8%, transparent);
+    transition:transform .5s var(--ease-out), box-shadow .5s; position:relative; overflow:hidden; }
+  .preview:hover{ transform:rotateX(0deg); }
+  .preview::after{ content:""; position:absolute; inset:0 0 auto 0; height:1px;
+    background:linear-gradient(90deg, transparent, color-mix(in srgb,var(--amber) 45%, transparent) 50%, transparent); }
+  .preview .p-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; }
+  .preview .p-score{ font-family:var(--font-mono); font-size:34px; font-weight:600; letter-spacing:-.03em; }
+  .preview .p-score small{ font-size:11px; color:var(--ink-faint); font-weight:400; }
+  .preview .p-verdict{ font-family:var(--font-display); font-size:17px; line-height:1.35; color:var(--ink); margin-bottom:16px; }
+  .preview .p-row{ display:flex; align-items:center; gap:12px; padding:7px 0; border-top:1px solid var(--line); font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em; color:var(--ink-faint); }
+  .preview .p-row b{ width:30px; font-size:13px; letter-spacing:0; }
+  .preview .p-bar{ flex:1; height:3px; background:var(--line); border-radius:2px; overflow:hidden; }
+  .preview .p-bar i{ display:block; height:100%; border-radius:2px; }
+  @media (prefers-reduced-motion:reduce){ .reveal-line>span{ animation:none; transform:none; } .fade-up{ animation:none; opacity:1; transform:none; } .sr{ opacity:1; transform:none; } #heroSpec{ display:none; } }
+  .hero-eyebrow{ color:var(--ink-faint); margin-bottom:26px; display:flex; align-items:center; gap:10px; }
+  .hero-eyebrow .pulse{ width:6px; height:6px; border-radius:50%; background:var(--good); animation:rec 2.4s infinite; }
+  .hero-h{ font-size:clamp(42px,7.6vw,74px); margin:0 0 26px; text-wrap:balance; }
+  .hero-h .grad{ font-style:italic; color:var(--amber); }
+  :root[lang="he"] .hero-h .grad{ font-style:normal; }
+  .hero-sub{ font-size:16.5px; color:var(--ink-dim); max-width:52ch; margin:0 0 44px; line-height:1.65; }
+  .hero-sub b{ color:var(--ink); font-weight:600; }
+
+  .glass{ position:relative; background:linear-gradient(180deg, color-mix(in srgb,var(--ink) 3%, var(--surface)) 0%, var(--surface) 22%); }
+  .glass::after{ content:""; position:absolute; inset:0 0 auto 0; height:1px; border-radius:inherit;
+    background:linear-gradient(90deg, transparent 4%, color-mix(in srgb,var(--ink) 26%, transparent) 30%, color-mix(in srgb,var(--amber) 36%, transparent) 50%, color-mix(in srgb,var(--ink) 26%, transparent) 70%, transparent 96%);
+    pointer-events:none; }
+  .drop{ border:1px solid var(--line); border-radius:var(--r); padding:44px 32px; text-align:center; cursor:pointer;
+    background:var(--surface); transition:border-color .25s, background .25s, box-shadow .35s; position:relative;
+    box-shadow:0 30px 70px -46px rgba(0,0,0,.9); }
+  .drop:hover{ border-color:var(--line-2); background:var(--surface-2); }
+  .drop.drag{ border-color:var(--amber); background:var(--amber-dim); }
+  .drop .ic{ width:52px; height:52px; margin:0 auto 18px; border:1px solid var(--line-2); border-radius:var(--r-sm);
+    display:grid; place-items:center; color:var(--ink-dim); transition:color .25s,border-color .25s; }
+  .drop:hover .ic{ color:var(--ink); border-color:var(--ink-dim); }
+  .drop .big{ font-size:17px; font-weight:600; margin-bottom:5px; letter-spacing:-0.01em; }
+  .drop .small{ font-size:13.5px; color:var(--ink-dim); }
+  .drop .browse{ color:var(--amber); font-weight:500; text-decoration:underline; text-underline-offset:3px; }
+  .fmt{ margin-top:14px; font-size:10.5px; color:var(--ink-faint); letter-spacing:0.08em; text-transform:uppercase; }
+
+  .genre-row{ margin-top:26px; display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .genre-lbl{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.2em; color:var(--ink-faint); }
+  .genre-chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .gchip{ background:none; border:1px solid var(--line); color:var(--ink-dim); border-radius:var(--r-sm); padding:6px 13px;
+    font-family:var(--font-mono); font-size:11.5px; letter-spacing:0.02em; cursor:pointer; transition:all .2s; }
+  .gchip:hover{ border-color:var(--line-2); color:var(--ink); }
+  .gchip.on{ background:var(--ink); color:var(--ground); border-color:var(--ink); font-weight:600; }
+
+  .demo-row{ margin-top:30px; display:flex; align-items:center; gap:16px; }
+  .demo-row .line{ flex:1; height:1px; background:var(--line); }
+  .demo-btn{ background:none; border:none; color:var(--ink-dim); padding:6px 4px; font-size:13px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:9px; text-decoration:underline; text-underline-offset:4px; text-decoration-color:var(--line-2); transition:color .2s; }
+  .demo-btn:hover{ color:var(--ink); text-decoration-color:var(--amber); }
+  .demo-btn .eq{ display:flex; gap:2px; align-items:flex-end; height:12px; }
+  .demo-btn .eq i{ width:2px; border-radius:1px; background:var(--amber); animation:eq 1.1s infinite ease-in-out; }
+  .demo-btn .eq i:nth-child(1){height:5px;animation-delay:0s}.demo-btn .eq i:nth-child(2){height:11px;animation-delay:.2s}.demo-btn .eq i:nth-child(3){height:7px;animation-delay:.4s}.demo-btn .eq i:nth-child(4){height:12px;animation-delay:.1s}
+  @keyframes eq{ 0%,100%{transform:scaleY(.35)} 50%{transform:scaleY(1)} }
+
+  .trust{ margin-top:46px; display:flex; gap:0; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:16px; }
+  .trust .t{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-faint); padding-right:28px; }
+  :root[dir="rtl"] .trust .t{ padding-right:0; padding-left:28px; }
+  .trust .t svg{ color:var(--ink-faint); flex-shrink:0; width:13px; height:13px; }
+
+  /* ═══════════════ ANALYZING ═══════════════ */
+  #s-analyze{ min-height:86vh; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:52px 0; }
+  #s-analyze.active{ display:flex; }
+  .orb{ position:relative; width:180px; height:180px; margin-bottom:42px; }
+  .orb canvas{ position:absolute; inset:0; }
+  .orb .core{ position:absolute; inset:0; margin:auto; width:88px; height:88px; border-radius:50%;
+    background:var(--surface-2); border:1px solid var(--line-2); display:grid; place-items:center; }
+  .orb .core::after{ content:""; width:10px; height:10px; border-radius:50%; background:var(--amber); animation:rec 1.6s infinite; }
+  #s-analyze .a-title{ font-size:28px; margin:0 0 8px; }
+  #s-analyze .a-track{ color:var(--ink-faint); font-size:12px; margin-bottom:40px; letter-spacing:0.06em; }
+  .a-steps{ display:flex; flex-direction:column; gap:0; width:100%; max-width:380px; text-align:left; border-top:1px solid var(--line); }
+  .a-step{ display:flex; align-items:center; gap:13px; font-size:13.5px; color:var(--ink-faint); transition:color .35s;
+    padding:11px 2px; border-bottom:1px solid var(--line); }
+  .a-step .box{ width:17px; height:17px; border-radius:3px; border:1px solid var(--line-2); flex-shrink:0; display:grid; place-items:center; transition:all .35s; }
+  .a-step.active{ color:var(--ink); } .a-step.active .box{ border-color:var(--amber); }
+  .a-step.done{ color:var(--ink-dim); } .a-step.done .box{ background:var(--ink); border-color:var(--ink); }
+  .a-step .spin{ width:9px; height:9px; border:1.5px solid transparent; border-top-color:var(--amber); border-radius:50%; animation:spin .7s linear infinite; }
+  @keyframes spin{ to{transform:rotate(360deg);} }
+  .a-step svg{ width:11px; height:11px; color:var(--ground); }
+
+  /* ═══════════════ REPORT ═══════════════ */
+  .track{ display:flex; align-items:center; gap:16px; padding:34px 0 22px; border-bottom:1px solid var(--line); }
+  .track .cover{ width:52px; height:52px; border-radius:var(--r-sm); flex-shrink:0; background:var(--surface-2); border:1px solid var(--line-2); position:relative; overflow:hidden; }
+  .track .cover::after{ content:""; position:absolute; inset:0; background:
+    repeating-linear-gradient(90deg, transparent 0 3px, var(--line) 3px 4px); opacity:.8; }
+  .track .cover .play{ position:absolute; inset:0; display:grid; place-items:center; background:color-mix(in srgb,var(--ground) 55%,transparent); color:var(--ink); opacity:0; transition:opacity .2s; cursor:pointer; z-index:1; }
+  .track .cover:hover .play{ opacity:1; }
+  .track .meta{ min-width:0; }
+  .track .meta .name{ font-weight:600; font-size:17px; letter-spacing:-0.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .track .meta .sub{ color:var(--ink-faint); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; margin-top:2px; }
+  .track .new{ margin-left:auto; flex-shrink:0; }
+  .btn-ghost{ background:none; border:1px solid var(--line); color:var(--ink-dim); border-radius:var(--r-sm); padding:8px 14px;
+    font-size:12px; cursor:pointer; transition:all .2s; white-space:nowrap; font-family:var(--font-mono); letter-spacing:0.02em; }
+  .btn-ghost:hover{ border-color:var(--line-2); color:var(--ink); }
+
+  .player{ margin:22px 0 6px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:13px 16px; display:flex; align-items:center; gap:14px; }
+  .player.hidden{ display:none; }
+  .player .pp{ width:38px; height:38px; border-radius:50%; border:1px solid var(--line-2); background:var(--surface-2); color:var(--ink); cursor:pointer; display:grid; place-items:center; flex-shrink:0; transition:all .2s; }
+  .player .pp:hover{ border-color:var(--ink-dim); }
+  .wf-wrap{ flex:1; position:relative; height:44px; cursor:pointer; }
+  .wf-wrap canvas{ position:absolute; inset:0; width:100%; height:100%; }
+  .wf-wrap .intro-tag{ position:absolute; top:-4px; transform:translateX(-50%); font-family:var(--font-mono); font-size:8.5px; color:var(--warn); letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap; pointer-events:none; }
+  .player .time{ font-size:11px; color:var(--ink-faint); min-width:80px; text-align:right; font-family:var(--font-mono); }
+
+  /* verdict — typeset like a document head */
+  .verdict{ margin:34px 0 0; padding:38px 0 30px; border-bottom:1px solid var(--line); position:relative; }
+  .verdict-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:26px; }
+  .verdict-top .who{ order:0; }
+  .verdict-top .who .badge{ font-family:var(--font-mono); color:var(--amber); font-weight:600; font-size:10.5px; letter-spacing:0.22em; text-transform:uppercase; }
+  .verdict-top .who .ov{ font-size:12.5px; color:var(--ink-faint); margin-top:6px; }
+  .score-dial{ order:1; width:auto; height:auto; position:relative; flex-shrink:0; display:flex; align-items:baseline; gap:10px; }
+  .score-dial svg{ display:none; }
+  .score-dial .lbl{ position:static; display:flex; flex-direction:row; align-items:baseline; gap:10px; }
+  .score-dial .lbl .n{ font-family:var(--font-mono); font-size:56px; font-weight:600; letter-spacing:-0.04em; line-height:1; color:var(--ink); }
+  .score-dial .lbl .n::after{ content:"/100"; font-size:13px; color:var(--ink-faint); font-weight:400; letter-spacing:0; margin-left:2px; }
+  .score-dial .lbl .u{ font-family:var(--font-mono); font-size:9.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.2em; }
+  .verdict h1{ margin:0; font-size:clamp(26px,4.4vw,38px); line-height:1.22; text-wrap:balance; font-weight:400; max-width:24ch; }
+  .verdict h1 em{ font-style:italic; color:var(--amber); } :root[lang="he"] .verdict h1 em{ font-style:normal; }
+  .verdict .signoff{ margin-top:24px; color:var(--ink-faint); font-size:11px; display:flex; align-items:center; gap:8px; font-family:var(--font-mono); letter-spacing:0.06em; text-transform:uppercase; }
+  .verdict .signoff svg{ color:var(--good); width:12px; height:12px; }
+
+  .priority{ margin:26px 0 0; padding:20px 22px; background:var(--surface); border:1px solid var(--line); border-left:2px solid var(--warn); border-radius:var(--r-sm); display:flex; gap:16px; align-items:flex-start; }
+  .priority .pic{ width:32px; height:32px; border-radius:var(--r-sm); background:var(--warn-dim); color:var(--warn); display:grid; place-items:center; flex-shrink:0; }
+  .priority .lbl{ font-family:var(--font-mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--warn); font-weight:600; margin-bottom:6px; }
+  .priority p{ margin:0; font-size:14.5px; line-height:1.6; color:var(--ink); }
+
+  .sec-head{ margin:52px 0 0; display:flex; align-items:center; gap:14px; }
+  .sec-head h2{ font-family:var(--font-mono); font-size:10.5px; margin:0; text-transform:uppercase; letter-spacing:0.24em; color:var(--ink-faint); font-weight:600; white-space:nowrap; }
+  .sec-head::after{ content:""; flex:1; height:1px; background:var(--line); }
+  .sec-head .count{ font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); order:2; letter-spacing:0.06em; }
+
+  /* findings — ruled document rows, LED meters */
+  .cards{ display:flex; flex-direction:column; margin-top:14px; }
+  .card{ border-bottom:1px solid var(--line); transition:background .2s; }
+  .card:first-child{ border-top:1px solid var(--line); }
+  .card:hover{ background:var(--surface); }
+  .card-top{ display:flex; align-items:center; gap:20px; padding:20px 4px; cursor:pointer; user-select:none; }
+  .scorebox{ width:72px; flex-shrink:0; display:flex; flex-direction:column; gap:7px; }
+  .scorebox .mnum{ font-family:var(--font-mono); font-size:22px; font-weight:600; line-height:1; letter-spacing:-0.02em; }
+  .meter{ height:4px; background:var(--line); border-radius:2px; position:relative; overflow:hidden; }
+  .meter i{ position:absolute; left:0; top:0; bottom:0; width:0; border-radius:2px; transition:width 1s var(--ease-out); background:var(--ink-dim); }
+  :root[dir="rtl"] .meter i{ left:auto; right:0; }
+  .card[data-sev="good"] .mnum{ color:var(--good); } .card[data-sev="good"] .meter i{ background:var(--good); }
+  .card[data-sev="warn"] .mnum{ color:var(--warn); } .card[data-sev="warn"] .meter i{ background:var(--warn); }
+  .card[data-sev="crit"] .mnum{ color:var(--crit); } .card[data-sev="crit"] .meter i{ background:var(--crit); }
+  .card-body-head{ flex:1; min-width:0; }
+  .card-body-head .k{ font-family:var(--font-mono); font-size:10px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.18em; display:flex; align-items:center; gap:7px; }
+  .card-body-head .k .sevdot{ display:none; }
+  .card-body-head .headline{ font-size:15.5px; font-weight:500; margin-top:5px; line-height:1.45; letter-spacing:-0.005em; }
+  .chev{ color:var(--ink-faint); transition:transform .3s var(--ease); flex-shrink:0; }
+  .card.open .chev{ transform:rotate(180deg); }
+  .card-detail{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s var(--ease); }
+  .card.open .card-detail{ grid-template-rows:1fr; }
+  .card-detail>div{ overflow:hidden; }
+  .card-detail-inner{ padding:4px 24px 26px 96px; }
+  .why-lbl{ font-family:var(--font-mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px; }
+  .reasons{ list-style:none; padding:0; margin:0 0 4px; display:flex; flex-direction:column; gap:8px; }
+  .reasons li{ display:flex; gap:11px; align-items:flex-start; font-size:13.5px; color:var(--ink-dim); line-height:1.55; }
+  .reasons li .tick{ color:var(--amber); flex-shrink:0; font-family:var(--font-mono); }
+  .measure{ margin-top:16px; padding-top:14px; border-top:1px solid var(--line); display:flex; gap:34px; flex-wrap:wrap; }
+  .measure .m .mv{ font-family:var(--font-mono); font-size:16px; font-weight:600; letter-spacing:-0.01em; }
+  .measure .m .ml{ font-family:var(--font-mono); font-size:9px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.12em; margin-top:3px; }
+
+  .fixbox{ margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+  .fixbox .fx-lbl{ font-family:var(--font-mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--amber); margin-bottom:10px; display:flex; align-items:center; gap:7px; font-weight:600; }
+  .fixbox .fx{ display:flex; gap:12px; align-items:flex-start; padding:11px 13px; border:1px solid var(--line); border-radius:var(--r-sm); font-size:13px; line-height:1.55; background:var(--surface); }
+  .fixbox .fx+.fx{ margin-top:7px; }
+  .fixbox .fx .tag{ flex-shrink:0; font-family:var(--font-mono); font-size:9.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; padding:3px 8px; border-radius:3px; margin-top:1px; }
+  .fixbox .fx.daw .tag{ background:var(--raise); color:var(--ink-dim); border:1px solid var(--line); }
+  .fixbox .fx.suno .tag{ background:var(--amber-dim); color:var(--amber); }
+  .fixbox .fx.suno code{ color:var(--amber); font-family:var(--font-mono); font-size:12.5px; }
+
+  /* AI signals — console flag panel */
+  .ai-block{ margin-top:14px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:24px; }
+  .ai-block[data-level="good"]{ border-color:color-mix(in srgb,var(--good) 40%,var(--line)); }
+  .ai-block[data-level="warn"]{ border-color:color-mix(in srgb,var(--warn) 40%,var(--line)); }
+  .ai-block[data-level="crit"]{ border-color:color-mix(in srgb,var(--crit) 40%,var(--line)); }
+  .ai-block .ai-top{ display:flex; align-items:center; gap:14px; }
+  .ai-block .ai-ic{ width:38px; height:38px; border-radius:var(--r-sm); display:grid; place-items:center; flex-shrink:0; border:1px solid var(--line); }
+  .ai-block[data-level="good"] .ai-ic{ color:var(--good); background:var(--good-dim); }
+  .ai-block[data-level="warn"] .ai-ic{ color:var(--warn); background:var(--warn-dim); }
+  .ai-block[data-level="crit"] .ai-ic{ color:var(--crit); background:var(--crit-dim); }
+  .ai-block .ai-head{ font-size:16px; font-weight:600; line-height:1.4; letter-spacing:-0.005em; }
+  .ai-block .ai-tells{ margin-top:16px; display:flex; flex-direction:column; }
+  .ai-block .ai-tell{ display:flex; gap:12px; align-items:flex-start; padding:12px 2px; border-top:1px solid var(--line); }
+  .ai-block .ai-tell .dot{ width:6px; height:6px; border-radius:50%; margin-top:7px; flex-shrink:0; }
+  .ai-block[data-level="crit"] .ai-tell .dot{ background:var(--crit); }
+  .ai-block[data-level="warn"] .ai-tell .dot{ background:var(--warn); }
+  .ai-block .ai-tell .tt{ font-size:13.5px; font-weight:600; }
+  .ai-block .ai-tell .td{ font-size:12.5px; color:var(--ink-dim); margin-top:2px; line-height:1.5; }
+  .ai-block .ai-note{ margin-top:14px; padding-top:12px; border-top:1px solid var(--line); font-size:11.5px; color:var(--ink-faint); display:flex; gap:7px; align-items:center; }
+  .ai-block .ai-note svg{ flex-shrink:0; width:12px; height:12px; }
+
+  /* locked */
+  .locked{ margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .locked .lrow{ display:flex; align-items:center; gap:14px; padding:15px 18px; border:1px dashed var(--line-2); border-radius:var(--r-sm); color:var(--ink-faint); background:none; }
+  .locked .lrow .lk{ width:30px; height:30px; border-radius:var(--r-sm); border:1px solid var(--line); display:grid; place-items:center; flex-shrink:0; }
+  .locked .lrow .lt{ flex:1; font-size:13.5px; color:var(--ink-dim); }
+  .locked .lrow .lt small{ display:block; font-size:11.5px; color:var(--ink-faint); margin-top:2px; }
+  .locked .lrow .soon{ font-family:var(--font-mono); font-size:9px; text-transform:uppercase; letter-spacing:0.16em; color:var(--ink-faint); border:1px solid var(--line); padding:3px 8px; border-radius:3px; }
+
+  /* producer + suno */
+  .producer{ margin-top:16px; }
+  .producer .quote{ font-size:clamp(19px,3vw,24px); line-height:1.42; margin:6px 0 22px; text-wrap:balance; color:var(--ink); font-family:var(--font-display); font-weight:400; }
+  :root[lang="he"] .producer .quote{ font-family:inherit; font-weight:600; }
+  .producer .quote em{ font-style:italic; color:var(--amber); } :root[lang="he"] .producer .quote em{ font-style:normal; }
+  .steps{ list-style:none; padding:0; margin:0; counter-reset:s; display:flex; flex-direction:column; }
+  .steps li{ counter-increment:s; display:flex; gap:15px; align-items:flex-start; padding:13px 2px; border-top:1px solid var(--line); font-size:14px; color:var(--ink-dim); }
+  .steps li::before{ content:"0" counter(s); flex-shrink:0; font-family:var(--font-mono); color:var(--amber); font-size:11px; margin-top:3px; letter-spacing:0.06em; }
+  .suno{ margin-top:24px; border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--surface); }
+  .suno-head{ display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--line); }
+  .suno-head .t{ display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-dim); }
+  .suno-head .t .s-logo{ width:16px; height:16px; border-radius:3px; border:1px solid var(--line-2); display:grid; place-items:center; font-size:9px; }
+  .copy-btn{ background:var(--ink); color:var(--ground); border:none; border-radius:var(--r-sm); padding:7px 14px;
+    font-family:var(--font-mono); font-size:11px; font-weight:600; letter-spacing:0.04em; cursor:pointer; transition:opacity .2s; display:inline-flex; align-items:center; gap:6px; }
+  .copy-btn:hover{ opacity:.85; }
+  .copy-btn.done{ background:var(--good); color:#fff; }
+  .suno pre{ margin:0; padding:18px; font-size:13px; line-height:1.75; font-family:var(--font-mono); color:var(--ink-dim); white-space:pre-wrap; word-break:break-word; }
+  .suno pre b{ color:var(--amber); font-weight:600; }
+
+  /* regen */
+  .regen{ margin:52px 0 0; padding:34px 0 0; border-top:1px solid var(--line); text-align:center; }
+  .regen h3{ margin:0 0 8px; font-size:24px; }
+  .regen p{ margin:0 0 22px; font-size:13.5px; color:var(--ink-dim); }
+  .regen .up{ background:var(--ink); color:var(--ground); border:none; border-radius:var(--r-sm); padding:13px 26px;
+    font-size:14px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:10px; transition:opacity .2s; }
+  .regen .up:hover{ opacity:.88; }
+  .regen .skip{ display:block; margin:16px auto 40px; background:none; border:none; color:var(--ink-faint); font-size:12px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .regen .skip:hover{ color:var(--ink-dim); }
+
+  /* v2 */
+  .v2-hero{ text-align:center; padding:44px 0 10px; }
+  .v2-hero .eyebrow{ color:var(--good); }
+  .v2-hero h1{ font-size:clamp(30px,5vw,44px); margin:18px 0 10px; text-wrap:balance; }
+  .v2-hero h1 em{ font-style:italic; color:var(--good); } :root[lang="he"] .v2-hero h1 em{ font-style:normal; }
+  .v2-hero p{ color:var(--ink-dim); font-size:14px; margin:0; }
+  .delta-cards{ display:flex; flex-direction:column; margin:34px 0; border-top:1px solid var(--line); }
+  .delta{ display:grid; grid-template-columns:150px 1fr auto; align-items:center; gap:20px; padding:16px 4px; border-bottom:1px solid var(--line); }
+  .delta .k{ font-size:13.5px; font-weight:600; }
+  .delta .k small{ display:block; font-family:var(--font-mono); font-size:9px; color:var(--ink-faint); font-weight:400; text-transform:uppercase; letter-spacing:0.12em; margin-top:3px; }
+  .delta .track-bar{ position:relative; height:4px; background:var(--line); border-radius:2px; overflow:hidden; }
+  .delta .track-bar .fill{ position:absolute; left:0; top:0; bottom:0; border-radius:2px; width:0; transition:width 1.1s var(--ease-out); background:var(--good); }
+  :root[dir="rtl"] .delta .track-bar .fill{ left:auto; right:0; }
+  .delta .vals{ display:flex; align-items:center; gap:9px; font-family:var(--font-mono); font-size:13.5px; }
+  .delta .vals .old{ color:var(--ink-faint); text-decoration:line-through; }
+  .delta .vals .arrow{ color:var(--ink-faint); }
+  .delta .vals .new{ font-weight:600; color:var(--good); }
+  .delta .chip{ font-family:var(--font-mono); font-size:10px; font-weight:600; padding:2px 7px; border-radius:3px; margin-left:4px; background:var(--good-dim); color:var(--good); letter-spacing:0.04em; }
+  .v2-verdict{ margin:8px 0; padding:26px; border:1px solid color-mix(in srgb,var(--good) 36%,var(--line)); border-radius:var(--r); background:var(--surface); }
+  .v2-verdict .badge{ font-family:var(--font-mono); font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:var(--good); font-weight:600; }
+  .v2-verdict p{ margin:12px 0 0; font-size:clamp(17px,2.6vw,21px); line-height:1.45; text-wrap:balance; font-family:var(--font-display); }
+  :root[lang="he"] .v2-verdict p{ font-family:inherit; font-weight:600; }
+  .v2-verdict p em{ color:var(--good); font-style:normal; }
+  .profile{ margin:30px 0; padding:22px 24px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); }
+  .profile .ph{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.2em; color:var(--ink-faint); font-weight:600; margin-bottom:20px; }
+  .versions{ display:flex; align-items:flex-end; gap:14px; height:90px; }
+  .versions .ver{ flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; justify-content:flex-end; }
+  .versions .bar{ width:100%; max-width:56px; border-radius:3px 3px 0 0; background:var(--line-2); transition:height 1s var(--ease-out); height:0; }
+  .versions .ver.cur .bar{ background:var(--good); }
+  .versions .lbl{ font-family:var(--font-mono); font-size:10px; color:var(--ink-faint); letter-spacing:0.08em; }
+  .versions .sc{ font-family:var(--font-mono); font-size:13px; font-weight:600; }
+
+  .share{ margin:48px 0 72px; padding:30px 0 0; text-align:center; border-top:1px solid var(--line); }
+  .share p{ margin:0 0 18px; color:var(--ink-dim); font-size:13.5px; }
+  .share .btns{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .share .btns button{ font-size:13.5px; font-weight:600; cursor:pointer; padding:12px 22px; border-radius:var(--r-sm); transition:opacity .2s,border-color .2s; }
+  .share .primary{ background:var(--ink); color:var(--ground); border:none; }
+  .share .primary:hover{ opacity:.88; }
+  .share .ghost{ background:none; border:1px solid var(--line); color:var(--ink); }
+  .share .ghost:hover{ border-color:var(--line-2); }
+
+  .toast{ position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--raise); color:var(--ink);
+    border:1px solid var(--line-2); padding:11px 18px; border-radius:var(--r-sm); font-size:13px; opacity:0; pointer-events:none;
+    transition:all .3s var(--ease-out); z-index:50; display:flex; align-items:center; gap:9px; box-shadow:0 12px 34px -12px rgba(0,0,0,.5); }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.err{ border-color:var(--crit); }
+  .toast svg{ color:var(--good); } .toast.err svg{ color:var(--crit); }
+
+  /* structure strip */
+  .structure{ margin-top:14px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:18px 20px 13px; }
+  .structure canvas{ display:block; width:100%; height:80px; }
+  .struct-legend{ display:flex; gap:22px; margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
+  .struct-legend .sl{ display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:9.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.12em; }
+  .struct-legend .sl i{ width:8px; height:8px; border-radius:2px; }
+  .struct-legend .sl.intro i{ background:var(--warn); }
+  .struct-legend .sl.body i{ background:var(--ink-dim); }
+  .struct-legend .sl.peak i{ background:var(--amber); border-radius:50%; }
+
+  @media (max-width:600px){
+    .verdict h1{ font-size:24px; }
+    .verdict-top{ flex-direction:column-reverse; gap:14px; }
+    .card-detail-inner{ padding-left:4px; }
+    :root[dir="rtl"] .card-detail-inner{ padding-right:4px; padding-left:4px; }
+    .delta{ grid-template-columns:100px 1fr; }
+    .delta .vals{ grid-column:1/-1; justify-content:flex-start; }
+    .scorebox{ width:56px; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar" id="bar">
+  <div class="bar-inner">
+    <button class="brand" id="brand" aria-label="A&R AI home"><span class="mark"></span> A&R<span style="color:var(--amber)">·</span>AI <small>beta</small></button>
+    <div class="bar-right">
+      <select class="lang-picker" id="langPicker" aria-label="Language"></select>
+      <button class="theme-toggle" id="themeBtn" aria-label="Toggle light/dark">◐</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ═══════ SCREEN 1: UPLOAD ═══════ -->
+  <section class="screen active" id="s-upload">
+    <div class="hero-eyebrow eyebrow fade-up"><span class="pulse"></span> <span data-i18n="hero_eyebrow">Your AI music producer</span></div>
+    <h1 class="hero-h display" data-i18n-html="hero_h">Why doesn't my song<br>feel <span class="grad">professional</span> yet?</h1>
+    <p class="hero-sub fade-up fd-1" data-i18n-html="hero_sub">Drop a track and get an honest read — like a demo landing on an A&R's desk. <b>Real measurements</b>, a single clear fix, and the exact Suno prompt to regenerate it better.</p>
+
+    <canvas id="heroSpec" class="fade-up fd-2"></canvas>
+
+    <div class="drop fade-up fd-2" id="drop" tabindex="0" role="button" aria-label="Upload a song">
+      <input type="file" id="file" accept="audio/*" hidden>
+      <div class="ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 15V3m0 0L8 7m4-4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
+      <div class="big" data-i18n="drop_big">Drop your song here</div>
+      <div class="small" data-i18n-html="drop_small">or <span class="browse">browse your files</span></div>
+      <div class="fmt mono" data-i18n="drop_fmt">MP3 · WAV · FLAC · M4A — up to 100 MB</div>
+    </div>
+
+    <div class="genre-row fade-up fd-3">
+      <span class="genre-lbl" data-i18n="genre_lbl">Genre</span>
+      <div class="genre-chips" id="genreChips"></div>
+    </div>
+
+    <div class="demo-row fade-up fd-4">
+      <span class="line"></span>
+      <button class="demo-btn" id="demoBtn"><span class="eq"><i></i><i></i><i></i><i></i></span> <span data-i18n="demo_btn">try it with a demo track</span></button>
+      <span class="line"></span>
+    </div>
+
+    <div class="trust fade-up fd-5">
+      <span class="t"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> <span data-i18n="trust_private">Private — never shared</span></span>
+      <span class="t"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> <span data-i18n="trust_account">No account to try</span></span>
+      <span class="t"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> <span data-i18n="trust_time">~30 seconds</span></span>
+    </div>
+
+    <div class="preview-wrap fade-up fd-5" aria-hidden="true">
+      <div class="preview-lbl" data-i18n="preview_lbl">What you get</div>
+      <div class="preview">
+        <div class="p-head">
+          <span class="eyebrow" style="color:var(--amber)">A&amp;R VERDICT</span>
+          <span class="p-score">68<small>/100</small></span>
+        </div>
+        <div class="p-verdict">"Your track has a solid core — the biggest weakness is the intro."</div>
+        <div class="p-row"><b style="color:var(--crit)">30</b> INTRO <span class="p-bar"><i style="width:30%;background:var(--crit)"></i></span></div>
+        <div class="p-row"><b style="color:var(--warn)">59</b> MASTER <span class="p-bar"><i style="width:59%;background:var(--warn)"></i></span></div>
+        <div class="p-row"><b style="color:var(--good)">95</b> TEMPO &amp; KEY <span class="p-bar"><i style="width:95%;background:var(--good)"></i></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ SCREEN 2: ANALYZING ═══════ -->
+  <section class="screen" id="s-analyze">
+    <div class="orb"><canvas id="wave" width="168" height="168"></canvas><div class="core"></div></div>
+    <h2 class="a-title display">Listening to your track…</h2>
+    <div class="a-track mono" id="aTrack">Nightdrive.wav</div>
+    <div class="a-steps" id="aSteps"></div>
+  </section>
+
+  <!-- ═══════ SCREEN 3: REPORT ═══════ -->
+  <section class="screen" id="s-report">
+    <div class="track">
+      <div class="cover" id="coverPlay"><div class="play"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>
+      <div class="meta"><div class="name" id="rName">Nightdrive</div><div class="sub mono" id="rSub">Melodic Techno · 124 BPM · A minor · 3:58</div></div>
+      <div class="new"><button class="btn-ghost" id="againBtn">↺ <span data-i18n="new_song">New song</span></button></div>
+    </div>
+
+    <div class="player glass hidden" id="player">
+      <button class="pp" id="ppBtn" aria-label="Play / pause"><svg id="ppIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+      <div class="wf-wrap" id="wfWrap"><canvas id="wfCanvas"></canvas><span class="intro-tag" id="introTag"></span></div>
+      <div class="time mono" id="wfTime">0:00 / 0:00</div>
+    </div>
+
+    <div class="verdict">
+      <div class="verdict-top">
+        <div class="score-dial" id="scoreDial">
+          <svg width="76" height="76" viewBox="0 0 76 76">
+            <defs><linearGradient id="dialgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--good)"/><stop offset="1" stop-color="var(--amber)"/></linearGradient></defs>
+            <circle class="dbg" cx="38" cy="38" r="32" fill="none" stroke-width="6"/>
+            <circle class="dfg" cx="38" cy="38" r="32" fill="none" stroke-width="6"/>
+          </svg>
+          <div class="lbl"><div class="n" id="ovNum">71</div><div class="u">Overall</div></div>
+        </div>
+        <div class="who"><div class="badge" data-i18n="verdict_badge">A&R Verdict</div><div class="ov" data-i18n="verdict_sub">A read on where your track stands</div></div>
+      </div>
+      <h1 class="display" id="verdictH">Your track is strong.</h1>
+      <div class="signoff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> <span data-i18n="signoff">reviewed like a demo — honest, not nice</span></div>
+    </div>
+
+    <div class="priority">
+      <div class="pic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg></div>
+      <div><div class="lbl" data-i18n="fix_one">If you fix one thing</div><p id="priorityP">—</p></div>
+    </div>
+
+    <div class="sec-head sr"><h2 data-i18n="structure_lbl">Song structure</h2><span class="count mono" id="structTime"></span></div>
+    <div class="structure glass" id="structWrap">
+      <canvas id="structCanvas"></canvas>
+      <div class="struct-legend">
+        <span class="sl intro"><i></i><b data-i18n="lg_intro">intro</b></span>
+        <span class="sl body"><i></i><b data-i18n="lg_body">body</b></span>
+        <span class="sl peak"><i></i><b data-i18n="lg_peak">peak moment</b></span>
+      </div>
+    </div>
+
+    <div class="sec-head sr"><h2 data-i18n="full_read">The full read</h2><span class="count mono" id="findCount">—</span></div>
+    <div class="cards" id="cards"></div>
+
+    <div class="sec-head sr"><h2 data-i18n="ai_section">Does it sound AI-made?</h2></div>
+    <div class="ai-block glass" id="aiBlock"></div>
+
+    <div class="sec-head sr"><h2 data-i18n="coming_next">Coming next</h2></div>
+    <div class="locked">
+      <div class="lrow"><div class="lk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><div class="lt" data-i18n-html="lock_vocal">Vocal analysis & genre match<small>How your vocal reads, and who you sound like</small></div><span class="soon" data-i18n="soon">soon</span></div>
+    </div>
+
+    <div class="producer">
+      <div class="suno glass">
+        <div class="suno-head"><div class="t"><span class="s-logo">🎵</span> <span data-i18n="suno_paste">Paste this into Suno to regenerate</span></div><button class="copy-btn" id="copyBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg> <span data-i18n="copy">Copy</span></button></div>
+        <pre id="sunoText">—</pre>
+      </div>
+    </div>
+
+    <div class="regen">
+      <h3 class="display" data-i18n="regen_h">Now regenerate it in Suno.</h3>
+      <p data-i18n="regen_p">Paste the prompt, make your new version, then drop it back — we'll show you exactly what changed.</p>
+      <button class="up magnetic" id="uploadV2"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15V3m0 0L8 7m4-4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg> <span data-i18n="regen_upload">Upload my new version</span></button>
+      <button class="skip" id="shareBtn" data-i18n="regen_skip">just share this report instead</button>
+    </div>
+  </section>
+
+  <!-- ═══════ SCREEN 4: V2 ═══════ -->
+  <section class="screen" id="s-v2">
+    <input type="file" id="fileV2" accept="audio/*" hidden>
+    <div class="v2-hero">
+      <div class="eyebrow" data-i18n="v2_eyebrow">Version 2 · analyzed</div>
+      <h1 class="display" id="v2Hero">—</h1>
+      <p data-i18n="v2_sub">Here's what changed between v1 and your new version.</p>
+    </div>
+    <div class="delta-cards" id="deltaCards"></div>
+    <div class="v2-verdict" id="v2VerdictBox"><span class="badge" data-i18n="v2_badge">A&R Verdict · v2</span><p class="display" id="v2Verdict">—</p></div>
+    <div class="profile"><div class="ph" data-i18n="v2_progress">This song's progress</div><div class="versions" id="versions"></div></div>
+    <div class="share"><p data-i18n="v2_keep">Keep going — every version gets a fresh read.</p><div class="btns"><button class="primary magnetic" id="againBtn2" data-i18n="v2_another">Analyze another song</button><button class="ghost" id="shareBtn2" data-i18n="v2_share">Share this progress</button></div></div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg"></span></div>
+
+<script>
+  // ─────────── demo report (matches API shape) ───────────
+  const DEMO_REPORT = {
+    meta: { duration:"3:58", genre:"melodic techno", bpm:124, key:"A minor" },
+    overall: 71,
+    verdict: "Your track has a solid core, with a few things holding it back. The biggest weakness is the intro.",
+    priority: "Your intro runs 34 seconds before anything happens — about 19s too long. Cut it to ~18s and the whole track reads more confident.",
+    suno_prompt: "melodic techno, 124 bpm, **short 18-second intro, get to the hook fast**, **louder, punchy modern master**, **clean low-mids, no 250 Hz mud**, Afterlife / Anyma style, cinematic, emotional",
+    _raw: { intro_sec: 34, duration_sec: 238 },
+    findings: [
+      { k:"Intro", score:41, sev:"crit", headline:"The intro is 34s — about 19s longer than similar tracks.",
+        why:["34s before the track opens up — genre range is ~12-20s","Listeners on a demo usually decide in the first 15 seconds","Risk: they skip before the payoff"],
+        measure:[["34s","Your intro"],["12-20s","Genre range"]],
+        fix:{ daw:"Trim the front so the first real section lands by ~18s. Keep just enough to set the mood.", suno:"short 18-second intro, get to the hook fast" } },
+      { k:"Master", score:59, sev:"warn", headline:"The master is quiet — -11.4 LUFS, softer than most released tracks.",
+        why:["Editorial playlists sit around -9 to -7 LUFS","At -11.4 LUFS your track will feel weaker next to others"],
+        measure:[["-11.4","Your LUFS"],["-9","Target"]],
+        fix:{ daw:"On the master bus, push loudness toward -9 LUFS with a limiter — keep true peak under -1 dB.", suno:"louder, punchy, well-mastered mix" } },
+      { k:"Mix", score:64, sev:"warn", headline:"There's a build-up of low-mid mud around 250 Hz.",
+        why:["Too much energy sits in the 200-350 Hz band","That's the range that makes a mix feel boxy / muddy","A gentle 2-3 dB cut around 250 Hz opens it up"],
+        measure:[["18%","200-350 Hz energy"]],
+        fix:{ daw:"Add an EQ and make a gentle 2-3 dB cut with a wide Q around 250 Hz on the muddiest element.", suno:"clean low-mids, no 250 Hz mud, tight low end" } },
+      { k:"Tempo & Key", score:95, sev:"good", headline:"124 BPM in A minor — squarely in the genre.",
+        why:["Genre tempo range is 120-126 BPM"], measure:[["124","BPM"],["A minor","Key"]] },
+    ],
+  };
+
+  let genreSel = localStorage.getItem('anr_genre') || 'melodic techno';
+  const GENRES = ['melodic techno','house','pop','hip-hop','edm','rock','lo-fi'];
+
+  // ─────────── i18n (UI strings) ───────────
+  const LANG_LABELS = { en:"English", he:"עברית", es:"Español", fr:"Français", de:"Deutsch", pt:"Português", "pt-BR":"Português (BR)" };
+  const RTL = new Set(["he"]);
+  const UI = {
+    en: { hero_eyebrow:"Your AI music producer", hero_h:'Why doesn\'t my song<br>feel <span class="grad">professional</span> yet?', hero_sub:'Drop a track and get an honest read — like a demo landing on an A&R\'s desk. <b>Real measurements</b>, a single clear fix, and the exact Suno prompt to regenerate it better.', drop_big:"Drop your song here", drop_small:'or <span class="browse">browse your files</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — up to 100 MB", demo_btn:"try it with a demo track", trust_private:"Private — never shared", trust_account:"No account to try", trust_time:"~30 seconds", new_song:"New song", verdict_badge:"A&R Verdict", verdict_sub:"A read on where your track stands", signoff:"reviewed like a demo — honest, not nice", fix_one:"If you fix one thing", full_read:"The full read", coming_next:"Coming next", ai_section:"Does it sound AI-made?", preview_lbl:"What you get", err_network:"The server didn't respond — it may be restarting. Try again in a few seconds.", lock_ai:'Does it sound AI-made?<small>The tell-tale signs — vibrato, timing, repetition</small>', lock_vocal:'Vocal analysis & genre match<small>How your vocal reads, and who you sound like</small>', soon:"soon", if_producing:"If I were producing this", suno_paste:"Paste this into Suno to regenerate", copy:"Copy", copied:"Copied", regen_h:"Now regenerate it in Suno.", regen_p:"Paste the prompt, make your new version, then drop it back — we'll show you exactly what changed.", regen_upload:"Upload my new version", regen_skip:"just share this report instead", why:"Why", how_fix:"How to fix it", fx_add:"add to your prompt:", steps:["Decoding audio & tempo","Mapping structure — intro & drop","Measuring loudness & peaks","Checking the low-mids","Comparing to genre norms","Writing your A&R report"], listening:"Listening to your track…", comparing:"Comparing to your v1…", findings_n:n=>`${n} findings`, toast_copied:"Suno prompt copied", toast_link:"Report link copied", overall:"Overall", genre_lbl:"Genre", structure_lbl:"Song structure", lg_intro:"intro", lg_body:"body", lg_peak:"peak moment", prod_hi:'"This is close. I\'d only spend time on <em>polish</em> — a couple of small moves and it\'s ready."', prod_mid:'"You\'re most of the way there. I\'d focus the last stretch on <em>the weak spots below</em> — that\'s what\'s holding it back."', prod_low:'"There\'s a real idea here. Before anything else, fix <em>the fundamentals below</em> — then it\'ll start to sing."', v2_eyebrow:"Version 2 · analyzed", v2_sub:"Here\'s what changed between v1 and your new version.", v2_badge:"A&R Verdict · v2", v2_progress:"This song\'s progress", v2_keep:"Keep going — every version gets a fresh read.", v2_another:"Analyze another song", v2_share:"Share this progress", v2_hero_up:(a,b)=>`From <em>${a}</em> to <em>${b}</em> — real progress.`, v2_hero_flat:(b)=>`Still at <em>${b}</em> — no overall change.`, v2_hero_down:(a,b)=>`This version reads weaker — ${a} → <em>${b}</em>.`, v2_verdict_up:'"This is a different track now. The fixes landed — it reads far more finished."', v2_verdict_flat:'"Different, but not stronger yet. Try attacking the weakest finding first."', v2_verdict_down:'"Honest read: this version lost ground. Go back to v1 and change one thing at a time."', ai_row:"AI signals", lower_better:"lower is better" },
+    he: { hero_eyebrow:"המפיק המוזיקלי שלך מבוסס AI", hero_h:'למה השיר שלי עדיין לא<br>מרגיש <span class="grad">מקצועי</span>?', hero_sub:'העלה שיר וקבל חוות דעת כנה — כמו דמו שמגיע לשולחן של A&R. <b>מדידות אמיתיות</b>, תיקון אחד ברור, וה-Suno prompt המדויק כדי לייצר אותו מחדש טוב יותר.', drop_big:"גרור לכאן את השיר שלך", drop_small:'או <span class="browse">בחר קובץ מהמחשב</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — עד 100MB", demo_btn:"נסה עם שיר לדוגמה", trust_private:"פרטי — לא משותף לעולם", trust_account:"בלי חשבון", trust_time:"~30 שניות", new_song:"שיר חדש", verdict_badge:"חוות דעת A&R", verdict_sub:"קריאה על איפה השיר שלך עומד", signoff:"נבדק כמו דמו — כן, לא נחמד", fix_one:"אם תתקן דבר אחד", full_read:"הקריאה המלאה", coming_next:"בקרוב", ai_section:"האם זה נשמע AI?", preview_lbl:"מה מקבלים", err_network:"השרת לא הגיב — ייתכן שהוא עולה מחדש. נסה שוב בעוד כמה שניות.", lock_ai:'האם זה נשמע AI?<small>הסימנים המובהקים — ויברטו, תזמון, חזרתיות</small>', lock_vocal:'ניתוח ווקאל והתאמת ז\'אנר<small>איך הווקאל נשמע, ולמי אתה דומה</small>', soon:"בקרוב", if_producing:"אם הייתי מפיק את זה", suno_paste:"הדבק את זה ב-Suno כדי לייצר מחדש", copy:"העתק", copied:"הועתק", regen_h:"עכשיו תייצר מחדש ב-Suno.", regen_p:"הדבק את ה-prompt, צור גרסה חדשה, ואז גרור אותה לכאן — נראה לך בדיוק מה השתנה.", regen_upload:"העלה את הגרסה החדשה", regen_skip:"פשוט שתף את הדו\"ח במקום", why:"למה", how_fix:"איך מתקנים", fx_add:"הוסף ל-prompt:", steps:["מפענח אודיו וטמפו","ממפה מבנה — אינטרו ודרופ","מודד עוצמה ושיאים","בודק את הנמוך-אמצע","משווה לנורמות הז'אנר","כותב את דו\"ח ה-A&R"], listening:"מאזין לשיר שלך…", comparing:"משווה ל-v1 שלך…", findings_n:n=>`${n} ממצאים`, toast_copied:"ה-Suno prompt הועתק", toast_link:"קישור הדו\"ח הועתק", overall:"כללי", genre_lbl:"ז'אנר", structure_lbl:"מבנה השיר", lg_intro:"אינטרו", lg_body:"גוף השיר", lg_peak:"רגע השיא", prod_hi:'"זה קרוב. הייתי משקיע רק ב<em>ליטוש</em> — כמה מהלכים קטנים וזה מוכן."', prod_mid:'"אתה רוב הדרך שם. הייתי מתמקד ב<em>נקודות החלשות למטה</em> — זה מה שמעכב."', prod_low:'"יש כאן רעיון אמיתי. לפני הכל, תקן את <em>היסודות למטה</em> — ואז זה יתחיל לשיר."', v2_eyebrow:"גרסה 2 · נותחה", v2_sub:"הנה מה שהשתנה בין v1 לגרסה החדשה שלך.", v2_badge:"חוות דעת A&R · v2", v2_progress:"ההתקדמות של השיר", v2_keep:"תמשיך — כל גרסה מקבלת קריאה טרייה.", v2_another:"נתח שיר נוסף", v2_share:"שתף את ההתקדמות", v2_hero_up:(a,b)=>`מ-<em>${a}</em> ל-<em>${b}</em> — התקדמות אמיתית.`, v2_hero_flat:(b)=>`עדיין על <em>${b}</em> — אין שינוי כללי.`, v2_hero_down:(a,b)=>`הגרסה הזאת חלשה יותר — ${a} ← <em>${b}</em>.`, v2_verdict_up:'"זה שיר אחר עכשיו. התיקונים עבדו — הוא נשמע הרבה יותר מוגמר."', v2_verdict_flat:'"שונה, אבל עדיין לא חזק יותר. נסה לתקוף קודם את הממצא החלש ביותר."', v2_verdict_down:'"קריאה כנה: הגרסה הזאת ירדה. חזור ל-v1 ושנה דבר אחד בכל פעם."', ai_row:"סימני AI", lower_better:"נמוך יותר = טוב יותר" },
+    es: { hero_eyebrow:"Tu productor musical con IA", hero_h:'¿Por qué mi tema aún no<br>suena <span class="grad">profesional</span>?', hero_sub:'Sube un tema y recibe una lectura honesta — como una demo que llega a la mesa de un A&R. <b>Mediciones reales</b>, un arreglo claro, y el prompt exacto de Suno para regenerarlo mejor.', drop_big:"Suelta tu tema aquí", drop_small:'o <span class="browse">explora tus archivos</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — hasta 100 MB", demo_btn:"prueba con un tema de ejemplo", trust_private:"Privado — nunca se comparte", trust_account:"Sin cuenta", trust_time:"~30 segundos", new_song:"Nuevo tema", verdict_badge:"Veredicto A&R", verdict_sub:"Una lectura de dónde está tu tema", signoff:"revisado como una demo — honesto, no amable", fix_one:"Si arreglas una cosa", full_read:"La lectura completa", coming_next:"Próximamente", ai_section:"¿Suena hecho con IA?", preview_lbl:"Lo que recibes", err_network:"El servidor no respondió — puede estar reiniciándose. Inténtalo de nuevo en unos segundos.", lock_ai:'¿Suena hecho con IA?<small>Las señales — vibrato, timing, repetición</small>', lock_vocal:'Análisis vocal y de género<small>Cómo suena tu voz, y a quién te pareces</small>', soon:"pronto", if_producing:"Si yo lo produjera", suno_paste:"Pega esto en Suno para regenerar", copy:"Copiar", copied:"Copiado", regen_h:"Ahora regénéralo en Suno.", regen_p:"Pega el prompt, crea tu nueva versión y súbela de nuevo — te mostraremos exactamente qué cambió.", regen_upload:"Subir mi nueva versión", regen_skip:"solo comparte este informe", why:"Por qué", how_fix:"Cómo arreglarlo", fx_add:"añade a tu prompt:", steps:["Decodificando audio y tempo","Mapeando estructura — intro y drop","Midiendo volumen y picos","Revisando los medios-graves","Comparando con el género","Escribiendo tu informe A&R"], listening:"Escuchando tu tema…", comparing:"Comparando con tu v1…", findings_n:n=>`${n} hallazgos`, toast_copied:"Prompt de Suno copiado", toast_link:"Enlace del informe copiado", overall:"Global", genre_lbl:"Género", structure_lbl:"Estructura del tema", lg_intro:"intro", lg_body:"cuerpo", lg_peak:"momento pico", prod_hi:'"Está cerca. Solo invertiría en <em>pulido</em> — un par de ajustes y está listo."', prod_mid:'"Estás casi ahí. Me centraría en <em>los puntos débiles de abajo</em> — eso es lo que lo frena."', prod_low:'"Hay una idea real aquí. Antes que nada, arregla <em>lo fundamental de abajo</em> — y empezará a cantar."', v2_eyebrow:"Versión 2 · analizada", v2_sub:"Esto es lo que cambió entre v1 y tu nueva versión.", v2_badge:"Veredicto A&R · v2", v2_progress:"El progreso de este tema", v2_keep:"Sigue — cada versión recibe una lectura nueva.", v2_another:"Analizar otro tema", v2_share:"Compartir este progreso", v2_hero_up:(a,b)=>`De <em>${a}</em> a <em>${b}</em> — progreso real.`, v2_hero_flat:(b)=>`Sigue en <em>${b}</em> — sin cambio global.`, v2_hero_down:(a,b)=>`Esta versión suena más débil — ${a} → <em>${b}</em>.`, v2_verdict_up:'"Ahora es otro tema. Los arreglos funcionaron — suena mucho más terminado."', v2_verdict_flat:'"Diferente, pero aún no más fuerte. Ataca primero el hallazgo más débil."', v2_verdict_down:'"Lectura honesta: esta versión perdió terreno. Vuelve a v1 y cambia una cosa a la vez."', ai_row:"Señales de IA", lower_better:"menos es mejor" },
+    fr: { hero_eyebrow:"Ton producteur musical IA", hero_h:'Pourquoi mon morceau ne<br>sonne pas encore <span class="grad">pro</span> ?', hero_sub:'Dépose un morceau et reçois un avis honnête — comme une démo qui arrive sur le bureau d\'un A&R. <b>Des mesures réelles</b>, un correctif clair, et le prompt Suno exact pour le régénérer en mieux.', drop_big:"Dépose ton morceau ici", drop_small:'ou <span class="browse">parcours tes fichiers</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — jusqu'à 100 Mo", demo_btn:"essaie avec un morceau de démo", trust_private:"Privé — jamais partagé", trust_account:"Sans compte", trust_time:"~30 secondes", new_song:"Nouveau morceau", verdict_badge:"Verdict A&R", verdict_sub:"Un avis sur où en est ton morceau", signoff:"évalué comme une démo — honnête, pas gentil", fix_one:"Si tu corriges une chose", full_read:"L'analyse complète", coming_next:"Bientôt", ai_section:"Ça sonne fait par IA ?", preview_lbl:"Ce que tu reçois", err_network:"Le serveur n'a pas répondu — il redémarre peut-être. Réessaie dans quelques secondes.", lock_ai:'Ça sonne fait par IA ?<small>Les indices — vibrato, timing, répétition</small>', lock_vocal:'Analyse voix & genre<small>Comment ta voix sonne, et à qui tu ressembles</small>', soon:"bientôt", if_producing:"Si je le produisais", suno_paste:"Colle ceci dans Suno pour régénérer", copy:"Copier", copied:"Copié", regen_h:"Maintenant régénère-le dans Suno.", regen_p:"Colle le prompt, crée ta nouvelle version, puis redépose-la — on te montrera exactement ce qui a changé.", regen_upload:"Uploader ma nouvelle version", regen_skip:"juste partager ce rapport", why:"Pourquoi", how_fix:"Comment corriger", fx_add:"ajoute à ton prompt :", steps:["Décodage audio & tempo","Cartographie — intro & drop","Mesure du volume & crêtes","Vérif des bas-médiums","Comparaison au genre","Rédaction de ton rapport A&R"], listening:"J'écoute ton morceau…", comparing:"Comparaison avec ta v1…", findings_n:n=>`${n} constats`, toast_copied:"Prompt Suno copié", toast_link:"Lien du rapport copié", overall:"Global", genre_lbl:"Genre", structure_lbl:"Structure du morceau", lg_intro:"intro", lg_body:"corps", lg_peak:"moment fort", prod_hi:'"C\'est proche. Je ne passerais du temps que sur le <em>polish</em> — deux ou trois gestes et c\'est prêt."', prod_mid:'"Tu y es presque. Je me concentrerais sur <em>les points faibles ci-dessous</em> — c\'est ce qui freine."', prod_low:'"Il y a une vraie idée ici. Avant tout, corrige <em>les fondamentaux ci-dessous</em> — et ça va commencer à chanter."', v2_eyebrow:"Version 2 · analysée", v2_sub:"Voici ce qui a changé entre la v1 et ta nouvelle version.", v2_badge:"Verdict A&R · v2", v2_progress:"La progression de ce morceau", v2_keep:"Continue — chaque version reçoit une lecture fraîche.", v2_another:"Analyser un autre morceau", v2_share:"Partager cette progression", v2_hero_up:(a,b)=>`De <em>${a}</em> à <em>${b}</em> — un vrai progrès.`, v2_hero_flat:(b)=>`Toujours à <em>${b}</em> — pas de changement global.`, v2_hero_down:(a,b)=>`Cette version est plus faible — ${a} → <em>${b}</em>.`, v2_verdict_up:'"C\'est un autre morceau maintenant. Les corrections ont porté — ça sonne bien plus fini."', v2_verdict_flat:'"Différent, mais pas encore plus fort. Attaque d\'abord le constat le plus faible."', v2_verdict_down:'"Lecture honnête : cette version a perdu du terrain. Reviens à la v1 et change une chose à la fois."', ai_row:"Signaux IA", lower_better:"plus bas = mieux" },
+    de: { hero_eyebrow:"Dein KI-Musikproduzent", hero_h:'Warum klingt mein Song<br>noch nicht <span class="grad">professionell</span>?', hero_sub:'Lad einen Track hoch und bekomm eine ehrliche Einschätzung — wie eine Demo auf dem Tisch eines A&R. <b>Echte Messungen</b>, ein klarer Fix, und der genaue Suno-Prompt zum besseren Neugenerieren.', drop_big:"Zieh deinen Song hierher", drop_small:'oder <span class="browse">durchsuche deine Dateien</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — bis 100 MB", demo_btn:"mit einem Demo-Track testen", trust_private:"Privat — nie geteilt", trust_account:"Kein Konto nötig", trust_time:"~30 Sekunden", new_song:"Neuer Song", verdict_badge:"A&R-Urteil", verdict_sub:"Eine Einschätzung, wo dein Track steht", signoff:"bewertet wie eine Demo — ehrlich, nicht nett", fix_one:"Wenn du eine Sache fixt", full_read:"Die volle Analyse", coming_next:"Demnächst", ai_section:"Klingt es KI-gemacht?", preview_lbl:"Was du bekommst", err_network:"Der Server hat nicht geantwortet — er startet evtl. neu. Versuch es in ein paar Sekunden erneut.", lock_ai:'Klingt es KI-gemacht?<small>Die Anzeichen — Vibrato, Timing, Wiederholung</small>', lock_vocal:'Vocal- & Genre-Analyse<small>Wie deine Stimme klingt, und nach wem</small>', soon:"bald", if_producing:"Wenn ich das produzieren würde", suno_paste:"Füge das in Suno ein zum Neugenerieren", copy:"Kopieren", copied:"Kopiert", regen_h:"Jetzt in Suno neu generieren.", regen_p:"Füge den Prompt ein, mach deine neue Version, und lad sie wieder hoch — wir zeigen dir genau, was sich geändert hat.", regen_upload:"Meine neue Version hochladen", regen_skip:"nur diesen Report teilen", why:"Warum", how_fix:"So behebst du es", fx_add:"füge zum Prompt hinzu:", steps:["Audio & Tempo dekodieren","Struktur mappen — Intro & Drop","Lautheit & Peaks messen","Tiefmitten prüfen","Mit Genre-Normen vergleichen","Deinen A&R-Report schreiben"], listening:"Höre deinen Track…", comparing:"Vergleiche mit deiner v1…", findings_n:n=>`${n} Befunde`, toast_copied:"Suno-Prompt kopiert", toast_link:"Report-Link kopiert", overall:"Gesamt", genre_lbl:"Genre", structure_lbl:"Song-Struktur", lg_intro:"Intro", lg_body:"Hauptteil", lg_peak:"Höhepunkt", prod_hi:'"Das ist nah dran. Ich würde nur noch <em>polieren</em> — ein paar kleine Griffe und es ist fertig."', prod_mid:'"Du bist fast da. Ich würde mich auf <em>die Schwachstellen unten</em> konzentrieren — das bremst es."', prod_low:'"Hier steckt eine echte Idee. Bring zuerst <em>die Grundlagen unten</em> in Ordnung — dann fängt es an zu singen."', v2_eyebrow:"Version 2 · analysiert", v2_sub:"Das hat sich zwischen v1 und deiner neuen Version geändert.", v2_badge:"A&R-Urteil · v2", v2_progress:"Fortschritt dieses Songs", v2_keep:"Weiter so — jede Version bekommt eine frische Einschätzung.", v2_another:"Weiteren Song analysieren", v2_share:"Fortschritt teilen", v2_hero_up:(a,b)=>`Von <em>${a}</em> auf <em>${b}</em> — echter Fortschritt.`, v2_hero_flat:(b)=>`Immer noch bei <em>${b}</em> — keine Gesamtveränderung.`, v2_hero_down:(a,b)=>`Diese Version wirkt schwächer — ${a} → <em>${b}</em>.`, v2_verdict_up:'"Das ist jetzt ein anderer Track. Die Fixes haben gegriffen — er klingt deutlich fertiger."', v2_verdict_flat:'"Anders, aber noch nicht stärker. Geh zuerst den schwächsten Befund an."', v2_verdict_down:'"Ehrliche Einschätzung: Diese Version hat verloren. Geh zu v1 zurück und ändere eins nach dem anderen."', ai_row:"KI-Signale", lower_better:"weniger ist besser" },
+    pt: { hero_eyebrow:"O teu produtor musical com IA", hero_h:'Porque é que a minha música<br>ainda não soa <span class="grad">profissional</span>?', hero_sub:'Carrega uma faixa e recebe uma leitura honesta — como uma demo que chega à mesa de um A&R. <b>Medições reais</b>, uma correção clara, e o prompt exato do Suno para a regenerar melhor.', drop_big:"Larga a tua faixa aqui", drop_small:'ou <span class="browse">procura nos teus ficheiros</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — até 100 MB", demo_btn:"experimenta com uma faixa de exemplo", trust_private:"Privado — nunca partilhado", trust_account:"Sem conta", trust_time:"~30 segundos", new_song:"Nova faixa", verdict_badge:"Veredito A&R", verdict_sub:"Uma leitura de onde está a tua faixa", signoff:"avaliado como uma demo — honesto, não simpático", fix_one:"Se corrigires uma coisa", full_read:"A leitura completa", coming_next:"Em breve", ai_section:"Soa a feito por IA?", preview_lbl:"O que recebes", err_network:"O servidor não respondeu — pode estar a reiniciar. Tenta novamente em alguns segundos.", lock_ai:'Soa a feito por IA?<small>Os sinais — vibrato, timing, repetição</small>', lock_vocal:'Análise vocal & de género<small>Como soa a tua voz, e com quem te pareces</small>', soon:"em breve", if_producing:"Se eu produzisse isto", suno_paste:"Cola isto no Suno para regenerar", copy:"Copiar", copied:"Copiado", regen_h:"Agora regenera no Suno.", regen_p:"Cola o prompt, cria a tua nova versão e larga-a aqui — mostramos-te exatamente o que mudou.", regen_upload:"Carregar a minha nova versão", regen_skip:"só partilhar este relatório", why:"Porquê", how_fix:"Como corrigir", fx_add:"adiciona ao teu prompt:", steps:["A descodificar áudio e tempo","A mapear estrutura — intro e drop","A medir volume e picos","A verificar os médios-graves","A comparar com o género","A escrever o teu relatório A&R"], listening:"A ouvir a tua faixa…", comparing:"A comparar com a tua v1…", findings_n:n=>`${n} constatações`, toast_copied:"Prompt do Suno copiado", toast_link:"Link do relatório copiado", overall:"Geral", genre_lbl:"Género", structure_lbl:"Estrutura da faixa", lg_intro:"intro", lg_body:"corpo", lg_peak:"momento alto", prod_hi:'"Está perto. Só investiria em <em>polimento</em> — dois ou três ajustes e está pronta."', prod_mid:'"Estás quase lá. Focava-me <em>nos pontos fracos abaixo</em> — é isso que trava."', prod_low:'"Há uma ideia real aqui. Antes de tudo, corrige <em>os fundamentos abaixo</em> — e vai começar a cantar."', v2_eyebrow:"Versão 2 · analisada", v2_sub:"Isto é o que mudou entre a v1 e a tua nova versão.", v2_badge:"Veredito A&R · v2", v2_progress:"O progresso desta faixa", v2_keep:"Continua — cada versão recebe uma leitura fresca.", v2_another:"Analisar outra faixa", v2_share:"Partilhar este progresso", v2_hero_up:(a,b)=>`De <em>${a}</em> para <em>${b}</em> — progresso real.`, v2_hero_flat:(b)=>`Continua em <em>${b}</em> — sem mudança geral.`, v2_hero_down:(a,b)=>`Esta versão soa mais fraca — ${a} → <em>${b}</em>.`, v2_verdict_up:'"Agora é outra faixa. As correções resultaram — soa muito mais acabada."', v2_verdict_flat:'"Diferente, mas ainda não mais forte. Ataca primeiro a constatação mais fraca."', v2_verdict_down:'"Leitura honesta: esta versão perdeu terreno. Volta à v1 e muda uma coisa de cada vez."', ai_row:"Sinais de IA", lower_better:"menos é melhor" },
+  };
+  UI["pt-BR"] = Object.assign({}, UI.pt, { hero_h:'Por que minha música<br>ainda não soa <span class="grad">profissional</span>?', drop_big:"Solte sua faixa aqui", drop_small:'ou <span class="browse">procure nos seus arquivos</span>', demo_btn:"teste com uma faixa de exemplo", new_song:"Nova faixa", regen_h:"Agora regenere no Suno.", regen_p:"Cole o prompt, crie sua nova versão e solte aqui — mostramos exatamente o que mudou.", regen_upload:"Enviar minha nova versão", listening:"Ouvindo sua faixa…", comparing:"Comparando com sua v1…", if_producing:"Se eu produzisse isso" });
+
+  let LANG = localStorage.getItem('anr_lang') || 'en';
+  function ui(k){ return (UI[LANG]&&UI[LANG][k]!==undefined) ? UI[LANG][k] : UI.en[k]; }
+  let analyzeSteps = ui('steps');
+
+  function applyLang(lang){
+    LANG = lang; localStorage.setItem('anr_lang', lang);
+    const root=document.documentElement;
+    root.setAttribute('lang', lang);
+    root.setAttribute('dir', RTL.has(lang) ? 'rtl' : 'ltr');
+    analyzeSteps = ui('steps');
+    // static nodes
+    document.querySelectorAll('[data-i18n]').forEach(el=>{ const v=ui(el.dataset.i18n); if(v!=null) el.textContent=v; });
+    document.querySelectorAll('[data-i18n-html]').forEach(el=>{ const v=ui(el.dataset.i18nHtml); if(v!=null) el.innerHTML=v; });
+    if(typeof choreographHero==='function') choreographHero();
+    // rebuild analyze steps text
+    [...stepsEl.children].forEach((c,i)=>{ const sp=c.querySelector('span'); if(sp&&analyzeSteps[i]) sp.textContent=analyzeSteps[i]; });
+    // re-render current report if showing
+    if(screens.report.classList.contains('active') && lastReport){
+      if(isDemo){
+        fetch('/api/demo?lang='+encodeURIComponent(lang))
+          .then(r=>r.json()).then(rep=>{ renderReport(rep); animateRings(); }).catch(()=>{});
+      } else if(currentFile){
+        // real report: re-analyze the same file in the new language so the sentences translate too
+        const fd=new FormData(); fd.append('file',currentFile); fd.append('genre',genreSel); fd.append('lang',lang);
+        fetch('/api/analyze',{method:'POST',body:fd}).then(r=>r.json())
+          .then(rep=>{ renderReport(rep); animateRings(); }).catch(()=>renderReport(lastReport));
+      } else {
+        renderReport(lastReport);
+      }
+    }
+  }
+
+  const screens = { upload:$('s-upload'), analyze:$('s-analyze'), report:$('s-report'), v2:$('s-v2') };
+  let analyzeTarget = 'report';
+  function $(id){ return document.getElementById(id); }
+  function show(name){ Object.values(screens).forEach(s=>s.classList.remove('active')); screens[name].classList.add('active'); window.scrollTo({top:0,behavior:'instant'}); }
+
+  function toast(msg, err){ const t=$('toast'); $('toastMsg').textContent=msg; t.classList.toggle('err',!!err); t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2400); }
+
+  // scrolled header
+  addEventListener('scroll', ()=> $('bar').classList.toggle('scrolled', scrollY>10), {passive:true});
+
+  // ─────────── upload wiring ───────────
+  const drop=$('drop'), fileInput=$('file');
+  drop.addEventListener('click',()=>fileInput.click());
+  drop.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();fileInput.click();} });
+  fileInput.addEventListener('change',e=>{ if(e.target.files[0]) startAnalyze(e.target.files[0].name,'report',e.target.files[0]); });
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag');}));
+  drop.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) startAnalyze(f.name,'report',f); });
+  $('demoBtn').addEventListener('click',()=>startAnalyze('Nightdrive (demo).wav'));
+
+  // ─────────── analyze sequence ───────────
+  const stepsEl=$('aSteps');
+  analyzeSteps.forEach(s=>{ const d=document.createElement('div'); d.className='a-step'; d.innerHTML=`<div class="box"></div><span>${s}</span>`; stepsEl.appendChild(d); });
+  const stepEls=[...stepsEl.children];
+  let currentFile=null;
+
+  let isDemo=false;
+  function startAnalyze(fname, target, fileObj){
+    analyzeTarget = target || 'report';
+    currentFile = fileObj || null;
+    if(fileObj) isDemo=false;
+    $('aTrack').textContent = fname;
+    if(analyzeTarget==='report') $('rName').textContent = fname.replace(/\.[^.]+$/,'').replace(/\s*\(demo\)/i,'');
+    document.querySelector('#s-analyze .a-title').textContent = analyzeTarget==='v2' ? ui('comparing') : ui('listening');
+    stepEls.forEach(s=>s.className='a-step');
+    show('analyze'); startWave();
+
+    let apiReport=null, apiError=null, apiDone=false;
+    if(fileObj){
+      const doPost=()=>{ const fd=new FormData(); fd.append('file',fileObj); fd.append('genre',genreSel); fd.append('lang',LANG);
+        return fetch('/api/analyze',{method:'POST',body:fd})
+          .then(r=> r.ok ? r.json() : r.json().then(e=>Promise.reject(e.detail||'Analysis failed'))); };
+      doPost()
+        .catch(err=>{
+          // network drop (server restart / hiccup): one silent retry
+          if(err instanceof TypeError) return new Promise(res=>setTimeout(res,1500)).then(doPost);
+          throw err;
+        })
+        .then(rep=>{ apiReport=rep; apiDone=true; })
+        .catch(err=>{ apiError=(err instanceof TypeError)? ui('err_network') : err; apiDone=true; });
+    } else {
+      // demo: goes through the SAME translation engine as a real file
+      if(analyzeTarget!=='v2') isDemo=true;
+      const v = analyzeTarget==='v2' ? 2 : 1;
+      fetch('/api/demo?lang='+encodeURIComponent(LANG)+'&v='+v)
+        .then(r=> r.ok ? r.json() : Promise.reject('demo failed'))
+        .then(rep=>{ apiReport=rep; apiDone=true; })
+        .catch(()=>{ apiReport=DEMO_REPORT; apiDone=true; });   // offline fallback (EN)
+    }
+
+    let i=0, minDone=false;
+    const finish=()=>{
+      stopWave();
+      if(apiError){ show(analyzeTarget==='v2'?'report':'upload'); toast(String(apiError), true); return; }
+      if(analyzeTarget==='v2'){ renderV2(v1Report, apiReport); show('v2'); animateV2(); return; }
+      renderReport(apiReport);
+      if(currentFile) setupPlayer(currentFile, apiReport); else $('player').classList.add('hidden');
+      show('report'); animateRings(); animateDial(apiReport.overall);
+    };
+    const tryFinish=()=>{ if(minDone&&apiDone) setTimeout(finish,400); };
+    const tick=()=>{
+      if(i>0){ stepEls[i-1].className='a-step done'; stepEls[i-1].querySelector('.box').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4L19 7"/></svg>'; }
+      if(i<stepEls.length){ stepEls[i].className='a-step active'; stepEls[i].querySelector('.box').innerHTML='<div class="spin"></div>'; i++; setTimeout(tick,600+Math.random()*380); }
+      else { minDone=true; tryFinish(); if(!apiDone){ const w=setInterval(()=>{ if(apiDone){clearInterval(w);tryFinish();} },250); } }
+    };
+    setTimeout(tick,500);
+  }
+
+  // ─────────── analyzing orb ───────────
+  const cv=$('wave'), ctx=cv.getContext('2d'); let waveRAF=null, t=0;
+  function startWave(){ cancelAnimationFrame(waveRAF); t=0; drawWave(); }
+  function stopWave(){ cancelAnimationFrame(waveRAF); ctx.clearRect(0,0,168,168); }
+  function drawWave(){
+    ctx.clearRect(0,0,168,168); const cx=84,cy=84,bars=52;
+    const accent=getComputedStyle(document.documentElement).getPropertyValue('--amber').trim();
+    for(let i=0;i<bars;i++){ const a=(i/bars)*Math.PI*2;
+      const amp=9+Math.abs(Math.sin(t*0.05+i*0.6))*18+Math.abs(Math.sin(t*0.09+i))*7; const r1=60,r2=60+amp;
+      ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1); ctx.lineTo(cx+Math.cos(a)*r2,cy+Math.sin(a)*r2);
+      ctx.strokeStyle=accent; ctx.globalAlpha=0.3+0.55*Math.abs(Math.sin(t*0.05+i*0.6)); ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.stroke();
+    }
+    ctx.globalAlpha=1; t++; waveRAF=requestAnimationFrame(drawWave);
+  }
+
+  // ─────────── report render ───────────
+  const cardsEl=$('cards'); const R=21, C=2*Math.PI*R;
+  const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+  let lastReport=null, v1Report=null;
+  function renderReport(rep){
+    lastReport=rep;
+    $('verdictH').innerHTML=esc(rep.verdict);
+    $('priorityP').innerHTML=esc(rep.priority);
+    const m=rep.meta||{};
+    $('rSub').textContent=[m.genre, (m.bpm?m.bpm+' BPM':''), m.key, m.duration].filter(Boolean).join(' · ');
+    $('findCount').textContent=ui('findings_n')(rep.findings.length);
+    document.querySelector('#scoreDial .u').textContent=ui('overall');
+    $('ovNum').textContent=rep.overall;
+    // subtle badge when the narrative was AI-written
+    const badgeEl=document.querySelector('#s-report .verdict .badge');
+    if(badgeEl){ badgeEl.textContent = ui('verdict_badge') + (rep.source==='llm' ? ' · AI' : ''); }
+    if(rep.suno_prompt) $('sunoText').innerHTML=esc(rep.suno_prompt).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+
+    cardsEl.innerHTML='';
+    rep.findings.forEach((it,idx)=>{
+      const el=document.createElement('div'); el.className='card'; el.dataset.sev=it.sev;
+      el.style.animation=`rise .5s var(--ease-out) ${idx*0.05}s backwards`;
+      el.innerHTML=`
+        <div class="card-top">
+          <div class="scorebox"><div class="mnum">${it.score}</div><div class="meter"><i data-p="${it.score}"></i></div></div>
+          <div class="card-body-head"><div class="k"><span class="sevdot"></span>${esc(it.k)}</div><div class="headline">${esc(it.headline)}</div></div>
+          <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="card-detail"><div><div class="card-detail-inner">
+          <div class="why-lbl">${esc(ui('why'))}</div>
+          <ul class="reasons">${it.why.map(w=>`<li><span class="tick">→</span><span>${esc(w)}</span></li>`).join('')}</ul>
+          <div class="measure">${(it.measure||[]).map(mm=>`<div class="m"><div class="mv mono">${esc(mm[0])}</div><div class="ml">${esc(mm[1])}</div></div>`).join('')}</div>
+          ${it.fix ? `<div class="fixbox">
+            <div class="fx-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.1 2.1-2-2 2.1-2.1z"/></svg> ${esc(ui('how_fix'))}</div>
+            <div class="fx daw"><span class="tag">DAW</span><span>${esc(it.fix.daw)}</span></div>
+            <div class="fx suno"><span class="tag">Suno</span><span>${esc(ui('fx_add'))} <code>${esc(it.fix.suno)}</code></span></div>
+          </div>` : ''}
+        </div></div></div>`;
+      cardsEl.appendChild(el);
+      el.querySelector('.card-top').addEventListener('click',()=>el.classList.toggle('open'));
+    });
+
+    // AI signals block
+    const ai=rep.ai_signals;
+    const aiEl=$('aiBlock');
+    if(ai){
+      aiEl.dataset.level=ai.level;
+      const okIcon='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
+      const flagIcon='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>';
+      aiEl.innerHTML=`
+        <div class="ai-top"><div class="ai-ic">${ai.level==='good'?okIcon:flagIcon}</div><div class="ai-head">${esc(ai.headline)}</div></div>
+        ${ai.tells.length?`<div class="ai-tells">${ai.tells.map(t=>`<div class="ai-tell"><span class="dot"></span><div><div class="tt">${esc(t.t)}</div><div class="td">${esc(t.d)}</div></div></div>`).join('')}</div>`:''}
+        <div class="ai-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> ${esc(ai.note)}</div>`;
+    }
+
+    // defer: the report section may still be display:none here (canvas width = 0)
+    requestAnimationFrame(()=>drawStructure(rep));
+    // keep v1 for the real V2 comparison
+    if(analyzeTarget!=='v2') v1Report=rep;
+  }
+
+  // ─────────── structure strip (energy over time, from the engine) ───────────
+  function drawStructure(rep){
+    const raw=rep._raw||{}; const curve=raw.energy_curve;
+    const wrap=$('structWrap');
+    if(!curve||curve.length<8){ wrap.style.display='none'; $('structTime').textContent=''; return; }
+    wrap.style.display='block';
+    const dur=raw.duration_sec||0, introFracS=dur?(raw.intro_sec||0)/dur:0, peakFrac=dur?(raw.peak_moment_sec||0)/dur:0;
+    $('structTime').textContent=(rep.meta&&rep.meta.duration)||'';
+    const canvas=$('structCanvas'); const dpr=devicePixelRatio||1;
+    const w=canvas.clientWidth||wrap.clientWidth-40, h=88;
+    canvas.width=w*dpr; canvas.height=h*dpr;
+    const c=canvas.getContext('2d'); c.scale(dpr,dpr); c.clearRect(0,0,w,h);
+    const cs=getComputedStyle(document.documentElement);
+    const violet=cs.getPropertyValue('--ink-dim').trim(), warn=cs.getPropertyValue('--warn').trim(), lime=cs.getPropertyValue('--amber').trim(), faint=cs.getPropertyValue('--ink-faint').trim();
+    const n=curve.length, bw=w/n;
+    for(let i=0;i<n;i++){
+      const frac=i/n, bh=Math.max(3,curve[i]*(h-14));
+      c.fillStyle = frac<introFracS ? warn+'99' : violet;
+      c.globalAlpha = frac<introFracS ? 0.75 : 0.9;
+      const x=i*bw, y=h-bh;
+      c.beginPath();
+      if(c.roundRect) c.roundRect(x, y, Math.max(1.5,bw-2), bh, 2); else c.rect(x,y,Math.max(1.5,bw-2),bh);
+      c.fill();
+    }
+    c.globalAlpha=1;
+    // intro divider
+    if(introFracS>0.01&&introFracS<0.95){ c.fillStyle=warn; c.fillRect(introFracS*w-0.5,4,1.5,h-4); }
+    // peak marker
+    if(peakFrac>0&&peakFrac<1){
+      const px=peakFrac*w, py=h-Math.max(3,(curve[Math.min(n-1,Math.floor(peakFrac*n))])*(h-14))-8;
+      c.fillStyle=lime; c.beginPath(); c.arc(px,Math.max(8,py),4,0,Math.PI*2); c.fill();
+      c.strokeStyle=lime+'55'; c.beginPath(); c.arc(px,Math.max(8,py),8,0,Math.PI*2); c.stroke();
+    }
+  }
+  function animateRings(){ setTimeout(()=>document.querySelectorAll('.card .meter i').forEach(m=>m.style.width=m.dataset.p+'%'),300); }
+  function animateDial(score){ const c=document.querySelector('#scoreDial .dfg'); const circ=2*Math.PI*32; c.style.strokeDasharray=circ; c.style.strokeDashoffset=circ; setTimeout(()=>c.style.strokeDashoffset=circ*(1-score/100),350);
+    // count up
+    const n=$('ovNum'); let cur=0; const step=Math.max(1,Math.round(score/28)); clearInterval(n._i);
+    n._i=setInterval(()=>{ cur=Math.min(score,cur+step); n.textContent=cur; if(cur>=score)clearInterval(n._i); },26);
+  }
+
+  // ─────────── real audio player + waveform ───────────
+  let audioEl=null, wfPeaks=null, playRAF=null, introFrac=0;
+  async function setupPlayer(file, rep){
+    const player=$('player'); player.classList.remove('hidden');
+    if(audioEl){ audioEl.pause(); URL.revokeObjectURL(audioEl.src); }
+    audioEl=new Audio(URL.createObjectURL(file));
+    setPlayIcon(false);
+    // decode for waveform peaks
+    try{
+      const buf=await file.arrayBuffer();
+      const AC=window.AudioContext||window.webkitAudioContext;
+      const actx=new AC();
+      const audio=await actx.decodeAudioData(buf.slice(0));
+      wfPeaks=computePeaks(audio, 260);
+      const dur=audio.duration;
+      const introSec=(rep._raw&&rep._raw.intro_sec)||0;
+      introFrac=dur? Math.min(1, introSec/dur):0;
+      actx.close();
+    }catch(e){ wfPeaks=null; introFrac=0; }
+    drawWaveform(0);
+    // intro marker
+    const tag=$('introTag');
+    if(introFrac>0.02 && introFrac<0.9){ tag.style.left=(introFrac*100)+'%'; tag.textContent='◂ intro'; tag.style.display='block'; }
+    else tag.style.display='none';
+    updateTime();
+    audioEl.addEventListener('timeupdate',updateTime);
+    audioEl.addEventListener('ended',()=>{ setPlayIcon(false); cancelAnimationFrame(playRAF); drawWaveform(0); });
+  }
+  function computePeaks(audio, n){
+    const ch=audio.getChannelData(0); const block=Math.floor(ch.length/n); const peaks=[];
+    for(let i=0;i<n;i++){ let max=0; for(let j=0;j<block;j++){ const v=Math.abs(ch[i*block+j]||0); if(v>max)max=v; } peaks.push(max); }
+    const mx=Math.max(...peaks,0.01); return peaks.map(p=>p/mx);
+  }
+  function drawWaveform(progress){
+    const canvas=$('wfCanvas'), wrap=$('wfWrap'); const dpr=devicePixelRatio||1;
+    const w=wrap.clientWidth, h=wrap.clientHeight; canvas.width=w*dpr; canvas.height=h*dpr;
+    const c=canvas.getContext('2d'); c.scale(dpr,dpr); c.clearRect(0,0,w,h);
+    const cs=getComputedStyle(document.documentElement);
+    const dim=cs.getPropertyValue('--ink-faint').trim(), acc=cs.getPropertyValue('--amber').trim(), warn=cs.getPropertyValue('--warn').trim();
+    const peaks=wfPeaks|| Array.from({length:200},(_,i)=>0.3+0.5*Math.abs(Math.sin(i*0.3)));
+    const n=peaks.length, bw=w/n, mid=h/2;
+    for(let i=0;i<n;i++){ const frac=i/n; const bh=Math.max(2,peaks[i]*(h-6));
+      c.fillStyle = frac<progress ? acc : (frac<introFrac ? (warn+'66') : dim+'55');
+      c.fillRect(i*bw, mid-bh/2, Math.max(1,bw-1.2), bh);
+    }
+    // intro divider
+    if(introFrac>0.02&&introFrac<0.95){ c.fillStyle=warn+'88'; c.fillRect(introFrac*w-0.5,0,1,h); }
+  }
+  function setPlayIcon(playing){ $('ppIcon').innerHTML = playing ? '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>' : '<path d="M8 5v14l11-7z"/>'; }
+  function fmt(s){ s=Math.floor(s||0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+  function updateTime(){ if(!audioEl)return; $('wfTime').textContent=fmt(audioEl.currentTime)+' / '+fmt(audioEl.duration); if(!audioEl.paused){ drawWaveform(audioEl.currentTime/(audioEl.duration||1)); } }
+  function loopDraw(){ if(audioEl&&!audioEl.paused){ drawWaveform(audioEl.currentTime/(audioEl.duration||1)); playRAF=requestAnimationFrame(loopDraw); } }
+  function togglePlay(){ if(!audioEl)return; if(audioEl.paused){ audioEl.play(); setPlayIcon(true); loopDraw(); } else { audioEl.pause(); setPlayIcon(false); cancelAnimationFrame(playRAF); } }
+  $('ppBtn').addEventListener('click',togglePlay);
+  $('coverPlay').addEventListener('click',togglePlay);
+  $('wfWrap').addEventListener('click',e=>{ if(!audioEl||!audioEl.duration)return; const r=e.currentTarget.getBoundingClientRect(); audioEl.currentTime=((e.clientX-r.left)/r.width)*audioEl.duration; updateTime(); });
+
+  // ─────────── V2 — REAL comparison between two analyzed reports ───────────
+  function renderV2(v1, v2){
+    if(!v1||!v2) return;
+    const dEl=$('deltaCards'); dEl.innerHTML='';
+    const vEl=$('versions'); vEl.innerHTML='';
+
+    // per-finding deltas: intersect findings by stable id
+    const map1={}; (v1.findings||[]).forEach(f=>map1[f.id]=f);
+    const rows=[];
+    (v2.findings||[]).forEach(f2=>{ const f1=map1[f2.id]; if(f1&&f1.score!==f2.score) rows.push({k:f2.k, old:f1.score, neu:f2.score}); });
+    rows.push({k:ui('overall'), old:v1.overall, neu:v2.overall});
+    // AI tells row (count — lower is better)
+    const t1=(v1.ai_signals||{}).count, t2=(v2.ai_signals||{}).count;
+    if(t1!==undefined&&t2!==undefined&&t1!==t2) rows.push({k:ui('ai_row'), old:t1, neu:t2, lowGood:true});
+
+    rows.forEach(d=>{
+      const better = d.lowGood ? d.old-d.neu : d.neu-d.old;
+      const sign = better>=0 ? (d.lowGood?'−':'+') : (d.lowGood?'+':'−');
+      const fill = d.lowGood ? Math.max(6,100-(d.neu*25)) : d.neu;
+      const row=document.createElement('div'); row.className='delta';
+      row.innerHTML=`<div class="k">${esc(d.k)}${d.lowGood?`<small>${esc(ui('lower_better'))}</small>`:''}</div>
+        <div class="track-bar"><div class="fill" data-w="${Math.min(100,fill)}"></div></div>
+        <div class="vals"><span class="old">${d.old}</span><span class="arrow">→</span><span class="new" style="${better<0?'color:var(--crit)':''}">${d.neu}</span><span class="chip" style="${better<0?'background:var(--crit-soft);color:var(--crit)':''}">${sign}${Math.abs(better)}</span></div>`;
+      dEl.appendChild(row);
+    });
+
+    // hero + verdict adapt to the REAL outcome — honest even when v2 is worse
+    const up=v2.overall-v1.overall;
+    $('v2Hero').innerHTML = up>0 ? ui('v2_hero_up')(v1.overall,v2.overall) : up===0 ? ui('v2_hero_flat')(v2.overall) : ui('v2_hero_down')(v1.overall,v2.overall);
+    $('v2Verdict').textContent = up>3 ? ui('v2_verdict_up') : up>=0 ? ui('v2_verdict_flat') : ui('v2_verdict_down');
+    $('v2VerdictBox').style.background = up>=0 ? '' : 'linear-gradient(160deg,var(--warn-soft),var(--surface))';
+
+    [{l:'v1',s:v1.overall},{l:'v2',s:v2.overall,cur:true}].forEach(v=>{
+      const c=document.createElement('div'); c.className='ver'+(v.cur?' cur':'');
+      c.innerHTML=`<div class="sc">${v.s}</div><div class="bar" data-h="${v.s}"></div><div class="lbl">${v.l}</div>`; vEl.appendChild(c);
+    });
+  }
+  function animateV2(){ setTimeout(()=>{ document.querySelectorAll('.delta .fill').forEach(f=>f.style.width=f.dataset.w+'%'); document.querySelectorAll('.versions .bar').forEach(b=>b.style.height=b.dataset.h+'%'); },300); }
+
+  // ─────────── buttons ───────────
+  // Real V2 flow: demo compares demo-v2 through the engine; real songs open a picker for the actual new file.
+  const fileV2=$('fileV2');
+  $('uploadV2').addEventListener('click',()=>{ if(isDemo) startAnalyze('Nightdrive_v2 (demo).wav','v2'); else fileV2.click(); });
+  fileV2.addEventListener('change',e=>{ const f=e.target.files[0]; if(f) startAnalyze(f.name,'v2',f); fileV2.value=''; });
+  $('copyBtn').addEventListener('click',function(){ navigator.clipboard?.writeText($('sunoText').innerText); this.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> '+esc(ui('copied')); this.classList.add('done'); toast(ui('toast_copied')); setTimeout(()=>{ this.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg> '+esc(ui('copy')); this.classList.remove('done'); },1800); });
+  [['shareBtn'],['shareBtn2']].forEach(([id])=>$(id).addEventListener('click',()=>{ navigator.clipboard?.writeText(location.href); toast(ui('toast_link')); }));
+  function reset(){ if(audioEl){audioEl.pause();setPlayIcon(false);} document.querySelectorAll('.card .meter i').forEach(m=>m.style.width=0); document.querySelectorAll('.card.open').forEach(c=>c.classList.remove('open')); document.querySelectorAll('.delta .fill').forEach(f=>f.style.width=0); document.querySelectorAll('.versions .bar').forEach(b=>b.style.height=0); show('upload'); document.querySelectorAll('.sr.inview').forEach(el=>{ el.classList.remove('inview'); srObs.observe(el); }); heroKick(); }
+  $('againBtn').addEventListener('click',reset); $('againBtn2').addEventListener('click',reset); $('brand').addEventListener('click',reset);
+
+  $('themeBtn').addEventListener('click',()=>{ const cur=document.documentElement.getAttribute('data-theme'); const next=cur==='dark'?'light':cur==='light'?'dark':(matchMedia('(prefers-color-scheme: dark)').matches?'light':'dark'); document.documentElement.setAttribute('data-theme',next); if(audioEl)drawWaveform(audioEl.paused?0:audioEl.currentTime/(audioEl.duration||1)); });
+
+  // ─────────── living spectrum hero (signature element) ───────────
+  const heroCv=$('heroSpec');
+  let heroRAF=null, heroT=0, mx=-1;
+  function heroLoop(){
+    if(!screens.upload.classList.contains('active')||document.hidden){ heroRAF=null; return; }
+    const dpr=devicePixelRatio||1, w=heroCv.clientWidth, hh=heroCv.clientHeight;
+    if(heroCv.width!==w*dpr){ heroCv.width=w*dpr; heroCv.height=hh*dpr; }
+    const c=heroCv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,w,hh);
+    const cs=getComputedStyle(document.documentElement);
+    const amber=cs.getPropertyValue('--amber').trim(), dim=cs.getPropertyValue('--ink-faint').trim();
+    const n=Math.floor(w/9);
+    for(let i=0;i<n;i++){
+      const x=i*9;
+      let v=0.18+0.14*Math.sin(heroT*0.011+i*0.55)+0.1*Math.sin(heroT*0.023+i*0.21)+0.06*Math.sin(heroT*0.041+i*1.7);
+      if(mx>=0){ const d=Math.abs(x-mx); v+=Math.max(0,1-d/170)*0.5; }
+      const bh=Math.max(2, v*hh*0.85);
+      c.fillStyle = (i%9===0)?amber:dim;
+      c.globalAlpha = (i%9===0)?0.95:0.42;
+      c.fillRect(x, hh-bh, 5, bh);
+    }
+    c.globalAlpha=1; heroT++;
+    heroRAF=requestAnimationFrame(heroLoop);
+  }
+  function heroKick(){ if(!heroRAF && !matchMedia('(prefers-reduced-motion: reduce)').matches) heroRAF=requestAnimationFrame(heroLoop); }
+  screens.upload.addEventListener('mousemove',e=>{ const r=heroCv.getBoundingClientRect(); mx=e.clientX-r.left; });
+  screens.upload.addEventListener('mouseleave',()=>{ mx=-1; });
+  document.addEventListener('visibilitychange',heroKick);
+  heroKick();
+
+  // ─────────── choreographed hero headline (masked line reveal) ───────────
+  function choreographHero(){
+    const el=document.querySelector('.hero-h'); if(!el) return;
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const parts=el.innerHTML.split(/<br\s*\/?>/i);
+    el.innerHTML=parts.map((p,i)=>`<span class="reveal-line${i?' rl-2':''}"><span>${p}</span></span>`).join('');
+  }
+
+  // ─────────── scroll reveals ───────────
+  const srObs=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('inview'); srObs.unobserve(e.target); } }),{threshold:.15});
+  document.querySelectorAll('.sr').forEach(el=>srObs.observe(el));
+
+  // ─────────── magnetic buttons ───────────
+  document.querySelectorAll('.magnetic').forEach(b=>{
+    b.addEventListener('mousemove',e=>{ const r=b.getBoundingClientRect();
+      b.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.12}px, ${(e.clientY-r.top-r.height/2)*.25}px)`; });
+    b.addEventListener('mouseleave',()=>{ b.style.transform=''; });
+  });
+
+  // ─────────── genre chips ───────────
+  const gWrap=$('genreChips');
+  GENRES.forEach(g=>{
+    const b=document.createElement('button'); b.className='gchip'+(g===genreSel?' on':''); b.textContent=g;
+    b.addEventListener('click',()=>{ genreSel=g; localStorage.setItem('anr_genre',g); gWrap.querySelectorAll('.gchip').forEach(x=>x.classList.toggle('on',x.textContent===g)); });
+    gWrap.appendChild(b);
+  });
+
+  // ─────────── language picker + init ───────────
+  const picker=$('langPicker');
+  Object.keys(LANG_LABELS).forEach(code=>{ const o=document.createElement('option'); o.value=code; o.textContent=LANG_LABELS[code]; picker.appendChild(o); });
+  picker.value=LANG;
+  picker.addEventListener('change',e=>applyLang(e.target.value));
+  applyLang(LANG);   // apply saved/default language on load
+</script>
+</body>
+</html>

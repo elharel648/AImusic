@@ -1,0 +1,96 @@
+{
+  "hits": {
+    "melodic techno": {
+      "bpm": [
+        113,
+        138
+      ],
+      "lufs": [
+        -8.0,
+        -4.4
+      ],
+      "n": 1271,
+      "min_popularity": 50,
+      "source": "spotify-tracks-dataset"
+    },
+    "house": {
+      "bpm": [
+        99,
+        131
+      ],
+      "lufs": [
+        -8.0,
+        -4.9
+      ],
+      "n": 1365,
+      "min_popularity": 50,
+      "source": "spotify-tracks-dataset"
+    },
+    "pop": {
+      "bpm": [
+        87,
+        164
+      ],
+      "lufs": [
+        -8.8,
+        -5.2
+      ],
+      "n": 1724,
+      "min_popularity": 50,
+      "source": "spotify-tracks-dataset"
+    },
+    "hip-hop": {
+      "bpm": [
+        84,
+        165
+      ],
+      "lufs": [
+        -7.3,
+        -4.7
+      ],
+      "n": 572,
+      "min_popularity": 50,
+      "source": "spotify-tracks-dataset"
+    },
+    "edm": {
+      "bpm": [
+        91,
+        154
+      ],
+      "lufs": [
+        -6.9,
+        -4.4
+      ],
+      "n": 1077,
+      "min_popularity": 50,
+      "source": "spotify-tracks-dataset"
+    },
+    "rock": {
+      "bpm": [
+        83,
+        166
+      ],
+      "lufs": [
+        -8.7,
+        -5.0
+      ],
+      "n": 1654,
+      "min_popularity": 50,
+      "source": "spotify-tracks-dataset"
+    },
+    "lo-fi": {
+      "bpm": [
+        79,
+        155
+      ],
+      "lufs": [
+        -15.0,
+        -8.0
+      ],
+      "n": 1467,
+      "min_popularity": 50,
+      "source": "spotify-tracks-dataset"
+    }
+  },
+  "generated": "2026-07-26"
+}
