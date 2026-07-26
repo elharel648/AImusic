@@ -129,9 +129,23 @@ def build_insights(m: dict, lang: str = "en") -> dict:
                    + ([[f"{int(m['key_confidence']*100)}%", L("ml_key_conf")]] if m.get("key_confidence") else []),
     })
 
-    # ── overall + verdict + priority ──
+    # ── overall + verdict + priority (computed BEFORE the informational
+    #    Character finding, which must not drag the score) ──
     overall = int(round(sum(f["score"] for f in findings) / len(findings)))
     weakest = min(findings, key=lambda f: f["score"])
+
+    # ── Character (ML): detected genre + vocals + danceability ──
+    if m.get("ml_genre_pretty"):
+        conf = int(m.get("ml_genre_confidence", 0) * 100)
+        dance = int(m.get("ml_danceability", 0) * 100)
+        voc = int(m.get("ml_voice_prob", 0) * 100)
+        head_key = "char_head_instr" if m.get("ml_is_instrumental") else "char_head_vocal"
+        findings.append({
+            "id": "Character", "k": L("label_Character"), "score": conf, "sev": "good",
+            "headline": L(head_key, genre=m["ml_genre_pretty"]),
+            "why": [L("char_why_conf", conf=conf), L("char_why_dance", dance=dance), L("char_why_model")],
+            "measure": [[m["ml_genre_pretty"], L("ml_genre")], [f"{voc}%", L("ml_voice")], [f"{dance}%", L("ml_dance")]],
+        })
     head = L("verdict_strong") if overall >= 80 else L("verdict_solid") if overall >= 60 else L("verdict_needs")
     verdict = head + L("verdict_weakest", k=L("name_" + weakest["id"]))
     priority = _priority(lang, weakest, m, L)
@@ -139,11 +153,11 @@ def build_insights(m: dict, lang: str = "en") -> dict:
     ai = _ai_signals(lang, m, L)
 
     return {
-        "meta": {"duration": _fmt_time(m["duration_sec"]), "genre": m["genre_assumed"], "bpm": m["bpm"], "key": m["key"]},
+        "meta": {"duration": _fmt_time(m["duration_sec"]), "genre": m.get("ml_genre_pretty") or m["genre_assumed"], "bpm": m["bpm"], "key": m["key"]},
         "overall": overall,
         "verdict": verdict,
         "priority": priority,
-        "findings": sorted(findings, key=lambda f: f["score"]),
+        "findings": sorted(findings, key=lambda f: (f["id"] == "Character", f["score"])),
         "ai_signals": ai,
         "suno_prompt": suno,
     }

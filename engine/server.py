@@ -20,6 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from analyze import analyze, GENRE_NORMS, get_norms
 from insights import build_insights
 from llm import llm_available, enrich_report
+from ml_tags import ml_available, ml_analyze
 
 app = FastAPI(title="A&R AI")
 app.add_middleware(
@@ -114,7 +115,14 @@ async def analyze_endpoint(file: UploadFile = File(...), genre: str = Form("melo
         if ext != ".wav":
             conv = _to_wav(path)
             path = conv
-        raw = analyze(path, genre)
+        # ML classifiers first (genre auto-detect, vocals, danceability) —
+        # so "auto" genre resolves to the detected bucket for the norms.
+        ml = ml_analyze(path) if ml_available() else {}
+        resolved_genre = genre
+        if genre == "auto":
+            resolved_genre = ml.get("ml_genre_bucket", "default")
+        raw = analyze(path, resolved_genre)
+        raw.update(ml)
         report = build_insights(raw, lang)
         report["source"] = "template"
         if llm_available():

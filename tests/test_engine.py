@@ -114,3 +114,29 @@ def test_genre_norms_complete():
         assert set(n) == {"bpm", "intro_sec", "lufs"}, f"{g} malformed"
         assert n["bpm"][0] < n["bpm"][1]
         assert n["lufs"][0] < n["lufs"][1]
+
+
+# ── ML character finding (unit — no model needed, keys injected) ─────────────
+
+def test_character_finding_excluded_from_overall(tmp_path):
+    p = _write(tmp_path, "ch.wav", make_track(dur=16))
+    raw = analyze(p)
+    base = build_insights(dict(raw))["overall"]
+    raw_ml = dict(raw, ml_genre_pretty="Minimal (Electronic)", ml_genre_confidence=0.42,
+                  ml_voice_prob=0.1, ml_is_instrumental=True, ml_danceability=0.9)
+    rep = build_insights(raw_ml)
+    ch = [f for f in rep["findings"] if f["id"] == "Character"]
+    assert len(ch) == 1
+    assert rep["findings"][-1]["id"] == "Character"      # always last
+    assert rep["overall"] == base                        # low confidence must not drag score
+    assert rep["meta"]["genre"] == "Minimal (Electronic)"
+
+
+def test_ml_style_bucket_mapping():
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "engine"))
+    from ml_tags import style_to_bucket
+    assert style_to_bucket("Electronic---Minimal") == "melodic techno"
+    assert style_to_bucket("Electronic---Deep House") == "house"
+    assert style_to_bucket("Hip Hop---Trap") == "hip-hop"
+    assert style_to_bucket("Rock---Shoegaze") == "rock"
+    assert style_to_bucket("Classical---Baroque") == "default"
