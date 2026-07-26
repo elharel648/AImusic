@@ -1161,7 +1161,7 @@
     x.textAlign=B; x.fillStyle='#EDEAE4'; x.font=`400 150px ${disp}`;
     x.fillText(String(rep.overall), R, 260);
     x.fillStyle='rgba(237,234,228,0.4)'; x.font=`14px ${mono}`;
-    if(rtl){ x.direction='ltr'; x.fillText(ui('overall')+' · 100/', R, 292); x.direction='rtl'; }
+    if(rtl){ x.direction='ltr'; x.fillText(ui('overall')+' · 100', R, 292); x.direction='rtl'; }
     else x.fillText('/100 · '+ui('overall').toUpperCase(), R, 292);
     // name + meta
     const m=rep.meta||{};
