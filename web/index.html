@@ -336,7 +336,7 @@
   .st-checks{ margin-top:18px; display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
   .st-check{ border:1px solid var(--line); border-radius:var(--r-sm); padding:12px 14px; background:none; }
   .st-check .ct{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--ink-faint); }
-  .st-check .cv{ font-family:var(--font-mono); font-size:15px; margin-top:5px; color:var(--good); }
+  .st-check .cv{ font-family:var(--font-mono); font-size:15px; margin-top:5px; color:var(--good); direction:ltr; unicode-bidi:isolate; }
   .st-check.bad .cv{ color:var(--warn); }
   .st-check .cd{ font-size:11.5px; color:var(--ink-dim); margin-top:5px; line-height:1.5; }
   .st-plats{ margin-top:16px; }
@@ -344,7 +344,7 @@
   .st-plat .led{ width:7px; height:7px; border-radius:50%; flex-shrink:0; background:var(--good); box-shadow:0 0 8px color-mix(in srgb,var(--good) 60%,transparent); }
   .st-plat.quiet .led{ background:var(--warn); box-shadow:0 0 8px color-mix(in srgb,var(--warn) 60%,transparent); }
   .st-plat .pn{ font-size:13px; font-weight:600; min-width:108px; }
-  .st-plat .pt{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); min-width:86px; }
+  .st-plat .pt{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); min-width:86px; direction:ltr; unicode-bidi:isolate; text-align:start; }
   .st-plat .pd{ font-size:12.5px; color:var(--ink-dim); line-height:1.4; }
   @media (max-width:640px){ .st-checks{ grid-template-columns:1fr; } .st-plat .pt{ display:none; } }
 
