@@ -247,18 +247,30 @@
   .gchip.auto::before{ content:""; display:inline-block; width:6px; height:6px; border-radius:50%;
     background:var(--amber); margin-inline-end:7px; vertical-align:1px; box-shadow:0 0 6px color-mix(in srgb,var(--amber) 70%,transparent); }
   .gchip.auto.on::before{ background:var(--ground); box-shadow:none; }
-  /* deep vocal analysis — basic toggle (hardware styling in the studio pass) */
-  .deep-toggle{ display:inline-flex; align-items:center; gap:9px; cursor:pointer; user-select:none; }
-  .dt-housing{ position:relative; width:34px; height:18px; border-radius:4px; border:1px solid var(--line-2);
-    background:var(--panel, rgba(255,255,255,.04)); flex:none; }
-  .dt-lever{ position:absolute; top:2px; inset-inline-start:2px; width:14px; height:12px; border-radius:3px;
-    background:var(--ink-dim); transition:transform .18s ease; }
-  .dt-led{ position:absolute; top:6px; inset-inline-end:-9px; width:5px; height:5px; border-radius:50%;
-    background:var(--line-2); }
-  .deep-toggle input:checked ~ .dt-housing .dt-lever{ transform:translateX(14px); background:var(--ink); }
-  [dir="rtl"] .deep-toggle input:checked ~ .dt-housing .dt-lever{ transform:translateX(-14px); }
-  .deep-toggle input:checked ~ .dt-housing .dt-led{ background:#e8a33d; box-shadow:0 0 6px 1px rgba(232,163,61,.55); }
-  .dt-lbl{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--ink-faint); }
+  /* deep vocal analysis — hardware toggle switch (LA-2A Limit/Compress style):
+     machined housing, sliding lever, amber jewel LED when engaged */
+  .deep-toggle{ display:inline-flex; align-items:center; gap:11px; cursor:pointer; user-select:none; }
+  .dt-housing{ position:relative; width:38px; height:20px; border-radius:4px; flex:none;
+    background:linear-gradient(180deg, color-mix(in srgb,var(--ink) 5%,var(--surface)), var(--surface-2));
+    border:1px solid var(--line-2);
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.4), inset 0 -1px 0 color-mix(in srgb,var(--ink) 4%,transparent); }
+  .dt-lever{ position:absolute; top:2px; inset-inline-start:2px; width:16px; height:14px; border-radius:3px;
+    background:linear-gradient(180deg, color-mix(in srgb,var(--ink) 14%,var(--raise)), var(--raise));
+    border:1px solid color-mix(in srgb,var(--ink) 16%,var(--line-2));
+    box-shadow:0 1px 2px rgba(0,0,0,.45), inset 0 1px 0 color-mix(in srgb,var(--ink) 8%,transparent);
+    transition:transform .18s ease; }
+  .dt-lever::after{ content:""; position:absolute; top:3px; bottom:3px; left:50%; width:1px;
+    margin-left:-0.5px; background:var(--line-2); }
+  .dt-led{ position:absolute; top:7px; inset-inline-end:-11px; width:5px; height:5px; border-radius:50%;
+    background:color-mix(in srgb,var(--line-2) 80%,var(--ground));
+    box-shadow:inset 0 1px 1px rgba(0,0,0,.4); }
+  .deep-toggle input:checked ~ .dt-housing .dt-lever{ transform:translateX(16px); }
+  [dir="rtl"] .deep-toggle input:checked ~ .dt-housing .dt-lever{ transform:translateX(-16px); }
+  .deep-toggle input:checked ~ .dt-housing .dt-led{
+    background:radial-gradient(circle at 35% 30%, #ffdca6, var(--amber) 55%, color-mix(in srgb,var(--amber) 60%,#000) 95%);
+    box-shadow:0 0 7px 1.5px color-mix(in srgb,var(--amber) 55%,transparent); }
+  .dt-lbl{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--ink-faint); margin-inline-start:6px; }
+  .deep-toggle:hover .dt-lbl{ color:var(--ink-dim); }
   .deep-toggle input:checked ~ .dt-lbl{ color:var(--ink-dim); }
   @media (prefers-reduced-motion: reduce){ .dt-lever{ transition:none; } }
 
@@ -379,14 +391,27 @@
   .verdict .signoff{ margin-top:24px; color:var(--ink-faint); font-size:11px; display:flex; align-items:center; gap:8px; font-family:var(--font-mono); letter-spacing:0.06em; text-transform:uppercase; }
   .verdict .signoff svg{ color:var(--good); width:12px; height:12px; }
 
-  .priority{ margin:26px 0 0; padding:20px 22px; background:var(--surface); border:1px solid var(--line); border-left:2px solid var(--warn); border-radius:var(--r-sm); display:flex; gap:16px; align-items:flex-start; }
-  .priority .pic{ width:32px; height:32px; border-radius:var(--r-sm); background:var(--warn-dim); color:var(--warn); display:grid; place-items:center; flex-shrink:0; }
+  .priority{ margin:26px 0 0; padding:20px 22px; background:var(--surface); border:1px solid var(--line); border-left:2px solid var(--warn); border-radius:var(--r-sm); display:flex; gap:16px; align-items:flex-start;
+    box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 3%,transparent); }
+  /* rack-module jewel indicator lamp instead of a flat icon chip */
+  .priority .pic{ width:14px; height:14px; margin-top:3px; border-radius:50%; flex-shrink:0;
+    background:radial-gradient(circle at 35% 30%, #ffdca6, var(--amber) 50%, color-mix(in srgb,var(--amber) 55%,#000) 92%);
+    border:1px solid color-mix(in srgb,var(--amber) 55%,#000);
+    box-shadow:0 0 12px 3px var(--amber-dim), 0 0 4px 1px color-mix(in srgb,var(--amber) 40%,transparent), inset 0 -2px 3px rgba(0,0,0,.3); }
+  .priority .pic svg{ display:none; }
   .priority .lbl{ font-family:var(--font-mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--warn); font-weight:600; margin-bottom:6px; }
   .priority p{ margin:0; font-size:14.5px; line-height:1.6; color:var(--ink); }
 
   .sec-head{ margin:52px 0 0; display:flex; align-items:center; gap:14px; }
   .sec-head h2{ font-family:var(--font-mono); font-size:10.5px; margin:0; text-transform:uppercase; letter-spacing:0.24em; color:var(--ink-faint); font-weight:600; white-space:nowrap; }
   .sec-head::after{ content:""; flex:1; height:1px; background:var(--line); }
+  /* faceplate screws at the far end of the engraved hairline */
+  .sec-head::before{ content:""; order:1; flex:none; width:15px; height:4px;
+    background:
+      radial-gradient(circle at 35% 30%, color-mix(in srgb,var(--ink) 22%,transparent), transparent 50%) left center/4px 4px no-repeat,
+      radial-gradient(circle, var(--line-2) 56%, rgba(0,0,0,.28) 70%, transparent 74%) left center/4px 4px no-repeat,
+      radial-gradient(circle at 35% 30%, color-mix(in srgb,var(--ink) 22%,transparent), transparent 50%) right center/4px 4px no-repeat,
+      radial-gradient(circle, var(--line-2) 56%, rgba(0,0,0,.28) 70%, transparent 74%) right center/4px 4px no-repeat; }
   .sec-head .count{ font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); order:2; letter-spacing:0.06em; }
 
   /* findings — ruled document rows, LED meters */
@@ -410,7 +435,13 @@
 
   /* VU meter — needle ballistics like the real thing */
   .score-dial.vu{ align-items:center; gap:16px; }
-  .score-dial.vu svg{ display:block; }
+  /* backlit meter glass: warm lamp glow rising from behind the needle pivot */
+  .score-dial.vu svg{ display:block; padding:5px 7px; border-radius:9px;
+    border:1px solid var(--line-2);
+    background:
+      radial-gradient(120% 95% at 50% 88%, color-mix(in srgb,var(--amber) 14%,transparent), transparent 68%),
+      linear-gradient(180deg, color-mix(in srgb,var(--ink) 4%,var(--surface)), var(--surface));
+    box-shadow:inset 0 2px 8px rgba(0,0,0,.35), inset 0 0 0 1px color-mix(in srgb,var(--ink) 3%,transparent); }
   .score-dial.vu .vu-scale{ fill:none; stroke:var(--ink-faint); stroke-width:7; stroke-dasharray:0.7 9.3; opacity:.85; }
   .score-dial.vu .vu-arc{ fill:none; stroke:var(--line-2); stroke-width:1; }
   .score-dial.vu .vu-needle{ stroke:var(--amber); stroke-width:2; stroke-linecap:round;
