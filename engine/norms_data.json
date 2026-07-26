@@ -1,95 +1,88 @@
 {
   "hits": {
-    "melodic techno": {
+    "edm": {
       "bpm": [
-        113,
-        138
+        100,
+        150
       ],
       "lufs": [
-        -8.0,
-        -4.4
+        -6.4,
+        -4.0
       ],
-      "n": 1271,
-      "min_popularity": 50,
-      "source": "spotify-tracks-dataset"
-    },
-    "house": {
-      "bpm": [
-        99,
-        131
-      ],
-      "lufs": [
-        -8.0,
-        -4.9
-      ],
-      "n": 1365,
-      "min_popularity": 50,
-      "source": "spotify-tracks-dataset"
-    },
-    "pop": {
-      "bpm": [
-        87,
-        164
-      ],
-      "lufs": [
-        -8.8,
-        -5.2
-      ],
-      "n": 1724,
-      "min_popularity": 50,
-      "source": "spotify-tracks-dataset"
+      "n": 1127,
+      "source": "zenodo_900k_2024"
     },
     "hip-hop": {
       "bpm": [
         84,
-        165
+        162
       ],
       "lufs": [
-        -7.3,
-        -4.7
+        -7.9,
+        -4.9
       ],
-      "n": 572,
-      "min_popularity": 50,
-      "source": "spotify-tracks-dataset"
+      "n": 19891,
+      "source": "zenodo_900k_2024"
     },
-    "edm": {
+    "house": {
       "bpm": [
-        91,
-        154
+        104,
+        139
       ],
       "lufs": [
-        -6.9,
-        -4.4
+        -7.7,
+        -4.8
       ],
-      "n": 1077,
-      "min_popularity": 50,
-      "source": "spotify-tracks-dataset"
-    },
-    "rock": {
-      "bpm": [
-        83,
-        166
-      ],
-      "lufs": [
-        -8.7,
-        -5.0
-      ],
-      "n": 1654,
-      "min_popularity": 50,
-      "source": "spotify-tracks-dataset"
+      "n": 3584,
+      "source": "zenodo_900k_2024"
     },
     "lo-fi": {
       "bpm": [
-        79,
-        155
+        75,
+        158
       ],
       "lufs": [
-        -15.0,
-        -8.0
+        -18.6,
+        -10.1
       ],
-      "n": 1467,
-      "min_popularity": 50,
-      "source": "spotify-tracks-dataset"
+      "n": 809,
+      "source": "zenodo_900k_2024"
+    },
+    "melodic techno": {
+      "bpm": [
+        120,
+        160
+      ],
+      "lufs": [
+        -8.6,
+        -5.2
+      ],
+      "n": 673,
+      "source": "zenodo_900k_2024"
+    },
+    "pop": {
+      "bpm": [
+        85,
+        162
+      ],
+      "lufs": [
+        -8.4,
+        -4.8
+      ],
+      "n": 21384,
+      "source": "zenodo_900k_2024"
+    },
+    "rock": {
+      "bpm": [
+        87,
+        167
+      ],
+      "lufs": [
+        -9.1,
+        -4.8
+      ],
+      "n": 18208,
+      "source": "zenodo_900k_2024"
     }
   },
   "generated": "2026-07-26",
@@ -179,5 +172,6 @@
     "dynamic_range_db_p05": 3.1,
     "n": 7997
   },
-  "intro_capped_at": 25.0
+  "intro_capped_at": 25.0,
+  "hits_generated": "2026-07-26"
 }
