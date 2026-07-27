@@ -287,6 +287,18 @@
   .suite-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:14px 0 18px; }
   .suite-row .s-lbl{ font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--ink-faint); }
   .suite-row .gchip{ font-size:11px; padding:5px 11px; }
+  .plat-row{ display:flex; flex-wrap:wrap; gap:6px; padding:10px 16px 0; }
+  .plat-row .gchip{ font-size:10px; padding:4px 10px; }
+  /* listen-to-the-finding row */
+  .listen-row{ display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin-top:13px; }
+  .lsn-lbl{ font-family:var(--font-mono); font-size:8.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--ink-faint); }
+  .lsn{ display:inline-flex; align-items:center; gap:6px; background:none; cursor:pointer;
+    font-family:var(--font-mono); font-size:10px; letter-spacing:0.05em; color:var(--ink-dim);
+    border:1px solid var(--line-2); border-radius:5px; padding:5px 11px; transition:border-color .15s,color .15s; }
+  .lsn:hover{ border-color:var(--ink-faint); color:var(--ink); }
+  .lsn.on{ color:var(--amber); border-color:color-mix(in srgb,var(--amber) 55%,var(--line));
+    background:color-mix(in srgb,var(--amber) 7%,transparent); }
+  .lsn.on svg{ filter:drop-shadow(0 0 4px color-mix(in srgb,var(--amber) 60%,transparent)); }
   /* personal plugin arsenal — LED-window input + owned-plugin chips */
   .ars-input{ background:color-mix(in srgb,#000 45%,var(--ground)); border:1px solid var(--line); border-radius:6px;
     box-shadow:inset 0 2px 8px rgba(0,0,0,.5); color:var(--amber); font-family:var(--font-mono); font-size:12px;
@@ -324,6 +336,29 @@
     direction:ltr; unicode-bidi:isolate; text-align:start; }
   .rx-p.plug b{ color:var(--amber); text-shadow:0 0 8px color-mix(in srgb,var(--amber) 45%,transparent); }
   .rx-note{ margin-top:11px; font-size:11px; color:var(--ink-faint); }
+  /* "show me how" — engraved procedure card inside the prescription */
+  .wt{ margin-top:12px; }
+  .wt-btn{ display:inline-flex; align-items:center; gap:7px; cursor:pointer; background:none;
+    font-family:var(--font-mono); font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.14em;
+    color:var(--amber); border:1px solid color-mix(in srgb,var(--amber) 32%,var(--line)); border-radius:var(--r-sm);
+    padding:6px 12px; }
+  .wt-btn:hover{ background:color-mix(in srgb,var(--amber) 8%,transparent); }
+  .wt-btn .tri{ display:inline-block; font-size:9px; transition:transform .25s var(--ease-out); }
+  [dir="rtl"] .wt-btn .tri{ transform:scaleX(-1); }
+  .wt.open .wt-btn .tri{ transform:rotate(90deg); }
+  [dir="rtl"] .wt.open .wt-btn .tri{ transform:scaleX(-1) rotate(-90deg); }
+  .wt-steps{ display:none; margin:10px 0 0; padding:6px 16px 10px; list-style:none; counter-reset:wt;
+    background:color-mix(in srgb,#000 45%,var(--ground)); border:1px solid var(--line); border-radius:6px;
+    box-shadow:inset 0 2px 8px rgba(0,0,0,.5); }
+  .wt.open .wt-steps{ display:block; }
+  .wt-steps li{ counter-increment:wt; position:relative; padding:9px 0; padding-inline-start:34px;
+    font-size:12.5px; line-height:1.55; color:var(--ink-dim); border-top:1px solid var(--line); }
+  .wt-steps li:first-child{ border-top:0; }
+  .wt-steps li::before{ content:counter(wt,decimal-leading-zero); position:absolute; inset-inline-start:2px; top:11px;
+    font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.1em; color:var(--ink-faint); }
+  .wt-steps b{ font-family:var(--font-mono); font-weight:600; color:var(--amber);
+    text-shadow:0 0 8px color-mix(in srgb,var(--amber) 35%,transparent);
+    direction:ltr; unicode-bidi:isolate; white-space:nowrap; }
   .rx-chain{ margin-top:14px; padding:13px 18px; border:1px dashed var(--line-2); border-radius:var(--r-sm);
     font-size:12px; color:var(--ink-dim); direction:ltr; text-align:center; }
   .rx-chain .c-lbl{ font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--ink-faint); margin-inline-end:8px; }
@@ -721,6 +756,8 @@
   .ht .hd{ font-family:var(--font-mono); font-size:8.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.1em;
     margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ht .hm{ direction:ltr; unicode-bidi:isolate; }
+  .ht.clk{ cursor:pointer; transition:border-color .15s, transform .15s; }
+  .ht.clk:hover{ border-color:color-mix(in srgb,var(--amber) 45%,var(--line)); transform:translateY(-1px); }
   .hist-clear{ margin-top:6px; background:none; border:none; padding:2px 0; cursor:pointer; color:var(--ink-faint);
     font-family:var(--font-mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em;
     text-decoration:underline; text-underline-offset:3px; transition:color .2s; }
@@ -928,6 +965,7 @@
     <div class="producer">
       <div class="suno glass">
         <div class="suno-head"><div class="t"><span class="s-logo"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span> <span data-i18n="suno_paste">Paste this into Suno to regenerate</span></div><button class="copy-btn" id="copyBtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg> <span data-i18n="copy">Copy</span></button></div>
+        <div class="plat-row" id="platChips"></div>
         <pre id="sunoText">—</pre>
       </div>
     </div>
@@ -1037,7 +1075,8 @@
     overall: 71,
     verdict: "Your track has a solid core, with a few things holding it back. The biggest weakness is the intro.",
     priority: "Your intro runs 34 seconds before anything happens — about 19s too long. Cut it to ~18s and the whole track reads more confident.",
-    suno_prompt: "melodic techno, 124 bpm, **short 18-second intro, get to the hook fast**, **louder, punchy modern master**, **clean low-mids, no 250 Hz mud**, Afterlife / Anyma style, cinematic, emotional",
+    prompt: { genre:"melodic techno", bpm:124, fixes:["**short 18-second intro, get to the hook fast**","**louder, punchy modern master**","**clean low-mids, no 250 Hz mud**"], artist:"Afterlife / Anyma style", safe:"dark cinematic melodic techno, hypnotic arps", moods:["cinematic","emotional"] },
+    suno_prompt: "melodic techno, 124 bpm, **short 18-second intro, get to the hook fast**, **louder, punchy modern master**, **clean low-mids, no 250 Hz mud**, dark cinematic melodic techno, hypnotic arps, cinematic, emotional",
     _raw: { intro_sec: 34, duration_sec: 238 },
     findings: [
       { k:"Intro", score:41, sev:"crit", headline:"The intro is 34s — about 19s longer than similar tracks.",
@@ -1065,18 +1104,64 @@
   const LANG_LABELS = { en:"English", he:"עברית", es:"Español", fr:"Français", de:"Deutsch", pt:"Português", "pt-BR":"Português (BR)" };
   const RTL = new Set(["he"]);
   const UI = {
-    en: { hero_eyebrow:"Your AI music producer", hero_h:'Why doesn\'t my song<br>feel <span class="grad">professional</span> yet?', hero_sub:'Drop a track and get an honest read — like a demo landing on an A&R\'s desk. <b>Real measurements</b>, a single clear fix, and the exact Suno prompt to regenerate it better.', drop_big:"Drop your song here", drop_small:'or <span class="browse">browse your files</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — up to 100 MB", demo_btn:"try it with a demo track", trust_private:"Private — never shared", trust_account:"No account to try", trust_time:"~30 seconds", new_song:"New song", verdict_badge:"A&R Verdict", verdict_sub:"A read on where your track stands", signoff:"reviewed like a demo — honest, not nice", fix_one:"If you fix one thing", full_read:"The full read", coming_next:"Coming next", ai_section:"Does it sound AI-made?", st_section:"Will it hold up on streaming?", preview_lbl:"What you get", err_network:"The server didn't respond — it may be restarting. Try again in a few seconds.", lock_ai:'Does it sound AI-made?<small>The tell-tale signs — vibrato, timing, repetition</small>', lock_vocal:'Vocal analysis & genre match<small>How your vocal reads, and who you sound like</small>', soon:"soon", if_producing:"If I were producing this", suno_paste:"Paste this into Suno to regenerate", copy:"Copy", copied:"Copied", regen_h:"Now regenerate it in Suno.", regen_p:"Paste the prompt, make your new version, then drop it back — we'll show you exactly what changed.", regen_upload:"Upload my new version", regen_skip:"just share this report instead", why:"Why", how_fix:"How to fix it", fx_add:"add to your prompt:", steps:["Decoding audio & tempo","Mapping structure — intro & drop","Measuring loudness & peaks","Checking the low-mids","Comparing to genre norms","Writing your A&R report"], listening:"Listening to your track…", comparing:"Comparing to your v1…", findings_n:n=>`${n} findings`, toast_copied:"Suno prompt copied", toast_link:"Report link copied", overall:"Overall", genre_lbl:"Genre", genre_auto:"Auto-detect", deep_lbl:"Deep vocal analysis — slower", structure_lbl:"Song structure", lg_intro:"intro", lg_body:"body", lg_peak:"peak moment", prod_hi:'"This is close. I\'d only spend time on <em>polish</em> — a couple of small moves and it\'s ready."', prod_mid:'"You\'re most of the way there. I\'d focus the last stretch on <em>the weak spots below</em> — that\'s what\'s holding it back."', prod_low:'"There\'s a real idea here. Before anything else, fix <em>the fundamentals below</em> — then it\'ll start to sing."', v2_eyebrow:"Version 2 · analyzed", v2_sub:"Here\'s what changed between v1 and your new version.", v2_badge:"A&R Verdict · v2", v2_progress:"This song\'s progress", v2_keep:"Keep going — every version gets a fresh read.", v2_another:"Analyze another song", v2_share:"Share this progress", v2_hero_up:(a,b)=>`From <em>${a}</em> to <em>${b}</em> — real progress.`, v2_hero_flat:(b)=>`Still at <em>${b}</em> — no overall change.`, v2_hero_down:(a,b)=>`This version reads weaker — ${a} → <em>${b}</em>.`, v2_verdict_up:'"This is a different track now. The fixes landed — it reads far more finished."', v2_verdict_flat:'"Different, but not stronger yet. Try attacking the weakest finding first."', v2_verdict_down:'"Honest read: this version lost ground. Go back to v1 and change one thing at a time."', ai_row:"AI signals", lower_better:"lower is better", drop_multi:"Pro move: drop 2–12 versions of the same song — we'll find the strongest", bt_eyebrow:"Version shoot-out", bt_sub:"Same measurements, side by side — the strongest version on each axis is lit.", bt_analyzing:(i,n)=>`Analyzing ${i} of ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> leads on ${x} of ${y} measured axes.`, bt_note:"This is which version is strongest on paper — measured axes only, not taste. Give the top two a blind listen before you choose.", bt_again:"Compare another batch", bt_open:"Full report", bt_ver:"Version", bt_intro:"Intro", bt_dyn:"Dynamics", bt_stream:"Streaming", bt_err:name=>`Couldn't analyze ${name} — skipped`, bt_one:"Only one version analyzed — showing its full report.", card_dl:"Report card saved — post it anywhere", rx_suite:"Your tools", rx_title:"Mix prescription", rx_start:"Derived from the measurements of this track. Start here — then trust your ears.", rx_chain:"Chain order", v2_fixed:"fixed", v2_better:"better — not done", v2_still:"still weak", hist_title:"Your desk", hist_empty:"Your analyzed tracks will land here.", hist_clear:"clear history", hist_cleared:"History cleared", ars_ph:"Type a plugin you own — e.g. Pro-Q 3, OTT…", ars_unknown:"Don't know this one — kept anyway", rx_missing:"You don't own a tool for this — free pick:", auth_login:"Sign in", auth_note:"No account needed to analyze. Nothing leaves this device.", auth_title:"Take a seat at the desk.", auth_sub:"Your name keeps your reports and progress together on this device.", auth_ph:"Your artist name", auth_continue:"Continue", auth_guest:"continue as guest", auth_out:"sign out", auth_hi:n=>`Welcome, ${n}`, ft_tag:"The producer between your generation and your release.", ft_honest:"Every number in the report is measured — never invented.", ft_product:"Product", ft_analyze:"Song analysis", ft_batch:"Version shoot-out", ft_stream:"Streaming readiness", ft_company:"Company", ft_about:"About", ft_privacy:"Privacy", ft_terms:"Terms", about_t:"About", about_b:"<p>A&R·AI does one thing: an honest read on AI-made music. Every number in a report is measured from your audio with studio-grade tools — loudness per ITU-R BS.1770, oversampled true peak, key and tempo detection — and benchmarked against tens of thousands of real commercial tracks.</p><p>We never invent scores. If we can\'t measure something, it isn\'t in the report.</p>", privacy_t:"Privacy", privacy_b:"<p>Your audio is analyzed and deleted immediately after the report is built. We don\'t store your tracks, we don\'t share them, and we never use them for training.</p><p>Your profile and history live only in your browser\'s local storage — clearing it removes them completely.</p>", terms_t:"Terms", terms_b:"<p>A&R·AI gives measurement-based feedback on your own tracks. You keep every right to your music — just make sure you have the rights to what you upload.</p><p>Reports are informational: no tool can promise what a distributor or platform will accept. The service is provided as-is, free, during beta.</p>", st_you:"Your track", st_r_down:"Louder than every target — each platform simply turns it down to its own level. This is how most commercial releases ship.", st_r_quiet:(n,d)=>`On ${n} platforms it will play up to ${d} dB quieter than the tracks around it — they never boost quiet masters.`, st_r_ok:"Right in the pocket — normalization will barely touch it.", st_h_plat:"Platform", st_h_target:"Their target", st_h_delta:"Normalization", st_h_result:"What happens", st_w_down:"turned down to target — normal", st_w_boost:"boosted to target", st_w_asis:"plays as-is", st_w_quiet:d=>`plays ${d} dB quieter` },
-    he: { hero_eyebrow:"המפיק המוזיקלי שלך מבוסס AI", hero_h:'למה השיר שלי עדיין לא<br>מרגיש <span class="grad">מקצועי?</span>', hero_sub:'העלה שיר וקבל חוות דעת כנה — כמו דמו שמגיע לשולחן של A&R. <b>מדידות אמיתיות</b>, תיקון אחד ברור, וה-Suno prompt המדויק כדי לייצר אותו מחדש טוב יותר.', drop_big:"גרור לכאן את השיר שלך", drop_small:'או <span class="browse">בחר קובץ מהמחשב</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — MAX 100 MB", demo_btn:"נסה עם שיר לדוגמה", trust_private:"פרטי — לא משותף לעולם", trust_account:"בלי חשבון", trust_time:"~30 שניות", new_song:"שיר חדש", verdict_badge:"חוות דעת A&R", verdict_sub:"קריאה על איפה השיר שלך עומד", signoff:"נבדק כמו דמו — כן, לא נחמד", fix_one:"אם תתקן דבר אחד", full_read:"הקריאה המלאה", coming_next:"בקרוב", ai_section:"האם זה נשמע AI?", st_section:"האם זה יחזיק בסטרימינג?", preview_lbl:"מה מקבלים", err_network:"השרת לא הגיב — ייתכן שהוא עולה מחדש. נסה שוב בעוד כמה שניות.", lock_ai:'האם זה נשמע AI?<small>הסימנים המובהקים — ויברטו, תזמון, חזרתיות</small>', lock_vocal:'ניתוח ווקאל והתאמת ז\'אנר<small>איך הווקאל נשמע, ולמי אתה דומה</small>', soon:"בקרוב", if_producing:"אם הייתי מפיק את זה", suno_paste:"הדבק את זה ב-Suno כדי לייצר מחדש", copy:"העתק", copied:"הועתק", regen_h:"עכשיו תייצר מחדש ב-Suno.", regen_p:"הדבק את ה-prompt, צור גרסה חדשה, ואז גרור אותה לכאן — נראה לך בדיוק מה השתנה.", regen_upload:"העלה את הגרסה החדשה", regen_skip:"פשוט שתף את הדו\"ח במקום", why:"למה", how_fix:"איך מתקנים", fx_add:"הוסף ל-prompt:", steps:["מפענח אודיו וטמפו","ממפה מבנה — אינטרו ודרופ","מודד עוצמה ושיאים","בודק את הנמוך-אמצע","משווה לנורמות הז'אנר","כותב את דו\"ח ה-A&R"], listening:"מאזין לשיר שלך…", comparing:"משווה ל-v1 שלך…", findings_n:n=>`${n} ממצאים`, toast_copied:"ה-Suno prompt הועתק", toast_link:"קישור הדו\"ח הועתק", overall:"כללי", genre_lbl:"ז'אנר", genre_auto:"זיהוי אוטומטי", deep_lbl:"ניתוח ווקאל מעמיק — איטי יותר", structure_lbl:"מבנה השיר", lg_intro:"אינטרו", lg_body:"גוף השיר", lg_peak:"רגע השיא", prod_hi:'"זה קרוב. הייתי משקיע רק ב<em>ליטוש</em> — כמה מהלכים קטנים וזה מוכן."', prod_mid:'"אתה רוב הדרך שם. הייתי מתמקד ב<em>נקודות החלשות למטה</em> — זה מה שמעכב."', prod_low:'"יש כאן רעיון אמיתי. לפני הכל, תקן את <em>היסודות למטה</em> — ואז זה יתחיל לשיר."', v2_eyebrow:"גרסה 2 · נותחה", v2_sub:"הנה מה שהשתנה בין v1 לגרסה החדשה שלך.", v2_badge:"חוות דעת A&R · v2", v2_progress:"ההתקדמות של השיר", v2_keep:"תמשיך — כל גרסה מקבלת קריאה טרייה.", v2_another:"נתח שיר נוסף", v2_share:"שתף את ההתקדמות", v2_hero_up:(a,b)=>`מ-<em>${a}</em> ל-<em>${b}</em> — התקדמות אמיתית.`, v2_hero_flat:(b)=>`עדיין על <em>${b}</em> — אין שינוי כללי.`, v2_hero_down:(a,b)=>`הגרסה הזאת חלשה יותר — ${a} ← <em>${b}</em>.`, v2_verdict_up:'"זה שיר אחר עכשיו. התיקונים עבדו — הוא נשמע הרבה יותר מוגמר."', v2_verdict_flat:'"שונה, אבל עדיין לא חזק יותר. נסה לתקוף קודם את הממצא החלש ביותר."', v2_verdict_down:'"קריאה כנה: הגרסה הזאת ירדה. חזור ל-v1 ושנה דבר אחד בכל פעם."', ai_row:"סימני AI", lower_better:"נמוך יותר = טוב יותר", drop_multi:"מהלך של מקצוענים: גרור 2–12 גרסאות של אותו שיר — נמצא את החזקה ביותר", bt_eyebrow:"קרב גרסאות", bt_sub:"אותן מדידות, זו לצד זו — הגרסה החזקה בכל מדד מוארת.", bt_analyzing:(i,n)=>`מנתח ${i} מתוך ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> מובילה ב-${x} מתוך ${y} מדדים.`, bt_note:"זו הגרסה החזקה על הנייר — מדדים מדודים בלבד, לא טעם. תן לשתי המובילות האזנה עיוורת לפני שתבחר.", bt_again:"השווה קבוצה נוספת", bt_open:"דוח מלא", bt_ver:"גרסה", bt_intro:"אינטרו", bt_dyn:"דינמיקה", bt_stream:"סטרימינג", bt_err:name=>`לא הצלחנו לנתח את ${name} — דילגנו`, bt_one:"רק גרסה אחת נותחה — מציג את הדוח המלא שלה.", card_dl:"כרטיס הדוח נשמר — פרסם אותו איפה שתרצה", rx_suite:"הכלים שלך", rx_title:"מרשם מיקס", rx_start:"נגזר מהמדידות של השיר הזה. תתחיל כאן — ואז תסמוך על האוזניים.", rx_chain:"סדר השרשרת", v2_fixed:"תוקן", v2_better:"השתפר — עוד לא שם", v2_still:"עדיין חלש", hist_title:"השולחן שלך", hist_empty:"השירים שתנתח ינחתו כאן.", hist_clear:"נקה היסטוריה", hist_cleared:"ההיסטוריה נוקתה", ars_ph:"כתוב פלאגין שיש לך — למשל Pro-Q 3, OTT…", ars_unknown:"לא מכירים את זה — נשמר בכל זאת", rx_missing:"אין לך כלי מתאים לזה — בחירה חינמית:", auth_login:"התחברות", auth_note:"לא צריך חשבון כדי לנתח. שום דבר לא עוזב את המכשיר הזה.", auth_title:"שב ליד השולחן.", auth_sub:"השם שלך שומר את הדוחות וההתקדמות שלך יחד, במכשיר הזה.", auth_ph:"שם האמן שלך", auth_continue:"המשך", auth_guest:"המשך כאורח", auth_out:"התנתקות", auth_hi:n=>`ברוך הבא, ${n}`, ft_tag:"המפיק שבין היצירה שלך לבין ההוצאה שלה.", ft_honest:"כל מספר בדוח נמדד — אף פעם לא מומצא.", ft_product:"מוצר", ft_analyze:"ניתוח שיר", ft_batch:"קרב גרסאות", ft_stream:"מוכנות לסטרימינג", ft_company:"חברה", ft_about:"אודות", ft_privacy:"פרטיות", ft_terms:"תנאים", about_t:"אודות", about_b:"<p>A&R·AI עושה דבר אחד: קריאה כנה של מוזיקה שנוצרה ב-AI. כל מספר בדוח נמדד מהאודיו שלך בכלים ברמת אולפן — עוצמה לפי תקן ITU-R BS.1770, שיאים בדגימת-יתר, זיהוי סולם וטמפו — ומושווה מול עשרות אלפי שירים מסחריים אמיתיים.</p><p>אנחנו אף פעם לא ממציאים ציונים. מה שאי אפשר למדוד — לא נמצא בדוח.</p>", privacy_t:"פרטיות", privacy_b:"<p>האודיו שלך מנותח ונמחק מיד אחרי שהדוח נבנה. אנחנו לא שומרים את השירים שלך, לא משתפים אותם, ולעולם לא מאמנים עליהם מודלים.</p><p>הפרופיל וההיסטוריה שלך חיים רק בדפדפן שלך — ניקוי האחסון המקומי מוחק אותם לגמרי.</p>", terms_t:"תנאים", terms_b:"<p>A&R·AI נותן משוב מבוסס-מדידה על שירים שלך. כל הזכויות על המוזיקה נשארות שלך — רק ודא שיש לך זכויות על מה שאתה מעלה.</p><p>הדוחות הם מידע, לא הבטחה: אף כלי לא יכול להבטיח מה מפיץ או פלטפורמה יאשרו. השירות ניתן כמו-שהוא, בחינם, בתקופת הבטא.</p>", st_you:"השיר שלך", st_r_down:"חזק מכל היעדים — כל פלטפורמה פשוט תנמיך אותו לרמה שלה. ככה יוצאים רוב השירים המסחריים.", st_r_quiet:(n,d)=>`ב-${n} פלטפורמות הוא יתנגן עד ${d} dB חלש מהשירים שסביבו — הן לא מגבירות מאסטר שקט.`, st_r_ok:"בול ביעד — הנרמול בקושי יגע בו.", st_h_plat:"פלטפורמה", st_h_target:"היעד שלהם", st_h_delta:"נרמול", st_h_result:"מה יקרה בפועל", st_w_down:"יונמך ליעד — תקין", st_w_boost:"יוגבר ליעד", st_w_asis:"יתנגן כמו שהוא", st_w_quiet:d=>`יתנגן ${d} dB חלש יותר` },
-    es: { hero_eyebrow:"Tu productor musical con IA", hero_h:'¿Por qué mi tema aún no<br>suena <span class="grad">profesional</span>?', hero_sub:'Sube un tema y recibe una lectura honesta — como una demo que llega a la mesa de un A&R. <b>Mediciones reales</b>, un arreglo claro, y el prompt exacto de Suno para regenerarlo mejor.', drop_big:"Suelta tu tema aquí", drop_small:'o <span class="browse">explora tus archivos</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — hasta 100 MB", demo_btn:"prueba con un tema de ejemplo", trust_private:"Privado — nunca se comparte", trust_account:"Sin cuenta", trust_time:"~30 segundos", new_song:"Nuevo tema", verdict_badge:"Veredicto A&R", verdict_sub:"Una lectura de dónde está tu tema", signoff:"revisado como una demo — honesto, no amable", fix_one:"Si arreglas una cosa", full_read:"La lectura completa", coming_next:"Próximamente", ai_section:"¿Suena hecho con IA?", st_section:"¿Aguantará en streaming?", preview_lbl:"Lo que recibes", err_network:"El servidor no respondió — puede estar reiniciándose. Inténtalo de nuevo en unos segundos.", lock_ai:'¿Suena hecho con IA?<small>Las señales — vibrato, timing, repetición</small>', lock_vocal:'Análisis vocal y de género<small>Cómo suena tu voz, y a quién te pareces</small>', soon:"pronto", if_producing:"Si yo lo produjera", suno_paste:"Pega esto en Suno para regenerar", copy:"Copiar", copied:"Copiado", regen_h:"Ahora regénéralo en Suno.", regen_p:"Pega el prompt, crea tu nueva versión y súbela de nuevo — te mostraremos exactamente qué cambió.", regen_upload:"Subir mi nueva versión", regen_skip:"solo comparte este informe", why:"Por qué", how_fix:"Cómo arreglarlo", fx_add:"añade a tu prompt:", steps:["Decodificando audio y tempo","Mapeando estructura — intro y drop","Midiendo volumen y picos","Revisando los medios-graves","Comparando con el género","Escribiendo tu informe A&R"], listening:"Escuchando tu tema…", comparing:"Comparando con tu v1…", findings_n:n=>`${n} hallazgos`, toast_copied:"Prompt de Suno copiado", toast_link:"Enlace del informe copiado", overall:"Global", genre_lbl:"Género", genre_auto:"Detección automática", deep_lbl:"Análisis vocal profundo — más lento", structure_lbl:"Estructura del tema", lg_intro:"intro", lg_body:"cuerpo", lg_peak:"momento pico", prod_hi:'"Está cerca. Solo invertiría en <em>pulido</em> — un par de ajustes y está listo."', prod_mid:'"Estás casi ahí. Me centraría en <em>los puntos débiles de abajo</em> — eso es lo que lo frena."', prod_low:'"Hay una idea real aquí. Antes que nada, arregla <em>lo fundamental de abajo</em> — y empezará a cantar."', v2_eyebrow:"Versión 2 · analizada", v2_sub:"Esto es lo que cambió entre v1 y tu nueva versión.", v2_badge:"Veredicto A&R · v2", v2_progress:"El progreso de este tema", v2_keep:"Sigue — cada versión recibe una lectura nueva.", v2_another:"Analizar otro tema", v2_share:"Compartir este progreso", v2_hero_up:(a,b)=>`De <em>${a}</em> a <em>${b}</em> — progreso real.`, v2_hero_flat:(b)=>`Sigue en <em>${b}</em> — sin cambio global.`, v2_hero_down:(a,b)=>`Esta versión suena más débil — ${a} → <em>${b}</em>.`, v2_verdict_up:'"Ahora es otro tema. Los arreglos funcionaron — suena mucho más terminado."', v2_verdict_flat:'"Diferente, pero aún no más fuerte. Ataca primero el hallazgo más débil."', v2_verdict_down:'"Lectura honesta: esta versión perdió terreno. Vuelve a v1 y cambia una cosa a la vez."', ai_row:"Señales de IA", lower_better:"menos es mejor", drop_multi:"Jugada pro: suelta 2–12 versiones del mismo tema — encontraremos la más fuerte", bt_eyebrow:"Duelo de versiones", bt_sub:"Las mismas mediciones, lado a lado — la versión más fuerte en cada eje está iluminada.", bt_analyzing:(i,n)=>`Analizando ${i} de ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> lidera en ${x} de ${y} ejes medidos.`, bt_note:"Esto es cuál versión es más fuerte sobre el papel — solo ejes medidos, no gusto. Escucha a ciegas las dos mejores antes de elegir.", bt_again:"Comparar otro lote", bt_open:"Informe completo", bt_ver:"Versión", bt_intro:"Intro", bt_dyn:"Dinámica", bt_stream:"Streaming", bt_err:name=>`No pudimos analizar ${name} — omitido`, bt_one:"Solo se analizó una versión — mostrando su informe completo.", card_dl:"Tarjeta guardada — publícala donde quieras", rx_suite:"Tus herramientas", rx_title:"Receta de mezcla", rx_start:"Derivado de las mediciones de este tema. Empieza aquí — luego confía en tus oídos.", rx_chain:"Orden de la cadena", v2_fixed:"arreglado", v2_better:"mejor — aún no", v2_still:"sigue débil", hist_title:"Tu mesa", hist_empty:"Tus temas analizados aterrizarán aquí.", hist_clear:"borrar historial", hist_cleared:"Historial borrado", ars_ph:"Escribe un plugin que tengas — p. ej. Pro-Q 3, OTT…", ars_unknown:"No conocemos este — guardado igualmente", rx_missing:"No tienes una herramienta para esto — opción gratuita:", auth_login:"Entrar", auth_note:"No necesitas cuenta para analizar. Nada sale de este dispositivo.", auth_title:"Toma asiento en la mesa.", auth_sub:"Tu nombre mantiene tus informes y tu progreso juntos en este dispositivo.", auth_ph:"Tu nombre artístico", auth_continue:"Continuar", auth_guest:"continuar como invitado", auth_out:"cerrar sesión", auth_hi:n=>`Bienvenido, ${n}`, ft_tag:"El productor entre tu generación y tu lanzamiento.", ft_honest:"Cada número del informe está medido — nunca inventado.", ft_product:"Producto", ft_analyze:"Análisis de temas", ft_batch:"Duelo de versiones", ft_stream:"Listo para streaming", ft_company:"Empresa", ft_about:"Acerca de", ft_privacy:"Privacidad", ft_terms:"Términos", about_t:"Acerca de", about_b:"<p>A&R·AI hace una cosa: una lectura honesta de la música hecha con IA. Cada número se mide de tu audio con herramientas de estudio y se compara con decenas de miles de temas comerciales reales.</p><p>Nunca inventamos puntuaciones. Lo que no se puede medir, no está en el informe.</p>", privacy_t:"Privacidad", privacy_b:"<p>Tu audio se analiza y se borra inmediatamente después de crear el informe. No guardamos tus temas, no los compartimos y nunca los usamos para entrenar.</p><p>Tu perfil e historial viven solo en tu navegador — limpiar el almacenamiento local los borra por completo.</p>", terms_t:"Términos", terms_b:"<p>A&R·AI da feedback basado en mediciones sobre tus propios temas. Conservas todos los derechos de tu música — asegúrate de tener derechos sobre lo que subes.</p><p>Los informes son informativos: ninguna herramienta puede prometer lo que aceptará un distribuidor. El servicio se ofrece tal cual, gratis, durante la beta.</p>", st_you:"Tu tema", st_r_down:"Más fuerte que todos los objetivos — cada plataforma simplemente lo baja a su nivel. Así salen la mayoría de los lanzamientos comerciales.", st_r_quiet:(n,d)=>`En ${n} plataformas sonará hasta ${d} dB más bajo que los temas de alrededor — nunca suben masters silenciosos.`, st_r_ok:"Justo en el objetivo — la normalización apenas lo tocará.", st_h_plat:"Plataforma", st_h_target:"Su objetivo", st_h_delta:"Normalización", st_h_result:"Qué pasará", st_w_down:"bajado al objetivo — normal", st_w_boost:"subido al objetivo", st_w_asis:"suena tal cual", st_w_quiet:d=>`sonará ${d} dB más bajo` },
-    fr: { hero_eyebrow:"Ton producteur musical IA", hero_h:'Pourquoi mon morceau ne<br>sonne pas encore <span class="grad">pro</span> ?', hero_sub:'Dépose un morceau et reçois un avis honnête — comme une démo qui arrive sur le bureau d\'un A&R. <b>Des mesures réelles</b>, un correctif clair, et le prompt Suno exact pour le régénérer en mieux.', drop_big:"Dépose ton morceau ici", drop_small:'ou <span class="browse">parcours tes fichiers</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — jusqu'à 100 Mo", demo_btn:"essaie avec un morceau de démo", trust_private:"Privé — jamais partagé", trust_account:"Sans compte", trust_time:"~30 secondes", new_song:"Nouveau morceau", verdict_badge:"Verdict A&R", verdict_sub:"Un avis sur où en est ton morceau", signoff:"évalué comme une démo — honnête, pas gentil", fix_one:"Si tu corriges une chose", full_read:"L'analyse complète", coming_next:"Bientôt", ai_section:"Ça sonne fait par IA ?", st_section:"Ça tiendra en streaming ?", preview_lbl:"Ce que tu reçois", err_network:"Le serveur n'a pas répondu — il redémarre peut-être. Réessaie dans quelques secondes.", lock_ai:'Ça sonne fait par IA ?<small>Les indices — vibrato, timing, répétition</small>', lock_vocal:'Analyse voix & genre<small>Comment ta voix sonne, et à qui tu ressembles</small>', soon:"bientôt", if_producing:"Si je le produisais", suno_paste:"Colle ceci dans Suno pour régénérer", copy:"Copier", copied:"Copié", regen_h:"Maintenant régénère-le dans Suno.", regen_p:"Colle le prompt, crée ta nouvelle version, puis redépose-la — on te montrera exactement ce qui a changé.", regen_upload:"Uploader ma nouvelle version", regen_skip:"juste partager ce rapport", why:"Pourquoi", how_fix:"Comment corriger", fx_add:"ajoute à ton prompt :", steps:["Décodage audio & tempo","Cartographie — intro & drop","Mesure du volume & crêtes","Vérif des bas-médiums","Comparaison au genre","Rédaction de ton rapport A&R"], listening:"J'écoute ton morceau…", comparing:"Comparaison avec ta v1…", findings_n:n=>`${n} constats`, toast_copied:"Prompt Suno copié", toast_link:"Lien du rapport copié", overall:"Global", genre_lbl:"Genre", genre_auto:"Détection auto", deep_lbl:"Analyse vocale approfondie — plus lente", structure_lbl:"Structure du morceau", lg_intro:"intro", lg_body:"corps", lg_peak:"moment fort", prod_hi:'"C\'est proche. Je ne passerais du temps que sur le <em>polish</em> — deux ou trois gestes et c\'est prêt."', prod_mid:'"Tu y es presque. Je me concentrerais sur <em>les points faibles ci-dessous</em> — c\'est ce qui freine."', prod_low:'"Il y a une vraie idée ici. Avant tout, corrige <em>les fondamentaux ci-dessous</em> — et ça va commencer à chanter."', v2_eyebrow:"Version 2 · analysée", v2_sub:"Voici ce qui a changé entre la v1 et ta nouvelle version.", v2_badge:"Verdict A&R · v2", v2_progress:"La progression de ce morceau", v2_keep:"Continue — chaque version reçoit une lecture fraîche.", v2_another:"Analyser un autre morceau", v2_share:"Partager cette progression", v2_hero_up:(a,b)=>`De <em>${a}</em> à <em>${b}</em> — un vrai progrès.`, v2_hero_flat:(b)=>`Toujours à <em>${b}</em> — pas de changement global.`, v2_hero_down:(a,b)=>`Cette version est plus faible — ${a} → <em>${b}</em>.`, v2_verdict_up:'"C\'est un autre morceau maintenant. Les corrections ont porté — ça sonne bien plus fini."', v2_verdict_flat:'"Différent, mais pas encore plus fort. Attaque d\'abord le constat le plus faible."', v2_verdict_down:'"Lecture honnête : cette version a perdu du terrain. Reviens à la v1 et change une chose à la fois."', ai_row:"Signaux IA", lower_better:"plus bas = mieux", drop_multi:"Astuce de pro : dépose 2–12 versions du même morceau — on trouvera la plus forte", bt_eyebrow:"Duel de versions", bt_sub:"Les mêmes mesures, côte à côte — la version la plus forte sur chaque axe est éclairée.", bt_analyzing:(i,n)=>`Analyse ${i} sur ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> mène sur ${x} des ${y} axes mesurés.`, bt_note:"Voici la version la plus forte sur le papier — axes mesurés seulement, pas le goût. Écoute les deux meilleures en aveugle avant de choisir.", bt_again:"Comparer un autre lot", bt_open:"Rapport complet", bt_ver:"Version", bt_intro:"Intro", bt_dyn:"Dynamique", bt_stream:"Streaming", bt_err:name=>`Impossible d'analyser ${name} — ignoré`, bt_one:"Une seule version analysée — voici son rapport complet.", card_dl:"Carte enregistrée — publie-la où tu veux", rx_suite:"Tes outils", rx_title:"Ordonnance de mix", rx_start:"Dérivé des mesures de ce morceau. Commence ici — puis fais confiance à tes oreilles.", rx_chain:"Ordre de la chaîne", v2_fixed:"corrigé", v2_better:"mieux — pas fini", v2_still:"encore faible", hist_title:"Ton bureau", hist_empty:"Tes morceaux analysés atterriront ici.", hist_clear:"effacer l'historique", hist_cleared:"Historique effacé", ars_ph:"Tape un plugin que tu possèdes — ex. Pro-Q 3, OTT…", ars_unknown:"Inconnu — gardé quand même", rx_missing:"Tu n'as pas d'outil pour ça — option gratuite :", auth_login:"Connexion", auth_note:"Pas besoin de compte pour analyser. Rien ne quitte cet appareil.", auth_title:"Prends place au bureau.", auth_sub:"Ton nom garde tes rapports et ta progression ensemble sur cet appareil.", auth_ph:"Ton nom d\'artiste", auth_continue:"Continuer", auth_guest:"continuer en invité", auth_out:"se déconnecter", auth_hi:n=>`Bienvenue, ${n}`, ft_tag:"Le producteur entre ta génération et ta sortie.", ft_honest:"Chaque chiffre du rapport est mesuré — jamais inventé.", ft_product:"Produit", ft_analyze:"Analyse de morceau", ft_batch:"Duel de versions", ft_stream:"Prêt pour le streaming", ft_company:"Société", ft_about:"À propos", ft_privacy:"Confidentialité", ft_terms:"Conditions", about_t:"À propos", about_b:"<p>A&R·AI fait une chose : une lecture honnête de la musique créée par IA. Chaque chiffre est mesuré depuis ton audio avec des outils de studio et comparé à des dizaines de milliers de morceaux commerciaux réels.</p><p>Nous n\'inventons jamais de scores. Ce qui ne se mesure pas n\'est pas dans le rapport.</p>", privacy_t:"Confidentialité", privacy_b:"<p>Ton audio est analysé puis supprimé immédiatement après la création du rapport. Nous ne stockons pas tes morceaux, ne les partageons pas et ne les utilisons jamais pour l\'entraînement.</p><p>Ton profil et ton historique vivent uniquement dans ton navigateur — vider le stockage local les efface complètement.</p>", terms_t:"Conditions", terms_b:"<p>A&R·AI donne un retour basé sur des mesures sur tes propres morceaux. Tu gardes tous les droits sur ta musique — assure-toi d\'avoir les droits sur ce que tu envoies.</p><p>Les rapports sont informatifs : aucun outil ne peut promettre ce qu\'un distributeur acceptera. Le service est fourni tel quel, gratuit, pendant la bêta.</p>", st_you:"Ton morceau", st_r_down:"Plus fort que toutes les cibles — chaque plateforme le baisse simplement à son niveau. C'est ainsi que sortent la plupart des sorties commerciales.", st_r_quiet:(n,d)=>`Sur ${n} plateformes il jouera jusqu'à ${d} dB plus bas que les morceaux autour — elles ne remontent jamais un master silencieux.`, st_r_ok:"Pile dans la cible — la normalisation le touchera à peine.", st_h_plat:"Plateforme", st_h_target:"Leur cible", st_h_delta:"Normalisation", st_h_result:"Ce qui se passera", st_w_down:"baissé à la cible — normal", st_w_boost:"remonté à la cible", st_w_asis:"joue tel quel", st_w_quiet:d=>`jouera ${d} dB plus bas` },
-    de: { hero_eyebrow:"Dein KI-Musikproduzent", hero_h:'Warum klingt mein Song<br>noch nicht <span class="grad">professionell</span>?', hero_sub:'Lad einen Track hoch und bekomm eine ehrliche Einschätzung — wie eine Demo auf dem Tisch eines A&R. <b>Echte Messungen</b>, ein klarer Fix, und der genaue Suno-Prompt zum besseren Neugenerieren.', drop_big:"Zieh deinen Song hierher", drop_small:'oder <span class="browse">durchsuche deine Dateien</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — bis 100 MB", demo_btn:"mit einem Demo-Track testen", trust_private:"Privat — nie geteilt", trust_account:"Kein Konto nötig", trust_time:"~30 Sekunden", new_song:"Neuer Song", verdict_badge:"A&R-Urteil", verdict_sub:"Eine Einschätzung, wo dein Track steht", signoff:"bewertet wie eine Demo — ehrlich, nicht nett", fix_one:"Wenn du eine Sache fixt", full_read:"Die volle Analyse", coming_next:"Demnächst", ai_section:"Klingt es KI-gemacht?", st_section:"Hält es auf Streaming stand?", preview_lbl:"Was du bekommst", err_network:"Der Server hat nicht geantwortet — er startet evtl. neu. Versuch es in ein paar Sekunden erneut.", lock_ai:'Klingt es KI-gemacht?<small>Die Anzeichen — Vibrato, Timing, Wiederholung</small>', lock_vocal:'Vocal- & Genre-Analyse<small>Wie deine Stimme klingt, und nach wem</small>', soon:"bald", if_producing:"Wenn ich das produzieren würde", suno_paste:"Füge das in Suno ein zum Neugenerieren", copy:"Kopieren", copied:"Kopiert", regen_h:"Jetzt in Suno neu generieren.", regen_p:"Füge den Prompt ein, mach deine neue Version, und lad sie wieder hoch — wir zeigen dir genau, was sich geändert hat.", regen_upload:"Meine neue Version hochladen", regen_skip:"nur diesen Report teilen", why:"Warum", how_fix:"So behebst du es", fx_add:"füge zum Prompt hinzu:", steps:["Audio & Tempo dekodieren","Struktur mappen — Intro & Drop","Lautheit & Peaks messen","Tiefmitten prüfen","Mit Genre-Normen vergleichen","Deinen A&R-Report schreiben"], listening:"Höre deinen Track…", comparing:"Vergleiche mit deiner v1…", findings_n:n=>`${n} Befunde`, toast_copied:"Suno-Prompt kopiert", toast_link:"Report-Link kopiert", overall:"Gesamt", genre_lbl:"Genre", genre_auto:"Automatisch erkennen", deep_lbl:"Tiefe Vocal-Analyse — langsamer", structure_lbl:"Song-Struktur", lg_intro:"Intro", lg_body:"Hauptteil", lg_peak:"Höhepunkt", prod_hi:'"Das ist nah dran. Ich würde nur noch <em>polieren</em> — ein paar kleine Griffe und es ist fertig."', prod_mid:'"Du bist fast da. Ich würde mich auf <em>die Schwachstellen unten</em> konzentrieren — das bremst es."', prod_low:'"Hier steckt eine echte Idee. Bring zuerst <em>die Grundlagen unten</em> in Ordnung — dann fängt es an zu singen."', v2_eyebrow:"Version 2 · analysiert", v2_sub:"Das hat sich zwischen v1 und deiner neuen Version geändert.", v2_badge:"A&R-Urteil · v2", v2_progress:"Fortschritt dieses Songs", v2_keep:"Weiter so — jede Version bekommt eine frische Einschätzung.", v2_another:"Weiteren Song analysieren", v2_share:"Fortschritt teilen", v2_hero_up:(a,b)=>`Von <em>${a}</em> auf <em>${b}</em> — echter Fortschritt.`, v2_hero_flat:(b)=>`Immer noch bei <em>${b}</em> — keine Gesamtveränderung.`, v2_hero_down:(a,b)=>`Diese Version wirkt schwächer — ${a} → <em>${b}</em>.`, v2_verdict_up:'"Das ist jetzt ein anderer Track. Die Fixes haben gegriffen — er klingt deutlich fertiger."', v2_verdict_flat:'"Anders, aber noch nicht stärker. Geh zuerst den schwächsten Befund an."', v2_verdict_down:'"Ehrliche Einschätzung: Diese Version hat verloren. Geh zu v1 zurück und ändere eins nach dem anderen."', ai_row:"KI-Signale", lower_better:"weniger ist besser", drop_multi:"Profi-Move: Zieh 2–12 Versionen desselben Songs rein — wir finden die stärkste", bt_eyebrow:"Versionen-Duell", bt_sub:"Dieselben Messungen, Seite an Seite — die stärkste Version pro Achse leuchtet.", bt_analyzing:(i,n)=>`Analysiere ${i} von ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> führt auf ${x} von ${y} gemessenen Achsen.`, bt_note:"Das ist die auf dem Papier stärkste Version — nur gemessene Achsen, kein Geschmack. Hör dir die besten zwei blind an, bevor du wählst.", bt_again:"Weiteren Stapel vergleichen", bt_open:"Voller Report", bt_ver:"Version", bt_intro:"Intro", bt_dyn:"Dynamik", bt_stream:"Streaming", bt_err:name=>`${name} konnte nicht analysiert werden — übersprungen`, bt_one:"Nur eine Version analysiert — zeige ihren vollen Report.", card_dl:"Report-Karte gespeichert — poste sie überall", rx_suite:"Deine Tools", rx_title:"Mix-Rezept", rx_start:"Abgeleitet aus den Messungen dieses Tracks. Fang hier an — dann vertrau deinen Ohren.", rx_chain:"Chain-Reihenfolge", v2_fixed:"behoben", v2_better:"besser — noch nicht fertig", v2_still:"noch schwach", hist_title:"Dein Pult", hist_empty:"Deine analysierten Tracks landen hier.", hist_clear:"Verlauf löschen", hist_cleared:"Verlauf gelöscht", ars_ph:"Tipp ein Plugin, das du besitzt — z. B. Pro-Q 3, OTT…", ars_unknown:"Kennen wir nicht — trotzdem gespeichert", rx_missing:"Dafür besitzt du kein Tool — Gratis-Tipp:", auth_login:"Anmelden", auth_note:"Kein Konto nötig zum Analysieren. Nichts verlässt dieses Gerät.", auth_title:"Nimm Platz am Pult.", auth_sub:"Dein Name hält deine Reports und deinen Fortschritt auf diesem Gerät zusammen.", auth_ph:"Dein Künstlername", auth_continue:"Weiter", auth_guest:"als Gast fortfahren", auth_out:"abmelden", auth_hi:n=>`Willkommen, ${n}`, ft_tag:"Der Produzent zwischen deiner Generierung und deinem Release.", ft_honest:"Jede Zahl im Report ist gemessen — nie erfunden.", ft_product:"Produkt", ft_analyze:"Song-Analyse", ft_batch:"Versionen-Duell", ft_stream:"Streaming-Readiness", ft_company:"Unternehmen", ft_about:"Über uns", ft_privacy:"Datenschutz", ft_terms:"AGB", about_t:"Über uns", about_b:"<p>A&R·AI macht eine Sache: eine ehrliche Einschätzung KI-gemachter Musik. Jede Zahl wird mit Studio-Werkzeugen aus deinem Audio gemessen und mit zehntausenden echten kommerziellen Tracks verglichen.</p><p>Wir erfinden nie Scores. Was sich nicht messen lässt, steht nicht im Report.</p>", privacy_t:"Datenschutz", privacy_b:"<p>Dein Audio wird analysiert und sofort nach dem Report gelöscht. Wir speichern deine Tracks nicht, teilen sie nicht und trainieren nie darauf.</p><p>Profil und Verlauf leben nur im lokalen Speicher deines Browsers — Löschen entfernt sie vollständig.</p>", terms_t:"AGB", terms_b:"<p>A&R·AI gibt messbasiertes Feedback zu deinen eigenen Tracks. Alle Rechte an deiner Musik bleiben bei dir — stell sicher, dass du die Rechte am Hochgeladenen hast.</p><p>Reports sind informativ: kein Tool kann versprechen, was ein Distributor akzeptiert. Der Service läuft as-is, kostenlos, in der Beta.</p>", st_you:"Dein Track", st_r_down:"Lauter als jedes Ziel — jede Plattform senkt ihn einfach auf ihr Niveau. So erscheinen die meisten kommerziellen Releases.", st_r_quiet:(n,d)=>`Auf ${n} Plattformen spielt er bis zu ${d} dB leiser als die Tracks drumherum — leise Master werden nie angehoben.`, st_r_ok:"Genau im Ziel — die Normalisierung wird ihn kaum anfassen.", st_h_plat:"Plattform", st_h_target:"Deren Ziel", st_h_delta:"Normalisierung", st_h_result:"Was passiert", st_w_down:"auf Ziel gesenkt — normal", st_w_boost:"auf Ziel angehoben", st_w_asis:"spielt unverändert", st_w_quiet:d=>`spielt ${d} dB leiser` },
-    pt: { hero_eyebrow:"O teu produtor musical com IA", hero_h:'Porque é que a minha música<br>ainda não soa <span class="grad">profissional</span>?', hero_sub:'Carrega uma faixa e recebe uma leitura honesta — como uma demo que chega à mesa de um A&R. <b>Medições reais</b>, uma correção clara, e o prompt exato do Suno para a regenerar melhor.', drop_big:"Larga a tua faixa aqui", drop_small:'ou <span class="browse">procura nos teus ficheiros</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — até 100 MB", demo_btn:"experimenta com uma faixa de exemplo", trust_private:"Privado — nunca partilhado", trust_account:"Sem conta", trust_time:"~30 segundos", new_song:"Nova faixa", verdict_badge:"Veredito A&R", verdict_sub:"Uma leitura de onde está a tua faixa", signoff:"avaliado como uma demo — honesto, não simpático", fix_one:"Se corrigires uma coisa", full_read:"A leitura completa", coming_next:"Em breve", ai_section:"Soa a feito por IA?", st_section:"Vai aguentar no streaming?", preview_lbl:"O que recebes", err_network:"O servidor não respondeu — pode estar a reiniciar. Tenta novamente em alguns segundos.", lock_ai:'Soa a feito por IA?<small>Os sinais — vibrato, timing, repetição</small>', lock_vocal:'Análise vocal & de género<small>Como soa a tua voz, e com quem te pareces</small>', soon:"em breve", if_producing:"Se eu produzisse isto", suno_paste:"Cola isto no Suno para regenerar", copy:"Copiar", copied:"Copiado", regen_h:"Agora regenera no Suno.", regen_p:"Cola o prompt, cria a tua nova versão e larga-a aqui — mostramos-te exatamente o que mudou.", regen_upload:"Carregar a minha nova versão", regen_skip:"só partilhar este relatório", why:"Porquê", how_fix:"Como corrigir", fx_add:"adiciona ao teu prompt:", steps:["A descodificar áudio e tempo","A mapear estrutura — intro e drop","A medir volume e picos","A verificar os médios-graves","A comparar com o género","A escrever o teu relatório A&R"], listening:"A ouvir a tua faixa…", comparing:"A comparar com a tua v1…", findings_n:n=>`${n} constatações`, toast_copied:"Prompt do Suno copiado", toast_link:"Link do relatório copiado", overall:"Geral", genre_lbl:"Género", genre_auto:"Deteção automática", deep_lbl:"Análise vocal profunda — mais lenta", structure_lbl:"Estrutura da faixa", lg_intro:"intro", lg_body:"corpo", lg_peak:"momento alto", prod_hi:'"Está perto. Só investiria em <em>polimento</em> — dois ou três ajustes e está pronta."', prod_mid:'"Estás quase lá. Focava-me <em>nos pontos fracos abaixo</em> — é isso que trava."', prod_low:'"Há uma ideia real aqui. Antes de tudo, corrige <em>os fundamentos abaixo</em> — e vai começar a cantar."', v2_eyebrow:"Versão 2 · analisada", v2_sub:"Isto é o que mudou entre a v1 e a tua nova versão.", v2_badge:"Veredito A&R · v2", v2_progress:"O progresso desta faixa", v2_keep:"Continua — cada versão recebe uma leitura fresca.", v2_another:"Analisar outra faixa", v2_share:"Partilhar este progresso", v2_hero_up:(a,b)=>`De <em>${a}</em> para <em>${b}</em> — progresso real.`, v2_hero_flat:(b)=>`Continua em <em>${b}</em> — sem mudança geral.`, v2_hero_down:(a,b)=>`Esta versão soa mais fraca — ${a} → <em>${b}</em>.`, v2_verdict_up:'"Agora é outra faixa. As correções resultaram — soa muito mais acabada."', v2_verdict_flat:'"Diferente, mas ainda não mais forte. Ataca primeiro a constatação mais fraca."', v2_verdict_down:'"Leitura honesta: esta versão perdeu terreno. Volta à v1 e muda uma coisa de cada vez."', ai_row:"Sinais de IA", lower_better:"menos é melhor", drop_multi:"Jogada pro: larga 2–12 versões da mesma faixa — encontramos a mais forte", bt_eyebrow:"Duelo de versões", bt_sub:"As mesmas medições, lado a lado — a versão mais forte em cada eixo está iluminada.", bt_analyzing:(i,n)=>`A analisar ${i} de ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> lidera em ${x} de ${y} eixos medidos.`, bt_note:"Esta é a versão mais forte no papel — só eixos medidos, não gosto. Ouve as duas melhores às cegas antes de escolher.", bt_again:"Comparar outro lote", bt_open:"Relatório completo", bt_ver:"Versão", bt_intro:"Intro", bt_dyn:"Dinâmica", bt_stream:"Streaming", bt_err:name=>`Não foi possível analisar ${name} — ignorado`, bt_one:"Só uma versão analisada — a mostrar o relatório completo.", card_dl:"Cartão guardado — publica-o onde quiseres", rx_suite:"As tuas ferramentas", rx_title:"Receita de mistura", rx_start:"Derivado das medições desta faixa. Começa aqui — depois confia nos teus ouvidos.", rx_chain:"Ordem da cadeia", v2_fixed:"corrigido", v2_better:"melhor — ainda não", v2_still:"ainda fraco", hist_title:"A tua mesa", hist_empty:"As tuas faixas analisadas vão aterrar aqui.", hist_clear:"limpar histórico", hist_cleared:"Histórico limpo", ars_ph:"Escreve um plugin que tens — p. ex. Pro-Q 3, OTT…", ars_unknown:"Não conhecemos este — guardado na mesma", rx_missing:"Não tens uma ferramenta para isto — escolha grátis:", auth_login:"Entrar", auth_note:"Não precisas de conta para analisar. Nada sai deste dispositivo.", auth_title:"Senta-te à mesa.", auth_sub:"O teu nome mantém os teus relatórios e progresso juntos neste dispositivo.", auth_ph:"O teu nome artístico", auth_continue:"Continuar", auth_guest:"continuar como convidado", auth_out:"terminar sessão", auth_hi:n=>`Bem-vindo, ${n}`, ft_tag:"O produtor entre a tua geração e o teu lançamento.", ft_honest:"Cada número do relatório é medido — nunca inventado.", ft_product:"Produto", ft_analyze:"Análise de faixas", ft_batch:"Duelo de versões", ft_stream:"Pronto para streaming", ft_company:"Empresa", ft_about:"Sobre", ft_privacy:"Privacidade", ft_terms:"Termos", about_t:"Sobre", about_b:"<p>A A&R·AI faz uma coisa: uma leitura honesta de música feita com IA. Cada número é medido do teu áudio com ferramentas de estúdio e comparado com dezenas de milhares de faixas comerciais reais.</p><p>Nunca inventamos pontuações. O que não se mede, não está no relatório.</p>", privacy_t:"Privacidade", privacy_b:"<p>O teu áudio é analisado e apagado imediatamente após o relatório. Não guardamos as tuas faixas, não as partilhamos e nunca treinamos com elas.</p><p>O teu perfil e histórico vivem só no teu navegador — limpar o armazenamento local apaga-os por completo.</p>", terms_t:"Termos", terms_b:"<p>A A&R·AI dá feedback baseado em medições sobre as tuas próprias faixas. Manténs todos os direitos da tua música — garante que tens direitos sobre o que carregas.</p><p>Os relatórios são informativos: nenhuma ferramenta pode prometer o que um distribuidor vai aceitar. O serviço é fornecido como está, grátis, durante a beta.</p>", st_you:"A tua faixa", st_r_down:"Mais alto que todos os alvos — cada plataforma simplesmente baixa-o para o seu nível. É assim que saem a maioria dos lançamentos comerciais.", st_r_quiet:(n,d)=>`Em ${n} plataformas vai tocar até ${d} dB mais baixo que as faixas à volta — nunca sobem masters silenciosos.`, st_r_ok:"Mesmo no alvo — a normalização mal lhe vai tocar.", st_h_plat:"Plataforma", st_h_target:"O alvo deles", st_h_delta:"Normalização", st_h_result:"O que acontece", st_w_down:"baixado ao alvo — normal", st_w_boost:"subido ao alvo", st_w_asis:"toca como está", st_w_quiet:d=>`toca ${d} dB mais baixo` },
+    en: { hero_eyebrow:"Your AI music producer", hero_h:'Why doesn\'t my song<br>feel <span class="grad">professional</span> yet?', hero_sub:'Drop a track and get an honest read — like a demo landing on an A&R\'s desk. <b>Real measurements</b>, a single clear fix, and the exact Suno prompt to regenerate it better.', drop_big:"Drop your song here", drop_small:'or <span class="browse">browse your files</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — up to 100 MB", demo_btn:"try it with a demo track", trust_private:"Private — never shared", trust_account:"No account to try", trust_time:"~30 seconds", new_song:"New song", verdict_badge:"A&R Verdict", verdict_sub:"A read on where your track stands", signoff:"reviewed like a demo — honest, not nice", fix_one:"If you fix one thing", full_read:"The full read", coming_next:"Coming next", ai_section:"Does it sound AI-made?", st_section:"Will it hold up on streaming?", preview_lbl:"What you get", err_network:"The server didn't respond — it may be restarting. Try again in a few seconds.", lock_ai:'Does it sound AI-made?<small>The tell-tale signs — vibrato, timing, repetition</small>', lock_vocal:'Vocal analysis & genre match<small>How your vocal reads, and who you sound like</small>', soon:"soon", if_producing:"If I were producing this", suno_paste:"Paste this into {p} to regenerate", suno_paste_any:"Paste this into your AI music tool to regenerate", plat_other:"Other", copy:"Copy", copied:"Copied", regen_h:"Now regenerate it in {p}.", regen_h_any:"Now regenerate it in your AI music tool.", regen_p:"Paste the prompt, make your new version, then drop it back — we'll show you exactly what changed.", regen_upload:"Upload my new version", regen_skip:"just share this report instead", why:"Why", how_fix:"How to fix it", lsn_lbl:"Listen", lsn_intro:"Hear where it really starts", lsn_peak:"Hear the loudest moment", lsn_band:"Solo the problem band", lsn_mono:"Compare in mono", fx_add:"add to your prompt:", steps:["Decoding audio & tempo","Mapping structure — intro & drop","Measuring loudness & peaks","Checking the low-mids","Comparing to genre norms","Writing your A&R report"], listening:"Listening to your track…", comparing:"Comparing to your v1…", findings_n:n=>`${n} findings`, toast_copied:"Suno prompt copied", toast_link:"Report link copied", overall:"Overall", genre_lbl:"Genre", genre_auto:"Auto-detect", deep_lbl:"Deep vocal analysis — slower", structure_lbl:"Song structure", lg_intro:"intro", lg_body:"body", lg_peak:"peak moment", prod_hi:'"This is close. I\'d only spend time on <em>polish</em> — a couple of small moves and it\'s ready."', prod_mid:'"You\'re most of the way there. I\'d focus the last stretch on <em>the weak spots below</em> — that\'s what\'s holding it back."', prod_low:'"There\'s a real idea here. Before anything else, fix <em>the fundamentals below</em> — then it\'ll start to sing."', v2_eyebrow:"Version 2 · analyzed", v2_sub:"Here\'s what changed between v1 and your new version.", v2_badge:"A&R Verdict · v2", v2_progress:"This song\'s progress", v2_keep:"Keep going — every version gets a fresh read.", v2_another:"Analyze another song", v2_share:"Share this progress", v2_hero_up:(a,b)=>`From <em>${a}</em> to <em>${b}</em> — real progress.`, v2_hero_flat:(b)=>`Still at <em>${b}</em> — no overall change.`, v2_hero_down:(a,b)=>`This version reads weaker — ${a} → <em>${b}</em>.`, v2_verdict_up:'"This is a different track now. The fixes landed — it reads far more finished."', v2_verdict_flat:'"Different, but not stronger yet. Try attacking the weakest finding first."', v2_verdict_down:'"Honest read: this version lost ground. Go back to v1 and change one thing at a time."', ai_row:"AI signals", lower_better:"lower is better", drop_multi:"Pro move: drop 2–12 versions of the same song — we'll find the strongest", bt_eyebrow:"Version shoot-out", bt_sub:"Same measurements, side by side — the strongest version on each axis is lit.", bt_analyzing:(i,n)=>`Analyzing ${i} of ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> leads on ${x} of ${y} measured axes.`, bt_note:"This is which version is strongest on paper — measured axes only, not taste. Give the top two a blind listen before you choose.", bt_again:"Compare another batch", bt_open:"Full report", bt_ver:"Version", bt_intro:"Intro", bt_dyn:"Dynamics", bt_stream:"Streaming", bt_err:name=>`Couldn't analyze ${name} — skipped`, bt_one:"Only one version analyzed — showing its full report.", card_dl:"Report card saved — post it anywhere", rx_suite:"Your tools", rx_title:"Mix prescription", rx_start:"Derived from the measurements of this track. Start here — then trust your ears.", rx_chain:"Chain order", v2_fixed:"fixed", v2_better:"better — not done", v2_still:"still weak", hist_title:"Your desk", hist_empty:"Your analyzed tracks will land here.", hist_clear:"clear history", hist_cleared:"History cleared", ars_ph:"Type a plugin you own — e.g. Pro-Q 3, OTT…", ars_unknown:"Don't know this one — kept anyway", rx_missing:"You don't own a tool for this — free pick:", wt_btn:"Show me how", auth_login:"Sign in", auth_note:"No account needed to analyze. Nothing leaves this device.", auth_title:"Take a seat at the desk.", auth_sub:"Your name keeps your reports and progress together on this device.", auth_ph:"Your artist name", auth_continue:"Continue", auth_guest:"continue as guest", auth_out:"sign out", auth_hi:n=>`Welcome, ${n}`, ft_tag:"The producer between your generation and your release.", ft_honest:"Every number in the report is measured — never invented.", ft_product:"Product", ft_analyze:"Song analysis", ft_batch:"Version shoot-out", ft_stream:"Streaming readiness", ft_company:"Company", ft_about:"About", ft_privacy:"Privacy", ft_terms:"Terms", about_t:"About", about_b:"<p>A&R·AI does one thing: an honest read on AI-made music. Every number in a report is measured from your audio with studio-grade tools — loudness per ITU-R BS.1770, oversampled true peak, key and tempo detection — and benchmarked against tens of thousands of real commercial tracks.</p><p>We never invent scores. If we can\'t measure something, it isn\'t in the report.</p>", privacy_t:"Privacy", privacy_b:"<p>Your audio is analyzed and deleted immediately after the report is built. We don\'t store your tracks, we don\'t share them, and we never use them for training.</p><p>Your profile and history live only in your browser\'s local storage — clearing it removes them completely.</p>", terms_t:"Terms", terms_b:"<p>A&R·AI gives measurement-based feedback on your own tracks. You keep every right to your music — just make sure you have the rights to what you upload.</p><p>Reports are informational: no tool can promise what a distributor or platform will accept. The service is provided as-is, free, during beta.</p>", st_you:"Your track", st_r_down:"Louder than every target — each platform simply turns it down to its own level. This is how most commercial releases ship.", st_r_quiet:(n,d)=>`On ${n} platforms it will play up to ${d} dB quieter than the tracks around it — they never boost quiet masters.`, st_r_ok:"Right in the pocket — normalization will barely touch it.", st_h_plat:"Platform", st_h_target:"Their target", st_h_delta:"Normalization", st_h_result:"What happens", st_w_down:"turned down to target — normal", st_w_boost:"boosted to target", st_w_asis:"plays as-is", st_w_quiet:d=>`plays ${d} dB quieter` },
+    he: { hero_eyebrow:"המפיק המוזיקלי שלך מבוסס AI", hero_h:'למה השיר שלי עדיין לא<br>מרגיש <span class="grad">מקצועי?</span>', hero_sub:'העלה שיר וקבל חוות דעת כנה — כמו דמו שמגיע לשולחן של A&R. <b>מדידות אמיתיות</b>, תיקון אחד ברור, וה-Suno prompt המדויק כדי לייצר אותו מחדש טוב יותר.', drop_big:"גרור לכאן את השיר שלך", drop_small:'או <span class="browse">בחר קובץ מהמחשב</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — MAX 100 MB", demo_btn:"נסה עם שיר לדוגמה", trust_private:"פרטי — לא משותף לעולם", trust_account:"בלי חשבון", trust_time:"~30 שניות", new_song:"שיר חדש", verdict_badge:"חוות דעת A&R", verdict_sub:"קריאה על איפה השיר שלך עומד", signoff:"נבדק כמו דמו — כן, לא נחמד", fix_one:"אם תתקן דבר אחד", full_read:"הקריאה המלאה", coming_next:"בקרוב", ai_section:"האם זה נשמע AI?", st_section:"האם זה יחזיק בסטרימינג?", preview_lbl:"מה מקבלים", err_network:"השרת לא הגיב — ייתכן שהוא עולה מחדש. נסה שוב בעוד כמה שניות.", lock_ai:'האם זה נשמע AI?<small>הסימנים המובהקים — ויברטו, תזמון, חזרתיות</small>', lock_vocal:'ניתוח ווקאל והתאמת ז\'אנר<small>איך הווקאל נשמע, ולמי אתה דומה</small>', soon:"בקרוב", if_producing:"אם הייתי מפיק את זה", suno_paste:"הדבק את זה ב-{p} כדי לייצר מחדש", suno_paste_any:"הדבק את זה בכלי ה-AI שלך כדי לייצר מחדש", plat_other:"אחר", copy:"העתק", copied:"הועתק", regen_h:"עכשיו תייצר מחדש ב-{p}.", regen_h_any:"עכשיו תייצר מחדש בכלי ה-AI שלך.", regen_p:"הדבק את ה-prompt, צור גרסה חדשה, ואז גרור אותה לכאן — נראה לך בדיוק מה השתנה.", regen_upload:"העלה את הגרסה החדשה", regen_skip:"פשוט שתף את הדו\"ח במקום", why:"למה", how_fix:"איך מתקנים", lsn_lbl:"האזן", lsn_intro:"שמע איפה זה באמת מתחיל", lsn_peak:"שמע את הרגע הכי חזק", lsn_band:"בודד את תדרי הבעיה", lsn_mono:"השווה במונו", fx_add:"הוסף ל-prompt:", steps:["מפענח אודיו וטמפו","ממפה מבנה — אינטרו ודרופ","מודד עוצמה ושיאים","בודק את הנמוך-אמצע","משווה לנורמות הז'אנר","כותב את דו\"ח ה-A&R"], listening:"מאזין לשיר שלך…", comparing:"משווה ל-v1 שלך…", findings_n:n=>`${n} ממצאים`, toast_copied:"ה-Suno prompt הועתק", toast_link:"קישור הדו\"ח הועתק", overall:"כללי", genre_lbl:"ז'אנר", genre_auto:"זיהוי אוטומטי", deep_lbl:"ניתוח ווקאל מעמיק — איטי יותר", structure_lbl:"מבנה השיר", lg_intro:"אינטרו", lg_body:"גוף השיר", lg_peak:"רגע השיא", prod_hi:'"זה קרוב. הייתי משקיע רק ב<em>ליטוש</em> — כמה מהלכים קטנים וזה מוכן."', prod_mid:'"אתה רוב הדרך שם. הייתי מתמקד ב<em>נקודות החלשות למטה</em> — זה מה שמעכב."', prod_low:'"יש כאן רעיון אמיתי. לפני הכל, תקן את <em>היסודות למטה</em> — ואז זה יתחיל לשיר."', v2_eyebrow:"גרסה 2 · נותחה", v2_sub:"הנה מה שהשתנה בין v1 לגרסה החדשה שלך.", v2_badge:"חוות דעת A&R · v2", v2_progress:"ההתקדמות של השיר", v2_keep:"תמשיך — כל גרסה מקבלת קריאה טרייה.", v2_another:"נתח שיר נוסף", v2_share:"שתף את ההתקדמות", v2_hero_up:(a,b)=>`מ-<em>${a}</em> ל-<em>${b}</em> — התקדמות אמיתית.`, v2_hero_flat:(b)=>`עדיין על <em>${b}</em> — אין שינוי כללי.`, v2_hero_down:(a,b)=>`הגרסה הזאת חלשה יותר — ${a} ← <em>${b}</em>.`, v2_verdict_up:'"זה שיר אחר עכשיו. התיקונים עבדו — הוא נשמע הרבה יותר מוגמר."', v2_verdict_flat:'"שונה, אבל עדיין לא חזק יותר. נסה לתקוף קודם את הממצא החלש ביותר."', v2_verdict_down:'"קריאה כנה: הגרסה הזאת ירדה. חזור ל-v1 ושנה דבר אחד בכל פעם."', ai_row:"סימני AI", lower_better:"נמוך יותר = טוב יותר", drop_multi:"מהלך של מקצוענים: גרור 2–12 גרסאות של אותו שיר — נמצא את החזקה ביותר", bt_eyebrow:"קרב גרסאות", bt_sub:"אותן מדידות, זו לצד זו — הגרסה החזקה בכל מדד מוארת.", bt_analyzing:(i,n)=>`מנתח ${i} מתוך ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> מובילה ב-${x} מתוך ${y} מדדים.`, bt_note:"זו הגרסה החזקה על הנייר — מדדים מדודים בלבד, לא טעם. תן לשתי המובילות האזנה עיוורת לפני שתבחר.", bt_again:"השווה קבוצה נוספת", bt_open:"דוח מלא", bt_ver:"גרסה", bt_intro:"אינטרו", bt_dyn:"דינמיקה", bt_stream:"סטרימינג", bt_err:name=>`לא הצלחנו לנתח את ${name} — דילגנו`, bt_one:"רק גרסה אחת נותחה — מציג את הדוח המלא שלה.", card_dl:"כרטיס הדוח נשמר — פרסם אותו איפה שתרצה", rx_suite:"הכלים שלך", rx_title:"מרשם מיקס", rx_start:"נגזר מהמדידות של השיר הזה. תתחיל כאן — ואז תסמוך על האוזניים.", rx_chain:"סדר השרשרת", v2_fixed:"תוקן", v2_better:"השתפר — עוד לא שם", v2_still:"עדיין חלש", hist_title:"השולחן שלך", hist_empty:"השירים שתנתח ינחתו כאן.", hist_clear:"נקה היסטוריה", hist_cleared:"ההיסטוריה נוקתה", ars_ph:"כתוב פלאגין שיש לך — למשל Pro-Q 3, OTT…", ars_unknown:"לא מכירים את זה — נשמר בכל זאת", rx_missing:"אין לך כלי מתאים לזה — בחירה חינמית:", wt_btn:"תראה לי איך", auth_login:"התחברות", auth_note:"לא צריך חשבון כדי לנתח. שום דבר לא עוזב את המכשיר הזה.", auth_title:"שב ליד השולחן.", auth_sub:"השם שלך שומר את הדוחות וההתקדמות שלך יחד, במכשיר הזה.", auth_ph:"שם האמן שלך", auth_continue:"המשך", auth_guest:"המשך כאורח", auth_out:"התנתקות", auth_hi:n=>`ברוך הבא, ${n}`, ft_tag:"המפיק שבין היצירה שלך לבין ההוצאה שלה.", ft_honest:"כל מספר בדוח נמדד — אף פעם לא מומצא.", ft_product:"מוצר", ft_analyze:"ניתוח שיר", ft_batch:"קרב גרסאות", ft_stream:"מוכנות לסטרימינג", ft_company:"חברה", ft_about:"אודות", ft_privacy:"פרטיות", ft_terms:"תנאים", about_t:"אודות", about_b:"<p>A&R·AI עושה דבר אחד: קריאה כנה של מוזיקה שנוצרה ב-AI. כל מספר בדוח נמדד מהאודיו שלך בכלים ברמת אולפן — עוצמה לפי תקן ITU-R BS.1770, שיאים בדגימת-יתר, זיהוי סולם וטמפו — ומושווה מול עשרות אלפי שירים מסחריים אמיתיים.</p><p>אנחנו אף פעם לא ממציאים ציונים. מה שאי אפשר למדוד — לא נמצא בדוח.</p>", privacy_t:"פרטיות", privacy_b:"<p>האודיו שלך מנותח ונמחק מיד אחרי שהדוח נבנה. אנחנו לא שומרים את השירים שלך, לא משתפים אותם, ולעולם לא מאמנים עליהם מודלים.</p><p>הפרופיל וההיסטוריה שלך חיים רק בדפדפן שלך — ניקוי האחסון המקומי מוחק אותם לגמרי.</p>", terms_t:"תנאים", terms_b:"<p>A&R·AI נותן משוב מבוסס-מדידה על שירים שלך. כל הזכויות על המוזיקה נשארות שלך — רק ודא שיש לך זכויות על מה שאתה מעלה.</p><p>הדוחות הם מידע, לא הבטחה: אף כלי לא יכול להבטיח מה מפיץ או פלטפורמה יאשרו. השירות ניתן כמו-שהוא, בחינם, בתקופת הבטא.</p>", st_you:"השיר שלך", st_r_down:"חזק מכל היעדים — כל פלטפורמה פשוט תנמיך אותו לרמה שלה. ככה יוצאים רוב השירים המסחריים.", st_r_quiet:(n,d)=>`ב-${n} פלטפורמות הוא יתנגן עד ${d} dB חלש מהשירים שסביבו — הן לא מגבירות מאסטר שקט.`, st_r_ok:"בול ביעד — הנרמול בקושי יגע בו.", st_h_plat:"פלטפורמה", st_h_target:"היעד שלהם", st_h_delta:"נרמול", st_h_result:"מה יקרה בפועל", st_w_down:"יונמך ליעד — תקין", st_w_boost:"יוגבר ליעד", st_w_asis:"יתנגן כמו שהוא", st_w_quiet:d=>`יתנגן ${d} dB חלש יותר` },
+    es: { hero_eyebrow:"Tu productor musical con IA", hero_h:'¿Por qué mi tema aún no<br>suena <span class="grad">profesional</span>?', hero_sub:'Sube un tema y recibe una lectura honesta — como una demo que llega a la mesa de un A&R. <b>Mediciones reales</b>, un arreglo claro, y el prompt exacto de Suno para regenerarlo mejor.', drop_big:"Suelta tu tema aquí", drop_small:'o <span class="browse">explora tus archivos</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — hasta 100 MB", demo_btn:"prueba con un tema de ejemplo", trust_private:"Privado — nunca se comparte", trust_account:"Sin cuenta", trust_time:"~30 segundos", new_song:"Nuevo tema", verdict_badge:"Veredicto A&R", verdict_sub:"Una lectura de dónde está tu tema", signoff:"revisado como una demo — honesto, no amable", fix_one:"Si arreglas una cosa", full_read:"La lectura completa", coming_next:"Próximamente", ai_section:"¿Suena hecho con IA?", st_section:"¿Aguantará en streaming?", preview_lbl:"Lo que recibes", err_network:"El servidor no respondió — puede estar reiniciándose. Inténtalo de nuevo en unos segundos.", lock_ai:'¿Suena hecho con IA?<small>Las señales — vibrato, timing, repetición</small>', lock_vocal:'Análisis vocal y de género<small>Cómo suena tu voz, y a quién te pareces</small>', soon:"pronto", if_producing:"Si yo lo produjera", suno_paste:"Pega esto en {p} para regenerar", suno_paste_any:"Pega esto en tu herramienta de IA para regenerar", plat_other:"Otra", copy:"Copiar", copied:"Copiado", regen_h:"Ahora regénéralo en {p}.", regen_h_any:"Ahora regénéralo en tu herramienta de IA.", regen_p:"Pega el prompt, crea tu nueva versión y súbela de nuevo — te mostraremos exactamente qué cambió.", regen_upload:"Subir mi nueva versión", regen_skip:"solo comparte este informe", why:"Por qué", how_fix:"Cómo arreglarlo", lsn_lbl:"Escucha", lsn_intro:"Escucha dónde arranca de verdad", lsn_peak:"Escucha el momento más fuerte", lsn_band:"Aísla la banda del problema", lsn_mono:"Compara en mono", fx_add:"añade a tu prompt:", steps:["Decodificando audio y tempo","Mapeando estructura — intro y drop","Midiendo volumen y picos","Revisando los medios-graves","Comparando con el género","Escribiendo tu informe A&R"], listening:"Escuchando tu tema…", comparing:"Comparando con tu v1…", findings_n:n=>`${n} hallazgos`, toast_copied:"Prompt de Suno copiado", toast_link:"Enlace del informe copiado", overall:"Global", genre_lbl:"Género", genre_auto:"Detección automática", deep_lbl:"Análisis vocal profundo — más lento", structure_lbl:"Estructura del tema", lg_intro:"intro", lg_body:"cuerpo", lg_peak:"momento pico", prod_hi:'"Está cerca. Solo invertiría en <em>pulido</em> — un par de ajustes y está listo."', prod_mid:'"Estás casi ahí. Me centraría en <em>los puntos débiles de abajo</em> — eso es lo que lo frena."', prod_low:'"Hay una idea real aquí. Antes que nada, arregla <em>lo fundamental de abajo</em> — y empezará a cantar."', v2_eyebrow:"Versión 2 · analizada", v2_sub:"Esto es lo que cambió entre v1 y tu nueva versión.", v2_badge:"Veredicto A&R · v2", v2_progress:"El progreso de este tema", v2_keep:"Sigue — cada versión recibe una lectura nueva.", v2_another:"Analizar otro tema", v2_share:"Compartir este progreso", v2_hero_up:(a,b)=>`De <em>${a}</em> a <em>${b}</em> — progreso real.`, v2_hero_flat:(b)=>`Sigue en <em>${b}</em> — sin cambio global.`, v2_hero_down:(a,b)=>`Esta versión suena más débil — ${a} → <em>${b}</em>.`, v2_verdict_up:'"Ahora es otro tema. Los arreglos funcionaron — suena mucho más terminado."', v2_verdict_flat:'"Diferente, pero aún no más fuerte. Ataca primero el hallazgo más débil."', v2_verdict_down:'"Lectura honesta: esta versión perdió terreno. Vuelve a v1 y cambia una cosa a la vez."', ai_row:"Señales de IA", lower_better:"menos es mejor", drop_multi:"Jugada pro: suelta 2–12 versiones del mismo tema — encontraremos la más fuerte", bt_eyebrow:"Duelo de versiones", bt_sub:"Las mismas mediciones, lado a lado — la versión más fuerte en cada eje está iluminada.", bt_analyzing:(i,n)=>`Analizando ${i} de ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> lidera en ${x} de ${y} ejes medidos.`, bt_note:"Esto es cuál versión es más fuerte sobre el papel — solo ejes medidos, no gusto. Escucha a ciegas las dos mejores antes de elegir.", bt_again:"Comparar otro lote", bt_open:"Informe completo", bt_ver:"Versión", bt_intro:"Intro", bt_dyn:"Dinámica", bt_stream:"Streaming", bt_err:name=>`No pudimos analizar ${name} — omitido`, bt_one:"Solo se analizó una versión — mostrando su informe completo.", card_dl:"Tarjeta guardada — publícala donde quieras", rx_suite:"Tus herramientas", rx_title:"Receta de mezcla", rx_start:"Derivado de las mediciones de este tema. Empieza aquí — luego confía en tus oídos.", rx_chain:"Orden de la cadena", v2_fixed:"arreglado", v2_better:"mejor — aún no", v2_still:"sigue débil", hist_title:"Tu mesa", hist_empty:"Tus temas analizados aterrizarán aquí.", hist_clear:"borrar historial", hist_cleared:"Historial borrado", ars_ph:"Escribe un plugin que tengas — p. ej. Pro-Q 3, OTT…", ars_unknown:"No conocemos este — guardado igualmente", rx_missing:"No tienes una herramienta para esto — opción gratuita:", wt_btn:"Muéstrame cómo", auth_login:"Entrar", auth_note:"No necesitas cuenta para analizar. Nada sale de este dispositivo.", auth_title:"Toma asiento en la mesa.", auth_sub:"Tu nombre mantiene tus informes y tu progreso juntos en este dispositivo.", auth_ph:"Tu nombre artístico", auth_continue:"Continuar", auth_guest:"continuar como invitado", auth_out:"cerrar sesión", auth_hi:n=>`Bienvenido, ${n}`, ft_tag:"El productor entre tu generación y tu lanzamiento.", ft_honest:"Cada número del informe está medido — nunca inventado.", ft_product:"Producto", ft_analyze:"Análisis de temas", ft_batch:"Duelo de versiones", ft_stream:"Listo para streaming", ft_company:"Empresa", ft_about:"Acerca de", ft_privacy:"Privacidad", ft_terms:"Términos", about_t:"Acerca de", about_b:"<p>A&R·AI hace una cosa: una lectura honesta de la música hecha con IA. Cada número se mide de tu audio con herramientas de estudio y se compara con decenas de miles de temas comerciales reales.</p><p>Nunca inventamos puntuaciones. Lo que no se puede medir, no está en el informe.</p>", privacy_t:"Privacidad", privacy_b:"<p>Tu audio se analiza y se borra inmediatamente después de crear el informe. No guardamos tus temas, no los compartimos y nunca los usamos para entrenar.</p><p>Tu perfil e historial viven solo en tu navegador — limpiar el almacenamiento local los borra por completo.</p>", terms_t:"Términos", terms_b:"<p>A&R·AI da feedback basado en mediciones sobre tus propios temas. Conservas todos los derechos de tu música — asegúrate de tener derechos sobre lo que subes.</p><p>Los informes son informativos: ninguna herramienta puede prometer lo que aceptará un distribuidor. El servicio se ofrece tal cual, gratis, durante la beta.</p>", st_you:"Tu tema", st_r_down:"Más fuerte que todos los objetivos — cada plataforma simplemente lo baja a su nivel. Así salen la mayoría de los lanzamientos comerciales.", st_r_quiet:(n,d)=>`En ${n} plataformas sonará hasta ${d} dB más bajo que los temas de alrededor — nunca suben masters silenciosos.`, st_r_ok:"Justo en el objetivo — la normalización apenas lo tocará.", st_h_plat:"Plataforma", st_h_target:"Su objetivo", st_h_delta:"Normalización", st_h_result:"Qué pasará", st_w_down:"bajado al objetivo — normal", st_w_boost:"subido al objetivo", st_w_asis:"suena tal cual", st_w_quiet:d=>`sonará ${d} dB más bajo` },
+    fr: { hero_eyebrow:"Ton producteur musical IA", hero_h:'Pourquoi mon morceau ne<br>sonne pas encore <span class="grad">pro</span> ?', hero_sub:'Dépose un morceau et reçois un avis honnête — comme une démo qui arrive sur le bureau d\'un A&R. <b>Des mesures réelles</b>, un correctif clair, et le prompt Suno exact pour le régénérer en mieux.', drop_big:"Dépose ton morceau ici", drop_small:'ou <span class="browse">parcours tes fichiers</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — jusqu'à 100 Mo", demo_btn:"essaie avec un morceau de démo", trust_private:"Privé — jamais partagé", trust_account:"Sans compte", trust_time:"~30 secondes", new_song:"Nouveau morceau", verdict_badge:"Verdict A&R", verdict_sub:"Un avis sur où en est ton morceau", signoff:"évalué comme une démo — honnête, pas gentil", fix_one:"Si tu corriges une chose", full_read:"L'analyse complète", coming_next:"Bientôt", ai_section:"Ça sonne fait par IA ?", st_section:"Ça tiendra en streaming ?", preview_lbl:"Ce que tu reçois", err_network:"Le serveur n'a pas répondu — il redémarre peut-être. Réessaie dans quelques secondes.", lock_ai:'Ça sonne fait par IA ?<small>Les indices — vibrato, timing, répétition</small>', lock_vocal:'Analyse voix & genre<small>Comment ta voix sonne, et à qui tu ressembles</small>', soon:"bientôt", if_producing:"Si je le produisais", suno_paste:"Colle ceci dans {p} pour régénérer", suno_paste_any:"Colle ceci dans ton outil d'IA pour régénérer", plat_other:"Autre", copy:"Copier", copied:"Copié", regen_h:"Maintenant régénère-le dans {p}.", regen_h_any:"Maintenant régénère-le dans ton outil d'IA.", regen_p:"Colle le prompt, crée ta nouvelle version, puis redépose-la — on te montrera exactement ce qui a changé.", regen_upload:"Uploader ma nouvelle version", regen_skip:"juste partager ce rapport", why:"Pourquoi", how_fix:"Comment corriger", lsn_lbl:"Écoute", lsn_intro:"Écoute où ça démarre vraiment", lsn_peak:"Écoute le moment le plus fort", lsn_band:"Isole la bande à problème", lsn_mono:"Compare en mono", fx_add:"ajoute à ton prompt :", steps:["Décodage audio & tempo","Cartographie — intro & drop","Mesure du volume & crêtes","Vérif des bas-médiums","Comparaison au genre","Rédaction de ton rapport A&R"], listening:"J'écoute ton morceau…", comparing:"Comparaison avec ta v1…", findings_n:n=>`${n} constats`, toast_copied:"Prompt Suno copié", toast_link:"Lien du rapport copié", overall:"Global", genre_lbl:"Genre", genre_auto:"Détection auto", deep_lbl:"Analyse vocale approfondie — plus lente", structure_lbl:"Structure du morceau", lg_intro:"intro", lg_body:"corps", lg_peak:"moment fort", prod_hi:'"C\'est proche. Je ne passerais du temps que sur le <em>polish</em> — deux ou trois gestes et c\'est prêt."', prod_mid:'"Tu y es presque. Je me concentrerais sur <em>les points faibles ci-dessous</em> — c\'est ce qui freine."', prod_low:'"Il y a une vraie idée ici. Avant tout, corrige <em>les fondamentaux ci-dessous</em> — et ça va commencer à chanter."', v2_eyebrow:"Version 2 · analysée", v2_sub:"Voici ce qui a changé entre la v1 et ta nouvelle version.", v2_badge:"Verdict A&R · v2", v2_progress:"La progression de ce morceau", v2_keep:"Continue — chaque version reçoit une lecture fraîche.", v2_another:"Analyser un autre morceau", v2_share:"Partager cette progression", v2_hero_up:(a,b)=>`De <em>${a}</em> à <em>${b}</em> — un vrai progrès.`, v2_hero_flat:(b)=>`Toujours à <em>${b}</em> — pas de changement global.`, v2_hero_down:(a,b)=>`Cette version est plus faible — ${a} → <em>${b}</em>.`, v2_verdict_up:'"C\'est un autre morceau maintenant. Les corrections ont porté — ça sonne bien plus fini."', v2_verdict_flat:'"Différent, mais pas encore plus fort. Attaque d\'abord le constat le plus faible."', v2_verdict_down:'"Lecture honnête : cette version a perdu du terrain. Reviens à la v1 et change une chose à la fois."', ai_row:"Signaux IA", lower_better:"plus bas = mieux", drop_multi:"Astuce de pro : dépose 2–12 versions du même morceau — on trouvera la plus forte", bt_eyebrow:"Duel de versions", bt_sub:"Les mêmes mesures, côte à côte — la version la plus forte sur chaque axe est éclairée.", bt_analyzing:(i,n)=>`Analyse ${i} sur ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> mène sur ${x} des ${y} axes mesurés.`, bt_note:"Voici la version la plus forte sur le papier — axes mesurés seulement, pas le goût. Écoute les deux meilleures en aveugle avant de choisir.", bt_again:"Comparer un autre lot", bt_open:"Rapport complet", bt_ver:"Version", bt_intro:"Intro", bt_dyn:"Dynamique", bt_stream:"Streaming", bt_err:name=>`Impossible d'analyser ${name} — ignoré`, bt_one:"Une seule version analysée — voici son rapport complet.", card_dl:"Carte enregistrée — publie-la où tu veux", rx_suite:"Tes outils", rx_title:"Ordonnance de mix", rx_start:"Dérivé des mesures de ce morceau. Commence ici — puis fais confiance à tes oreilles.", rx_chain:"Ordre de la chaîne", v2_fixed:"corrigé", v2_better:"mieux — pas fini", v2_still:"encore faible", hist_title:"Ton bureau", hist_empty:"Tes morceaux analysés atterriront ici.", hist_clear:"effacer l'historique", hist_cleared:"Historique effacé", ars_ph:"Tape un plugin que tu possèdes — ex. Pro-Q 3, OTT…", ars_unknown:"Inconnu — gardé quand même", rx_missing:"Tu n'as pas d'outil pour ça — option gratuite :", wt_btn:"Montre-moi comment", auth_login:"Connexion", auth_note:"Pas besoin de compte pour analyser. Rien ne quitte cet appareil.", auth_title:"Prends place au bureau.", auth_sub:"Ton nom garde tes rapports et ta progression ensemble sur cet appareil.", auth_ph:"Ton nom d\'artiste", auth_continue:"Continuer", auth_guest:"continuer en invité", auth_out:"se déconnecter", auth_hi:n=>`Bienvenue, ${n}`, ft_tag:"Le producteur entre ta génération et ta sortie.", ft_honest:"Chaque chiffre du rapport est mesuré — jamais inventé.", ft_product:"Produit", ft_analyze:"Analyse de morceau", ft_batch:"Duel de versions", ft_stream:"Prêt pour le streaming", ft_company:"Société", ft_about:"À propos", ft_privacy:"Confidentialité", ft_terms:"Conditions", about_t:"À propos", about_b:"<p>A&R·AI fait une chose : une lecture honnête de la musique créée par IA. Chaque chiffre est mesuré depuis ton audio avec des outils de studio et comparé à des dizaines de milliers de morceaux commerciaux réels.</p><p>Nous n\'inventons jamais de scores. Ce qui ne se mesure pas n\'est pas dans le rapport.</p>", privacy_t:"Confidentialité", privacy_b:"<p>Ton audio est analysé puis supprimé immédiatement après la création du rapport. Nous ne stockons pas tes morceaux, ne les partageons pas et ne les utilisons jamais pour l\'entraînement.</p><p>Ton profil et ton historique vivent uniquement dans ton navigateur — vider le stockage local les efface complètement.</p>", terms_t:"Conditions", terms_b:"<p>A&R·AI donne un retour basé sur des mesures sur tes propres morceaux. Tu gardes tous les droits sur ta musique — assure-toi d\'avoir les droits sur ce que tu envoies.</p><p>Les rapports sont informatifs : aucun outil ne peut promettre ce qu\'un distributeur acceptera. Le service est fourni tel quel, gratuit, pendant la bêta.</p>", st_you:"Ton morceau", st_r_down:"Plus fort que toutes les cibles — chaque plateforme le baisse simplement à son niveau. C'est ainsi que sortent la plupart des sorties commerciales.", st_r_quiet:(n,d)=>`Sur ${n} plateformes il jouera jusqu'à ${d} dB plus bas que les morceaux autour — elles ne remontent jamais un master silencieux.`, st_r_ok:"Pile dans la cible — la normalisation le touchera à peine.", st_h_plat:"Plateforme", st_h_target:"Leur cible", st_h_delta:"Normalisation", st_h_result:"Ce qui se passera", st_w_down:"baissé à la cible — normal", st_w_boost:"remonté à la cible", st_w_asis:"joue tel quel", st_w_quiet:d=>`jouera ${d} dB plus bas` },
+    de: { hero_eyebrow:"Dein KI-Musikproduzent", hero_h:'Warum klingt mein Song<br>noch nicht <span class="grad">professionell</span>?', hero_sub:'Lad einen Track hoch und bekomm eine ehrliche Einschätzung — wie eine Demo auf dem Tisch eines A&R. <b>Echte Messungen</b>, ein klarer Fix, und der genaue Suno-Prompt zum besseren Neugenerieren.', drop_big:"Zieh deinen Song hierher", drop_small:'oder <span class="browse">durchsuche deine Dateien</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — bis 100 MB", demo_btn:"mit einem Demo-Track testen", trust_private:"Privat — nie geteilt", trust_account:"Kein Konto nötig", trust_time:"~30 Sekunden", new_song:"Neuer Song", verdict_badge:"A&R-Urteil", verdict_sub:"Eine Einschätzung, wo dein Track steht", signoff:"bewertet wie eine Demo — ehrlich, nicht nett", fix_one:"Wenn du eine Sache fixt", full_read:"Die volle Analyse", coming_next:"Demnächst", ai_section:"Klingt es KI-gemacht?", st_section:"Hält es auf Streaming stand?", preview_lbl:"Was du bekommst", err_network:"Der Server hat nicht geantwortet — er startet evtl. neu. Versuch es in ein paar Sekunden erneut.", lock_ai:'Klingt es KI-gemacht?<small>Die Anzeichen — Vibrato, Timing, Wiederholung</small>', lock_vocal:'Vocal- & Genre-Analyse<small>Wie deine Stimme klingt, und nach wem</small>', soon:"bald", if_producing:"Wenn ich das produzieren würde", suno_paste:"Füge das in {p} ein zum Neugenerieren", suno_paste_any:"Füge das in dein KI-Tool ein zum Neugenerieren", plat_other:"Andere", copy:"Kopieren", copied:"Kopiert", regen_h:"Jetzt in {p} neu generieren.", regen_h_any:"Jetzt in deinem KI-Tool neu generieren.", regen_p:"Füge den Prompt ein, mach deine neue Version, und lad sie wieder hoch — wir zeigen dir genau, was sich geändert hat.", regen_upload:"Meine neue Version hochladen", regen_skip:"nur diesen Report teilen", why:"Warum", how_fix:"So behebst du es", lsn_lbl:"Anhören", lsn_intro:"Hör, wo es wirklich losgeht", lsn_peak:"Hör den lautesten Moment", lsn_band:"Problem-Band isolieren", lsn_mono:"In Mono vergleichen", fx_add:"füge zum Prompt hinzu:", steps:["Audio & Tempo dekodieren","Struktur mappen — Intro & Drop","Lautheit & Peaks messen","Tiefmitten prüfen","Mit Genre-Normen vergleichen","Deinen A&R-Report schreiben"], listening:"Höre deinen Track…", comparing:"Vergleiche mit deiner v1…", findings_n:n=>`${n} Befunde`, toast_copied:"Suno-Prompt kopiert", toast_link:"Report-Link kopiert", overall:"Gesamt", genre_lbl:"Genre", genre_auto:"Automatisch erkennen", deep_lbl:"Tiefe Vocal-Analyse — langsamer", structure_lbl:"Song-Struktur", lg_intro:"Intro", lg_body:"Hauptteil", lg_peak:"Höhepunkt", prod_hi:'"Das ist nah dran. Ich würde nur noch <em>polieren</em> — ein paar kleine Griffe und es ist fertig."', prod_mid:'"Du bist fast da. Ich würde mich auf <em>die Schwachstellen unten</em> konzentrieren — das bremst es."', prod_low:'"Hier steckt eine echte Idee. Bring zuerst <em>die Grundlagen unten</em> in Ordnung — dann fängt es an zu singen."', v2_eyebrow:"Version 2 · analysiert", v2_sub:"Das hat sich zwischen v1 und deiner neuen Version geändert.", v2_badge:"A&R-Urteil · v2", v2_progress:"Fortschritt dieses Songs", v2_keep:"Weiter so — jede Version bekommt eine frische Einschätzung.", v2_another:"Weiteren Song analysieren", v2_share:"Fortschritt teilen", v2_hero_up:(a,b)=>`Von <em>${a}</em> auf <em>${b}</em> — echter Fortschritt.`, v2_hero_flat:(b)=>`Immer noch bei <em>${b}</em> — keine Gesamtveränderung.`, v2_hero_down:(a,b)=>`Diese Version wirkt schwächer — ${a} → <em>${b}</em>.`, v2_verdict_up:'"Das ist jetzt ein anderer Track. Die Fixes haben gegriffen — er klingt deutlich fertiger."', v2_verdict_flat:'"Anders, aber noch nicht stärker. Geh zuerst den schwächsten Befund an."', v2_verdict_down:'"Ehrliche Einschätzung: Diese Version hat verloren. Geh zu v1 zurück und ändere eins nach dem anderen."', ai_row:"KI-Signale", lower_better:"weniger ist besser", drop_multi:"Profi-Move: Zieh 2–12 Versionen desselben Songs rein — wir finden die stärkste", bt_eyebrow:"Versionen-Duell", bt_sub:"Dieselben Messungen, Seite an Seite — die stärkste Version pro Achse leuchtet.", bt_analyzing:(i,n)=>`Analysiere ${i} von ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> führt auf ${x} von ${y} gemessenen Achsen.`, bt_note:"Das ist die auf dem Papier stärkste Version — nur gemessene Achsen, kein Geschmack. Hör dir die besten zwei blind an, bevor du wählst.", bt_again:"Weiteren Stapel vergleichen", bt_open:"Voller Report", bt_ver:"Version", bt_intro:"Intro", bt_dyn:"Dynamik", bt_stream:"Streaming", bt_err:name=>`${name} konnte nicht analysiert werden — übersprungen`, bt_one:"Nur eine Version analysiert — zeige ihren vollen Report.", card_dl:"Report-Karte gespeichert — poste sie überall", rx_suite:"Deine Tools", rx_title:"Mix-Rezept", rx_start:"Abgeleitet aus den Messungen dieses Tracks. Fang hier an — dann vertrau deinen Ohren.", rx_chain:"Chain-Reihenfolge", v2_fixed:"behoben", v2_better:"besser — noch nicht fertig", v2_still:"noch schwach", hist_title:"Dein Pult", hist_empty:"Deine analysierten Tracks landen hier.", hist_clear:"Verlauf löschen", hist_cleared:"Verlauf gelöscht", ars_ph:"Tipp ein Plugin, das du besitzt — z. B. Pro-Q 3, OTT…", ars_unknown:"Kennen wir nicht — trotzdem gespeichert", rx_missing:"Dafür besitzt du kein Tool — Gratis-Tipp:", wt_btn:"Zeig mir, wie", auth_login:"Anmelden", auth_note:"Kein Konto nötig zum Analysieren. Nichts verlässt dieses Gerät.", auth_title:"Nimm Platz am Pult.", auth_sub:"Dein Name hält deine Reports und deinen Fortschritt auf diesem Gerät zusammen.", auth_ph:"Dein Künstlername", auth_continue:"Weiter", auth_guest:"als Gast fortfahren", auth_out:"abmelden", auth_hi:n=>`Willkommen, ${n}`, ft_tag:"Der Produzent zwischen deiner Generierung und deinem Release.", ft_honest:"Jede Zahl im Report ist gemessen — nie erfunden.", ft_product:"Produkt", ft_analyze:"Song-Analyse", ft_batch:"Versionen-Duell", ft_stream:"Streaming-Readiness", ft_company:"Unternehmen", ft_about:"Über uns", ft_privacy:"Datenschutz", ft_terms:"AGB", about_t:"Über uns", about_b:"<p>A&R·AI macht eine Sache: eine ehrliche Einschätzung KI-gemachter Musik. Jede Zahl wird mit Studio-Werkzeugen aus deinem Audio gemessen und mit zehntausenden echten kommerziellen Tracks verglichen.</p><p>Wir erfinden nie Scores. Was sich nicht messen lässt, steht nicht im Report.</p>", privacy_t:"Datenschutz", privacy_b:"<p>Dein Audio wird analysiert und sofort nach dem Report gelöscht. Wir speichern deine Tracks nicht, teilen sie nicht und trainieren nie darauf.</p><p>Profil und Verlauf leben nur im lokalen Speicher deines Browsers — Löschen entfernt sie vollständig.</p>", terms_t:"AGB", terms_b:"<p>A&R·AI gibt messbasiertes Feedback zu deinen eigenen Tracks. Alle Rechte an deiner Musik bleiben bei dir — stell sicher, dass du die Rechte am Hochgeladenen hast.</p><p>Reports sind informativ: kein Tool kann versprechen, was ein Distributor akzeptiert. Der Service läuft as-is, kostenlos, in der Beta.</p>", st_you:"Dein Track", st_r_down:"Lauter als jedes Ziel — jede Plattform senkt ihn einfach auf ihr Niveau. So erscheinen die meisten kommerziellen Releases.", st_r_quiet:(n,d)=>`Auf ${n} Plattformen spielt er bis zu ${d} dB leiser als die Tracks drumherum — leise Master werden nie angehoben.`, st_r_ok:"Genau im Ziel — die Normalisierung wird ihn kaum anfassen.", st_h_plat:"Plattform", st_h_target:"Deren Ziel", st_h_delta:"Normalisierung", st_h_result:"Was passiert", st_w_down:"auf Ziel gesenkt — normal", st_w_boost:"auf Ziel angehoben", st_w_asis:"spielt unverändert", st_w_quiet:d=>`spielt ${d} dB leiser` },
+    pt: { hero_eyebrow:"O teu produtor musical com IA", hero_h:'Porque é que a minha música<br>ainda não soa <span class="grad">profissional</span>?', hero_sub:'Carrega uma faixa e recebe uma leitura honesta — como uma demo que chega à mesa de um A&R. <b>Medições reais</b>, uma correção clara, e o prompt exato do Suno para a regenerar melhor.', drop_big:"Larga a tua faixa aqui", drop_small:'ou <span class="browse">procura nos teus ficheiros</span>', drop_fmt:"MP3 · WAV · FLAC · M4A — até 100 MB", demo_btn:"experimenta com uma faixa de exemplo", trust_private:"Privado — nunca partilhado", trust_account:"Sem conta", trust_time:"~30 segundos", new_song:"Nova faixa", verdict_badge:"Veredito A&R", verdict_sub:"Uma leitura de onde está a tua faixa", signoff:"avaliado como uma demo — honesto, não simpático", fix_one:"Se corrigires uma coisa", full_read:"A leitura completa", coming_next:"Em breve", ai_section:"Soa a feito por IA?", st_section:"Vai aguentar no streaming?", preview_lbl:"O que recebes", err_network:"O servidor não respondeu — pode estar a reiniciar. Tenta novamente em alguns segundos.", lock_ai:'Soa a feito por IA?<small>Os sinais — vibrato, timing, repetição</small>', lock_vocal:'Análise vocal & de género<small>Como soa a tua voz, e com quem te pareces</small>', soon:"em breve", if_producing:"Se eu produzisse isto", suno_paste:"Cola isto no {p} para regenerar", suno_paste_any:"Cola isto na tua ferramenta de IA para regenerar", plat_other:"Outra", copy:"Copiar", copied:"Copiado", regen_h:"Agora regenera no {p}.", regen_h_any:"Agora regenera na tua ferramenta de IA.", regen_p:"Cola o prompt, cria a tua nova versão e larga-a aqui — mostramos-te exatamente o que mudou.", regen_upload:"Carregar a minha nova versão", regen_skip:"só partilhar este relatório", why:"Porquê", how_fix:"Como corrigir", lsn_lbl:"Ouve", lsn_intro:"Ouve onde começa mesmo", lsn_peak:"Ouve o momento mais forte", lsn_band:"Isola a banda do problema", lsn_mono:"Compara em mono", fx_add:"adiciona ao teu prompt:", steps:["A descodificar áudio e tempo","A mapear estrutura — intro e drop","A medir volume e picos","A verificar os médios-graves","A comparar com o género","A escrever o teu relatório A&R"], listening:"A ouvir a tua faixa…", comparing:"A comparar com a tua v1…", findings_n:n=>`${n} constatações`, toast_copied:"Prompt do Suno copiado", toast_link:"Link do relatório copiado", overall:"Geral", genre_lbl:"Género", genre_auto:"Deteção automática", deep_lbl:"Análise vocal profunda — mais lenta", structure_lbl:"Estrutura da faixa", lg_intro:"intro", lg_body:"corpo", lg_peak:"momento alto", prod_hi:'"Está perto. Só investiria em <em>polimento</em> — dois ou três ajustes e está pronta."', prod_mid:'"Estás quase lá. Focava-me <em>nos pontos fracos abaixo</em> — é isso que trava."', prod_low:'"Há uma ideia real aqui. Antes de tudo, corrige <em>os fundamentos abaixo</em> — e vai começar a cantar."', v2_eyebrow:"Versão 2 · analisada", v2_sub:"Isto é o que mudou entre a v1 e a tua nova versão.", v2_badge:"Veredito A&R · v2", v2_progress:"O progresso desta faixa", v2_keep:"Continua — cada versão recebe uma leitura fresca.", v2_another:"Analisar outra faixa", v2_share:"Partilhar este progresso", v2_hero_up:(a,b)=>`De <em>${a}</em> para <em>${b}</em> — progresso real.`, v2_hero_flat:(b)=>`Continua em <em>${b}</em> — sem mudança geral.`, v2_hero_down:(a,b)=>`Esta versão soa mais fraca — ${a} → <em>${b}</em>.`, v2_verdict_up:'"Agora é outra faixa. As correções resultaram — soa muito mais acabada."', v2_verdict_flat:'"Diferente, mas ainda não mais forte. Ataca primeiro a constatação mais fraca."', v2_verdict_down:'"Leitura honesta: esta versão perdeu terreno. Volta à v1 e muda uma coisa de cada vez."', ai_row:"Sinais de IA", lower_better:"menos é melhor", drop_multi:"Jogada pro: larga 2–12 versões da mesma faixa — encontramos a mais forte", bt_eyebrow:"Duelo de versões", bt_sub:"As mesmas medições, lado a lado — a versão mais forte em cada eixo está iluminada.", bt_analyzing:(i,n)=>`A analisar ${i} de ${n}…`, bt_hero:(name,x,y)=>`<em>${name}</em> lidera em ${x} de ${y} eixos medidos.`, bt_note:"Esta é a versão mais forte no papel — só eixos medidos, não gosto. Ouve as duas melhores às cegas antes de escolher.", bt_again:"Comparar outro lote", bt_open:"Relatório completo", bt_ver:"Versão", bt_intro:"Intro", bt_dyn:"Dinâmica", bt_stream:"Streaming", bt_err:name=>`Não foi possível analisar ${name} — ignorado`, bt_one:"Só uma versão analisada — a mostrar o relatório completo.", card_dl:"Cartão guardado — publica-o onde quiseres", rx_suite:"As tuas ferramentas", rx_title:"Receita de mistura", rx_start:"Derivado das medições desta faixa. Começa aqui — depois confia nos teus ouvidos.", rx_chain:"Ordem da cadeia", v2_fixed:"corrigido", v2_better:"melhor — ainda não", v2_still:"ainda fraco", hist_title:"A tua mesa", hist_empty:"As tuas faixas analisadas vão aterrar aqui.", hist_clear:"limpar histórico", hist_cleared:"Histórico limpo", ars_ph:"Escreve um plugin que tens — p. ex. Pro-Q 3, OTT…", ars_unknown:"Não conhecemos este — guardado na mesma", rx_missing:"Não tens uma ferramenta para isto — escolha grátis:", wt_btn:"Mostra-me como", auth_login:"Entrar", auth_note:"Não precisas de conta para analisar. Nada sai deste dispositivo.", auth_title:"Senta-te à mesa.", auth_sub:"O teu nome mantém os teus relatórios e progresso juntos neste dispositivo.", auth_ph:"O teu nome artístico", auth_continue:"Continuar", auth_guest:"continuar como convidado", auth_out:"terminar sessão", auth_hi:n=>`Bem-vindo, ${n}`, ft_tag:"O produtor entre a tua geração e o teu lançamento.", ft_honest:"Cada número do relatório é medido — nunca inventado.", ft_product:"Produto", ft_analyze:"Análise de faixas", ft_batch:"Duelo de versões", ft_stream:"Pronto para streaming", ft_company:"Empresa", ft_about:"Sobre", ft_privacy:"Privacidade", ft_terms:"Termos", about_t:"Sobre", about_b:"<p>A A&R·AI faz uma coisa: uma leitura honesta de música feita com IA. Cada número é medido do teu áudio com ferramentas de estúdio e comparado com dezenas de milhares de faixas comerciais reais.</p><p>Nunca inventamos pontuações. O que não se mede, não está no relatório.</p>", privacy_t:"Privacidade", privacy_b:"<p>O teu áudio é analisado e apagado imediatamente após o relatório. Não guardamos as tuas faixas, não as partilhamos e nunca treinamos com elas.</p><p>O teu perfil e histórico vivem só no teu navegador — limpar o armazenamento local apaga-os por completo.</p>", terms_t:"Termos", terms_b:"<p>A A&R·AI dá feedback baseado em medições sobre as tuas próprias faixas. Manténs todos os direitos da tua música — garante que tens direitos sobre o que carregas.</p><p>Os relatórios são informativos: nenhuma ferramenta pode prometer o que um distribuidor vai aceitar. O serviço é fornecido como está, grátis, durante a beta.</p>", st_you:"A tua faixa", st_r_down:"Mais alto que todos os alvos — cada plataforma simplesmente baixa-o para o seu nível. É assim que saem a maioria dos lançamentos comerciais.", st_r_quiet:(n,d)=>`Em ${n} plataformas vai tocar até ${d} dB mais baixo que as faixas à volta — nunca sobem masters silenciosos.`, st_r_ok:"Mesmo no alvo — a normalização mal lhe vai tocar.", st_h_plat:"Plataforma", st_h_target:"O alvo deles", st_h_delta:"Normalização", st_h_result:"O que acontece", st_w_down:"baixado ao alvo — normal", st_w_boost:"subido ao alvo", st_w_asis:"toca como está", st_w_quiet:d=>`toca ${d} dB mais baixo` },
   };
-  UI["pt-BR"] = Object.assign({}, UI.pt, { hero_h:'Por que minha música<br>ainda não soa <span class="grad">profissional</span>?', drop_big:"Solte sua faixa aqui", drop_small:'ou <span class="browse">procure nos seus arquivos</span>', demo_btn:"teste com uma faixa de exemplo", new_song:"Nova faixa", regen_h:"Agora regenere no Suno.", regen_p:"Cole o prompt, crie sua nova versão e solte aqui — mostramos exatamente o que mudou.", regen_upload:"Enviar minha nova versão", listening:"Ouvindo sua faixa…", comparing:"Comparando com sua v1…", if_producing:"Se eu produzisse isso" });
+  UI["pt-BR"] = Object.assign({}, UI.pt, { hero_h:'Por que minha música<br>ainda não soa <span class="grad">profissional</span>?', drop_big:"Solte sua faixa aqui", drop_small:'ou <span class="browse">procure nos seus arquivos</span>', demo_btn:"teste com uma faixa de exemplo", new_song:"Nova faixa", regen_h:"Agora regenere no {p}.", regen_h_any:"Agora regenere na sua ferramenta de IA.", regen_p:"Cole o prompt, crie sua nova versão e solte aqui — mostramos exatamente o que mudou.", regen_upload:"Enviar minha nova versão", listening:"Ouvindo sua faixa…", comparing:"Comparando com sua v1…", if_producing:"Se eu produzisse isso" });
 
   let LANG = localStorage.getItem('anr_lang') || 'en';
   function ui(k){ return (UI[LANG]&&UI[LANG][k]!==undefined) ? UI[LANG][k] : UI.en[k]; }
   let analyzeSteps = ui('steps');
+
+  // ─── generation platform: same measured fixes, rendered in each platform's dialect ───
+  // artist:false → the platform blocks real artist names in prompts (Suno/Udio moderation)
+  const PLATFORMS = {
+    suno:      { name:'Suno',      artist:false },
+    udio:      { name:'Udio',      artist:false },
+    riffusion: { name:'Riffusion', artist:false, brief:true },
+    mureka:    { name:'Mureka',    artist:false },
+    generic:   { name:'',          artist:true },
+  };
+  let plat = localStorage.getItem('anr_platform') || 'suno';
+  if(!PLATFORMS[plat]) plat = 'suno';
+  function promptHTML(rep){
+    const p = rep.prompt, cfg = PLATFORMS[plat];
+    let text;
+    if(!p){ text = rep.suno_prompt || ''; }
+    else {
+      const fixes = cfg.brief ? p.fixes.slice(0,2) : p.fixes;
+      const moods = cfg.brief ? p.moods.slice(0,1) : p.moods;
+      const style = (cfg.artist && p.artist) ? p.artist : p.safe;
+      text = [p.genre, p.bpm+' bpm', ...fixes, style, ...moods].filter(Boolean).join(', ');
+    }
+    return esc(text).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  }
+  function i18nPlat(){
+    const any = plat==='generic';
+    const paste = document.querySelector('[data-i18n="suno_paste"]');
+    if(paste) paste.textContent = any ? ui('suno_paste_any') : ui('suno_paste').replace('{p}', PLATFORMS[plat].name);
+    const rh = document.querySelector('[data-i18n="regen_h"]');
+    if(rh) rh.textContent = any ? ui('regen_h_any') : ui('regen_h').replace('{p}', PLATFORMS[plat].name);
+  }
+  function renderPlatChips(){
+    const el = $('platChips'); if(!el) return;
+    el.innerHTML = '';
+    Object.entries(PLATFORMS).forEach(([k,c])=>{
+      const b = document.createElement('button');
+      b.className = 'gchip' + (k===plat ? ' on' : '');
+      b.textContent = k==='generic' ? ui('plat_other') : c.name;
+      b.addEventListener('click', ()=>{
+        plat = k; localStorage.setItem('anr_platform', k);
+        renderPlatChips(); i18nPlat();
+        if(typeof lastReport!=='undefined' && lastReport) $('sunoText').innerHTML = promptHTML(lastReport);
+      });
+      el.appendChild(b);
+    });
+  }
 
   function applyLang(lang){
     LANG = lang; localStorage.setItem('anr_lang', lang);
@@ -1088,6 +1173,7 @@
     // static nodes
     document.querySelectorAll('[data-i18n]').forEach(el=>{ const v=ui(el.dataset.i18n); if(v!=null) el.textContent=v; });
     document.querySelectorAll('[data-i18n-html]').forEach(el=>{ const v=ui(el.dataset.i18nHtml); if(v!=null) el.innerHTML=v; });
+    i18nPlat(); renderPlatChips();
     if(typeof choreographHero==='function') choreographHero();
     if(typeof renderHistory==='function') renderHistory();   // tile dates are locale-formatted
     if(typeof renderArsenal==='function') renderArsenal();   // arsenal placeholder + unknown-chip tooltips
@@ -1295,7 +1381,7 @@
     // subtle badge when the narrative was AI-written
     const badgeEl=document.querySelector('#s-report .verdict .badge');
     if(badgeEl){ badgeEl.textContent = ui('verdict_badge') + (rep.source==='llm' ? ' · AI' : ''); }
-    if(rep.suno_prompt) $('sunoText').innerHTML=esc(rep.suno_prompt).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+    if(rep.prompt||rep.suno_prompt){ $('sunoText').innerHTML=promptHTML(rep); renderPlatChips(); }
 
     cardsEl.innerHTML='';
     rep.findings.forEach((it,idx)=>{
@@ -1324,6 +1410,7 @@
         </div></div></div>`;
       cardsEl.appendChild(el);
       el.querySelector('.card-top').addEventListener('click',()=>el.classList.toggle('open'));
+      el.querySelectorAll('.wt-btn').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); b.closest('.wt').classList.toggle('open'); }));
     });
 
     renderChain(rep);
@@ -1430,6 +1517,7 @@
     const player=$('player'); player.classList.remove('hidden');
     if(audioEl){ audioEl.pause(); URL.revokeObjectURL(audioEl.src); }
     audioEl=new Audio(URL.createObjectURL(file));
+    fxReset();   // new track: drop any band/mono A-B state from the previous one
     setPlayIcon(false);
     // decode for waveform peaks
     try{
@@ -1451,6 +1539,7 @@
     updateTime();
     audioEl.addEventListener('timeupdate',updateTime);
     audioEl.addEventListener('ended',()=>{ setPlayIcon(false); cancelAnimationFrame(playRAF); drawWaveform(0); });
+    injectListen(rep);   // listen-buttons only exist when there's real audio to hear
   }
   function computePeaks(audio, n){
     const ch=audio.getChannelData(0); const block=Math.floor(ch.length/n); const peaks=[];
@@ -1477,6 +1566,75 @@
   function updateTime(){ if(!audioEl)return; $('wfTime').textContent=fmt(audioEl.currentTime)+' / '+fmt(audioEl.duration); if(!audioEl.paused){ drawWaveform(audioEl.currentTime/(audioEl.duration||1)); } }
   function loopDraw(){ if(audioEl&&!audioEl.paused){ drawWaveform(audioEl.currentTime/(audioEl.duration||1)); playRAF=requestAnimationFrame(loopDraw); } }
   function togglePlay(){ if(!audioEl)return; if(audioEl.paused){ audioEl.play(); setPlayIcon(true); loopDraw(); } else { audioEl.pause(); setPlayIcon(false); cancelAnimationFrame(playRAF); } }
+  // ─────────── listen to the finding: route the player through a live A/B chain ───────────
+  // src → band (peaking gain 0 = transparent bypass) → makeup → mono → out
+  let fxCtx=null, fxSrc=null, fxBand=null, fxMakeup=null, fxMono=null, fxAudioEl=null;
+  function fxEnsure(){
+    if(!audioEl) return false;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!fxCtx) fxCtx=new AC();
+    if(fxAudioEl!==audioEl){
+      try{ if(fxSrc) fxSrc.disconnect(); }catch(e){}
+      if(!fxBand){
+        fxBand=fxCtx.createBiquadFilter(); fxBand.type='peaking'; fxBand.gain.value=0;
+        fxMakeup=fxCtx.createGain(); fxMono=fxCtx.createGain();
+        fxBand.connect(fxMakeup); fxMakeup.connect(fxMono); fxMono.connect(fxCtx.destination);
+      }
+      fxSrc=fxCtx.createMediaElementSource(audioEl); fxAudioEl=audioEl;
+      fxSrc.connect(fxBand);
+    }
+    if(fxCtx.state==='suspended') fxCtx.resume();
+    return true;
+  }
+  function fxReset(){
+    document.querySelectorAll('.lsn.on').forEach(b=>b.classList.remove('on'));
+    if(!fxBand) return;
+    fxBand.type='peaking'; fxBand.gain.value=0; fxMakeup.gain.value=1;
+    fxMono.channelCountMode='max'; fxMono.channelCount=2;
+  }
+  function injectListen(rep){
+    const raw=rep._raw||{};
+    const seekIntro=(raw.intro_sec>3)? raw.intro_sec : null;
+    const seekPeak=(typeof raw.peak_moment_sec==='number')? Math.max(0, raw.peak_moment_sec-4) : null;
+    rep.findings.forEach((it,i)=>{
+      const card=cardsEl.children[i]; if(!card) return;
+      const inner=card.querySelector('.card-detail-inner');
+      if(!inner || inner.querySelector('.listen-row')) return;
+      const btns=[];
+      const tri='<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+      if(it.id==='Intro' && seekIntro!=null) btns.push(`<button class="lsn" data-act="seek" data-t="${seekIntro}">${tri} ${esc(ui('lsn_intro'))}</button>`);
+      if(['Master','Dynamics','Clipping','Punch'].includes(it.id) && seekPeak!=null) btns.push(`<button class="lsn" data-act="seek" data-t="${seekPeak}">${tri} ${esc(ui('lsn_peak'))}</button>`);
+      if(['Mix','LowEnd','Sibilance'].includes(it.id)){
+        const f=(it.rx&&it.rx.freq)||({Mix:250,LowEnd:80,Sibilance:6800})[it.id];
+        btns.push(`<button class="lsn tgl" data-act="band" data-f="${f}">${tri} ${esc(ui('lsn_band'))} · ${f} Hz</button>`);
+      }
+      if(it.id==='Stereo') btns.push(`<button class="lsn tgl" data-act="mono">${tri} ${esc(ui('lsn_mono'))}</button>`);
+      if(!btns.length) return;
+      const row=document.createElement('div'); row.className='listen-row';
+      row.innerHTML=`<span class="lsn-lbl">${esc(ui('lsn_lbl'))}</span>${btns.join('')}`;
+      inner.appendChild(row);
+      row.querySelectorAll('.lsn').forEach(b=>b.addEventListener('click',e=>{
+        e.stopPropagation();
+        if(!audioEl) return;
+        const act=b.dataset.act;
+        if(act==='seek'){
+          fxReset();
+          audioEl.currentTime=+b.dataset.t;
+          if(audioEl.paused) togglePlay(); else updateTime();
+          return;
+        }
+        const wasOn=b.classList.contains('on');
+        if(!fxEnsure()) return;
+        fxReset();
+        if(!wasOn){
+          if(act==='band'){ fxBand.type='bandpass'; fxBand.frequency.value=+b.dataset.f; fxBand.Q.value=2.2; fxMakeup.gain.value=2.4; }
+          if(act==='mono'){ fxMono.channelCountMode='explicit'; fxMono.channelCount=1; }
+          b.classList.add('on');
+          if(audioEl.paused) togglePlay();
+        }
+      }));
+    });
+  }
   $('ppBtn').addEventListener('click',togglePlay);
   $('coverPlay').addEventListener('click',togglePlay);
   $('wfWrap').addEventListener('click',e=>{ if(!audioEl||!audioEl.duration)return; const r=e.currentTarget.getBoundingClientRect(); audioEl.currentTime=((e.clientX-r.left)/r.width)*audioEl.duration; updateTime(); });
@@ -1697,12 +1855,149 @@
     {n:'Transient Processor', a:['transientprocessor','fltransient'], t:{transient:2}},
     {n:'Fruity Stereo Enhancer', a:['fruitystereoenhancer','flstereoenhancer'], t:{widen:3}},
     // Logic Pro stock
-    {n:'Channel EQ', a:['channeleq','logiceq'], t:{eq_cut:3}},
-    {n:'Logic Compressor', a:['logiccompressor','logiccomp'], t:{decompress:3,sidechain:2}},
+    {n:'Channel EQ', a:['channeleq','logiceq','garagebandeq','gbchanneleq'], t:{eq_cut:3}},   // Logic + GarageBand
+    {n:'Logic Compressor', a:['logiccompressor','logiccomp','garagebandcompressor','gbcompressor'], t:{decompress:3,sidechain:2}},
     {n:'Adaptive Limiter', a:['adaptivelimiter','logiclimiter'], t:{limiter:3,clip:3}},
     {n:'DeEsser 2', a:['deesser2','logicdeesser'], t:{deess:1}},
     {n:'Enveloper', a:['enveloper','logicenveloper'], t:{transient:2}},
     {n:'Direction Mixer', a:['directionmixer','logicdirectionmixer'], t:{widen:3}},
+    // Waves — the rest of the lineup people actually own
+    {n:'CLA-2A', a:['cla2a','wavescla2a'], t:{decompress:4}},
+    {n:'CLA-3A', a:['cla3a','wavescla3a'], t:{decompress:4}},
+    {n:'RCompressor', a:['rcompressor','rcomp','renaissancecompressor','wavesrcomp'], t:{decompress:3,sidechain:3}},
+    {n:'RVox', a:['rvox','renaissancevox','wavesrvox'], t:{decompress:5}},
+    {n:'RBass', a:['rbass','renaissancebass','wavesrbass'], t:{}},                        // bass harmonics — no rx type
+    {n:'REQ', a:['renaissanceeq','wavesreq'], t:{eq_cut:3}},
+    {n:'Q10', a:['q10','wavesq10'], t:{eq_cut:3}},
+    {n:'H-Comp', a:['hcomp','waveshcomp','hybridcompressor'], t:{decompress:3,sidechain:3}},
+    {n:'F6', a:['f6','wavesf6','f6dynamiceq'], t:{eq_cut:2,deess:3}},
+    {n:'Vitamin', a:['vitamin','wavesvitamin'], t:{}},                                    // multiband enhancer — no rx type
+    {n:'Center', a:['center','wavescenter'], t:{widen:2}},
+    {n:'Waves Sibilance', a:['sibilance','wavessibilance'], t:{deess:2}},
+    {n:'C4', a:['c4','wavesc4'], t:{decompress:4,deess:5}},
+    {n:'L3', a:['l3','wavesl3','l3multimaximizer'], t:{limiter:2,clip:3}},
+    {n:'PuigTec EQP-1A', a:['puigtec','puigteceqp1a','eqp1a'], t:{eq_cut:4}},             // tone EQ, not surgical
+    {n:'API 2500', a:['api2500','wavesapi2500'], t:{decompress:3}},
+    {n:'SSL E-Channel', a:['sslechannel','wavessslechannel','sslevchannel'], t:{eq_cut:4,decompress:4,deess:5}},
+    {n:'SSL G-Channel', a:['sslgchannel','wavessslgchannel'], t:{eq_cut:4,decompress:4,deess:5}},
+    {n:'Scheps Omni Channel', a:['schepsomnichannel','omnichannel','scheps'], t:{eq_cut:4,decompress:4,deess:4}},
+    {n:'MaxxBass', a:['maxxbass','wavesmaxxbass'], t:{}},
+    {n:'MV2', a:['mv2','wavesmv2'], t:{decompress:5}},
+    // UAD
+    {n:'UAD 1176', a:['uad1176','ua1176','uad1176ln'], t:{decompress:4,sidechain:3}},
+    {n:'UAD LA-2A', a:['la2a','uadla2a','teletronixla2a'], t:{decompress:4}},
+    {n:'UAD Precision Limiter', a:['precisionlimiter','uadprecisionlimiter'], t:{limiter:2,clip:3}},
+    {n:'UAD SSL G Bus Compressor', a:['uadsslbus','uadsslgbus','uadbuscompressor'], t:{decompress:3}},
+    {n:'UAD Pultec EQP-1A', a:['pultec','uadpultec'], t:{eq_cut:4}},
+    {n:'UAD Fairchild 670', a:['fairchild','fairchild670','uadfairchild'], t:{decompress:3}},
+    // Slate Digital
+    {n:'FG-X', a:['fgx','slatefgx','fgx2'], t:{limiter:2,clip:2}},
+    {n:'VMR', a:['vmr','virtualmixrack','slatevmr'], t:{eq_cut:4,decompress:4}},
+    {n:'FG-N', a:['fgn','slatefgn'], t:{eq_cut:4}},
+    {n:'FG-S', a:['fgs','slatefgs'], t:{eq_cut:3}},
+    {n:'FG-116', a:['fg116','slatefg116'], t:{decompress:4,sidechain:3}},
+    {n:'FG-401', a:['fg401','slatefg401'], t:{decompress:3,sidechain:3}},
+    {n:'FG-MU', a:['fgmu','slatefgmu'], t:{decompress:2}},
+    {n:'Revival', a:['revival','slaterevival'], t:{}},
+    // Plugin Alliance / Brainworx
+    {n:'bx_digital V3', a:['bxdigital','bxdigitalv3'], t:{eq_cut:2,widen:2,deess:3}},
+    {n:'Shadow Hills Mastering Compressor', a:['shadowhills','shadowhillsmasteringcompressor'], t:{decompress:2}},
+    {n:'Elysia mpressor', a:['mpressor','elysiampressor'], t:{decompress:2,transient:3}},
+    {n:'bx_masterdesk', a:['bxmasterdesk','masterdesk'], t:{limiter:3,decompress:4}},
+    {n:'bx_limiter True Peak', a:['bxlimiter','bxlimitertruepeak'], t:{limiter:2,clip:2}},
+    {n:'Maag EQ4', a:['maageq4','maag'], t:{eq_cut:4}},                                   // air shelf — tone, not surgery
+    {n:'SPL Transient Designer Plus', a:['transientdesigner','spltransientdesigner','transientdesignerplus'], t:{transient:1}},
+    {n:'bx_townhouse', a:['bxtownhouse','townhouse'], t:{decompress:3}},
+    // Softube
+    {n:'Tube-Tech CL 1B', a:['cl1b','tubetechcl1b','tubetech'], t:{decompress:3}},
+    {n:'Softube FET Compressor', a:['fetcompressor','softubefet'], t:{decompress:4,sidechain:3}},
+    {n:'Softube Saturation Knob', a:['saturationknob','softubesaturationknob'], t:{}},
+    // Weiss (Softube)
+    {n:'Weiss DS1-MK3', a:['weissds1','ds1mk3','weissds1mk3'], t:{deess:1,limiter:2,decompress:2}},
+    {n:'Weiss MM-1', a:['weissmm1','mm1'], t:{limiter:2}},
+    {n:'Weiss EQ1', a:['weisseq1','eq1'], t:{eq_cut:2}},
+    // sidechain / movement specialists
+    {n:'LFOTool', a:['lfotool','xferlfotool'], t:{sidechain:2}},
+    {n:'Trackspacer', a:['trackspacer','wavesfactorytrackspacer'], t:{sidechain:1}},      // spectral ducking — the specialist
+    // iZotope — Neutron modules + friends
+    {n:'Neutron EQ', a:['neutroneq'], t:{eq_cut:3}},
+    {n:'Neutron Compressor', a:['neutroncompressor','neutroncomp'], t:{decompress:3,sidechain:3}},
+    {n:'Neutron Transient Shaper', a:['neutrontransientshaper','neutrontransient'], t:{transient:2}},
+    {n:'Neutron Exciter', a:['neutronexciter'], t:{}},
+    {n:'Nectar', a:['nectar','izotopenectar'], t:{deess:3,decompress:4}},
+    {n:'iZotope RX', a:['izotoperx','rxstandard','rxadvanced'], t:{}},                    // repair suite — different job
+    {n:'Insight', a:['insight','izotopeinsight'], t:{}},                                  // metering only
+    // Melda (free bundle staples)
+    {n:'MEqualizer', a:['mequalizer','meldaeq'], t:{eq_cut:3}},
+    {n:'MCompressor', a:['mcompressor','meldacompressor'], t:{decompress:3,sidechain:3}},
+    {n:'MStereoExpander', a:['mstereoexpander','meldastereo'], t:{widen:2}},
+    {n:'MAnalyzer', a:['manalyzer'], t:{}},                                               // analyzer — measures, fixes nothing
+    {n:'MAutoPitch', a:['mautopitch'], t:{}},
+    // Klanghelm
+    {n:'MJUC', a:['mjuc','klanghelmmjuc'], t:{decompress:2}},
+    {n:'DC1A', a:['dc1a','klanghelmdc1a'], t:{decompress:3}},
+    {n:'SDRR', a:['sdrr','klanghelmsdrr'], t:{}},
+    {n:'IVGI', a:['ivgi','klanghelmivgi'], t:{}},
+    // Voxengo
+    {n:'SPAN', a:['span','voxengospan'], t:{}},                                           // analyzer — no rx type
+    {n:'Elephant', a:['elephant','voxengoelephant'], t:{limiter:1,clip:2}},
+    {n:'MSED', a:['msed','voxengomsed'], t:{widen:2}},
+    // DMG Audio
+    {n:'Limitless', a:['limitless','dmglimitless'], t:{limiter:1,clip:2}},
+    {n:'EQuilibrium', a:['equilibrium','dmgequilibrium'], t:{eq_cut:1}},
+    {n:'Essence', a:['essence','dmgessence'], t:{deess:1}},
+    {n:'TrackComp', a:['trackcomp','dmgtrackcomp'], t:{decompress:2,sidechain:2}},
+    // Sonnox Oxford
+    {n:'Oxford Limiter', a:['oxfordlimiter','sonnoxlimiter'], t:{limiter:1,clip:2}},
+    {n:'Oxford Inflator', a:['inflator','oxfordinflator','sonnoxinflator'], t:{}},        // loudness tone-box — not a true-peak limiter
+    {n:'Oxford Dynamics', a:['oxforddynamics','sonnoxdynamics'], t:{decompress:3,sidechain:3}},
+    {n:'Oxford EQ', a:['oxfordeq','sonnoxeq'], t:{eq_cut:2}},
+    {n:'Oxford SuprEsser', a:['supresser','oxfordsupresser','sonnoxsupresser'], t:{deess:1}},
+    // sonible / modern specialists
+    {n:'smart:limit', a:['smartlimit','soniblesmartlimit'], t:{limiter:2}},
+    {n:'smart:comp 2', a:['smartcomp','smartcomp2','soniblesmartcomp'], t:{decompress:3,sidechain:3}},
+    {n:'smart:EQ 4', a:['smarteq','smarteq4','soniblesmarteq'], t:{eq_cut:2}},
+    {n:'oeksound spiff', a:['spiff','oeksoundspiff'], t:{transient:1,deess:2}},
+    {n:'Newfangled Elevate', a:['elevate','newfangledelevate'], t:{limiter:2,transient:2}},
+    {n:'Pulsar Mu', a:['pulsarmu','pulsaraudiomu'], t:{decompress:2}},
+    // Soundtoys — recognized, no rx type (color, not correction)
+    {n:'Decapitator', a:['decapitator','soundtoysdecapitator'], t:{}},
+    {n:'EchoBoy', a:['echoboy','soundtoysechoboy'], t:{}},
+    // FabFilter — rest of the bundle (recognized)
+    {n:'Pro-R 2', a:['pror2','pror','fabfilterreverb'], t:{}},
+    {n:'Pro-G', a:['prog','fabfiltergate'], t:{}},
+    {n:'Timeless 3', a:['timeless3','timeless','fabfiltertimeless'], t:{}},
+    // more free classics
+    {n:'TDR VOS SlickEQ', a:['slickeq','tdrslickeq'], t:{eq_cut:3}},
+    {n:'W1 Limiter', a:['w1limiter','w1','yohngw1'], t:{limiter:3,clip:3}},
+    {n:'Youlean Loudness Meter', a:['youlean','youleanloudnessmeter','ylm'], t:{}},       // meter — no rx type
+    // Cubase stock
+    {n:'StudioEQ', a:['studioeq','cubaseeq','cubasestudioeq'], t:{eq_cut:3}},
+    {n:'Frequency 2', a:['frequency','frequency2','cubasefrequency'], t:{eq_cut:2}},
+    {n:'Cubase Compressor', a:['cubasecompressor','cubasecomp'], t:{decompress:3,sidechain:2}},
+    {n:'Brickwall Limiter', a:['brickwalllimiter','cubaselimiter','brickwall'], t:{limiter:3,clip:3}},
+    {n:'Envelope Shaper', a:['envelopeshaper','cubaseenvelopeshaper'], t:{transient:2}},
+    {n:'Cubase DeEsser', a:['cubasedeesser'], t:{deess:2}},
+    {n:'Cubase Maximizer', a:['cubasemaximizer'], t:{limiter:3}},
+    // Studio One stock
+    {n:'Pro EQ', a:['proeq','proeq3','studiooneeq','presonusproeq'], t:{eq_cut:3}},
+    {n:'Limiter2', a:['limiter2','studioonelimiter','presonuslimiter'], t:{limiter:3,clip:3}},
+    {n:'Studio One Compressor', a:['studioonecompressor','presonuscompressor'], t:{decompress:3,sidechain:2}},
+    // Reaper stock
+    {n:'ReaEQ', a:['reaeq'], t:{eq_cut:3}},
+    {n:'ReaComp', a:['reacomp'], t:{decompress:3,sidechain:2}},
+    {n:'ReaLimit', a:['realimit'], t:{limiter:3,clip:3}},
+    {n:'ReaXcomp', a:['reaxcomp'], t:{decompress:4,deess:5}},
+    // Bitwig stock
+    {n:'EQ+', a:['eqplus','bitwigeq'], t:{eq_cut:3}},
+    {n:'Peak Limiter', a:['peaklimiter','bitwiglimiter'], t:{limiter:3,clip:3}},
+    {n:'Compressor+', a:['compressorplus','bitwigcompressor'], t:{decompress:3,sidechain:2}},
+    // more stock — Ableton / Logic / FL
+    {n:'Glue Compressor', a:['gluecompressor','glue','abletonglue'], t:{decompress:2,sidechain:2}},
+    {n:'Saturator', a:['saturator','abletonsaturator'], t:{}},
+    {n:'Multipressor', a:['multipressor','logicmultipressor'], t:{decompress:4,deess:5}},
+    {n:'Fruity Compressor', a:['fruitycompressor','flcompressor'], t:{decompress:4}},
+    {n:'Soundgoodizer', a:['soundgoodizer'], t:{}},                                       // one-knob polish — honest: not a fix tool
   ];
   const KB_BY_NAME={}; PLUGIN_KB.forEach(p=>{ KB_BY_NAME[p.n.toLowerCase().replace(/[^a-z0-9]+/g,'')]=p; });
   function normPl(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,''); }
@@ -1764,9 +2059,223 @@
     logic:['Channel EQ','Logic Compressor','Adaptive Limiter','DeEsser 2','Enveloper','Direction Mixer'],
     free:['TDR Nova','TDR Kotelnikov','Limiter No6','BitterSweet','A1StereoControl'],
   };
+
+  // ─────────── "show me how" — real per-plugin walkthroughs, {param}s injected from the rx ───────────
+  // EN + HE are written in full; other languages read the EN steps (only the button label is translated).
+  // Keys are canonical KB names; legacy suite names resolve by containment ("Pro-L 2 / Maximizer" → Pro-L 2).
+  const WALKTHROUGHS={
+    'Pro-Q 3':{eq_cut:{
+      en:["Open Pro-Q 3 on the muddy track (or the mix bus) and double-click the curve display near {freq} Hz to create a band.",
+          "Drag the band to exactly {freq} Hz — or double-click its frequency readout and type {freq}.",
+          "Pull the band down to {gain_db} dB.",
+          "Set Q to {q} (scroll on the band dot, or type it in the Q field).",
+          "Toggle the bypass a few times — the mud should lift without the mix going thin."],
+      he:["פתח את Pro-Q 3 על הערוץ הבוצי (או על המאסטר) ולחץ לחיצה כפולה על התצוגה באזור {freq} Hz כדי ליצור באנד.",
+          "גרור את הבאנד בדיוק ל־{freq} Hz — או לחץ לחיצה כפולה על שדה התדר והקלד {freq}.",
+          "הורד את הבאנד ל־{gain_db} dB.",
+          "כוון את ה־Q ל־{q} (גלגלת על נקודת הבאנד, או הקלדה בשדה ה־Q).",
+          "הפעל וכבה bypass כמה פעמים — הבוץ אמור להתפנות בלי שהמיקס יישמע דק."]}},
+    'EQ Eight':{eq_cut:{
+      en:["Drop EQ Eight on the muddy track and switch on a free filter band.",
+          "Set that band's filter type to Bell.",
+          "Click the Freq value and type {freq} Hz.",
+          "Set Gain to {gain_db} dB.",
+          "Set Q to {q}.",
+          "A/B with the device on/off switch — cleaner, not thinner."],
+      he:["זרוק EQ Eight על הערוץ הבוצי והדלק באנד פנוי.",
+          "בחר לבאנד סוג פילטר Bell.",
+          "לחץ על ערך ה־Freq והקלד {freq} Hz.",
+          "כוון Gain ל־{gain_db} dB.",
+          "כוון Q ל־{q}.",
+          "השווה עם מתג ההפעלה של המכשיר — נקי יותר, לא דק יותר."]}},
+    'Parametric EQ 2':{eq_cut:{
+      en:["Drop Parametric EQ 2 on the muddy track and grab one of the numbered band tokens.",
+          "Drag it to {freq} Hz and down to {gain_db} dB — the readout shows exact values while you drag.",
+          "Tighten the bandwidth (BW) until the dip is roughly a Q of {q} — narrower BW = higher Q.",
+          "Make sure the band type is Peaking (the default for the middle bands).",
+          "Compare against bypass — the boxiness should open up."],
+      he:["זרוק Parametric EQ 2 על הערוץ הבוצי ותפוס אחד מהטוקנים הממוספרים.",
+          "גרור אותו ל־{freq} Hz ולמטה ל־{gain_db} dB — הקריאה מציגה ערכים מדויקים תוך כדי גרירה.",
+          "הצר את ה־Bandwidth (BW) עד שהחתך ברוחב של בערך Q {q} — BW צר יותר = Q גבוה יותר.",
+          "ודא שסוג הבאנד הוא Peaking (ברירת המחדל לבאנדים האמצעיים).",
+          "השווה מול bypass — הבוקסיות אמורה להיפתח."]}},
+    'Channel EQ':{eq_cut:{
+      en:["Insert Channel EQ on the muddy track and pick one of the middle bell bands.",
+          "Click the frequency value under the display and type {freq}.",
+          "Set that band's Gain to {gain_db} dB.",
+          "Set Q to {q}.",
+          "Turn on the Analyzer to see the dip you made, then bypass-compare."],
+      he:["הכנס Channel EQ על הערוץ הבוצי ובחר אחד מבאנדי ה־Bell האמצעיים.",
+          "לחץ על ערך התדר מתחת לתצוגה והקלד {freq}.",
+          "כוון את ה־Gain של הבאנד ל־{gain_db} dB.",
+          "כוון Q ל־{q}.",
+          "הדלק את ה־Analyzer כדי לראות את החתך שעשית, ואז השווה מול bypass."]}},
+    'TDR Nova':{
+      eq_cut:{
+      en:["Insert TDR Nova and click a node in the display to activate a band.",
+          "Set its frequency to {freq} Hz, gain to {gain_db} dB and Q to {q} — click any readout to type exact values.",
+          "Leave the band's threshold section off — this is a static cut, no dynamics needed.",
+          "Use the bypass button to A/B."],
+      he:["הכנס TDR Nova ולחץ על נקודה בתצוגה כדי להפעיל באנד.",
+          "כוון תדר {freq} Hz, גיין {gain_db} dB ו־Q {q} — לחיצה על כל קריאה מאפשרת הקלדה מדויקת.",
+          "השאר את מקטע ה־Threshold של הבאנד כבוי — זה חתך סטטי, בלי דינמיקה.",
+          "השתמש בכפתור ה־bypass כדי להשוות."]},
+      deess:{
+      en:["Insert Nova on the vocal track and activate a band around {freq} Hz.",
+          "Widen it slightly — a Q around 2–3 covers the whole sibilant range.",
+          "In that band's dynamics section, engage the threshold and pull it down until esses trigger 3–5 dB of gain reduction.",
+          "Keep the band's static gain at 0 dB — let the dynamic threshold do the work.",
+          "Play the loudest chorus: reduction should flicker only on S and T sounds."],
+      he:["הכנס Nova על ערוץ הווקאל והפעל באנד סביב {freq} Hz.",
+          "הרחב מעט — Q בסביבות 2–3 מכסה את כל טווח הסיבילנס.",
+          "במקטע הדינמיקה של הבאנד, הפעל את ה־Threshold והורד אותו עד שה־S־ים מפעילים הפחתה של 3–5 dB.",
+          "השאר את הגיין הסטטי של הבאנד על 0 dB — תן ל־Threshold הדינמי לעבוד.",
+          "נגן את הפזמון הכי חזק: ההפחתה צריכה להבהב רק על צלילי S ו־T."]}},
+    'Pro-L 2':{limiter:{
+      en:["Put Pro-L 2 last on your master bus, after any EQ.",
+          "Set the output level to {ceiling_db} dBTP and turn oversampling to 4x so inter-sample peaks are caught.",
+          "Pick a style — Modern is a safe default for electronic mixes.",
+          "Raise the main gain by about +{gain_db} dB, until the loudness readout sits near {target_lufs} LUFS.",
+          "Watch the gain-reduction display on the loudest section — more than ~3 dB of constant reduction means back off and fix the mix first."],
+      he:["שים את Pro-L 2 אחרון על ערוץ המאסטר, אחרי כל EQ.",
+          "כוון את ה־Output ל־{ceiling_db} dBTP והעלה oversampling ל־4x כדי לתפוס פיקים בין־דגימות.",
+          "בחר סגנון — Modern הוא ברירת מחדל בטוחה למיקסים אלקטרוניים.",
+          "הרם את הגיין הראשי בערך +{gain_db} dB, עד שמד הלאודנס יושב סביב {target_lufs} LUFS.",
+          "שים עין על ה־gain reduction בקטע הכי חזק — יותר מ־3 dB קבועים? תרד, ותקן קודם את המיקס."]}},
+    'L2':{limiter:{
+      en:["Put L2 last on the master bus.",
+          "Set Out Ceiling to {ceiling_db} dB.",
+          "Pull Threshold down by about {gain_db} dB — every dB of threshold adds a dB of loudness.",
+          "Check the result on a LUFS meter after L2 — aim for about {target_lufs} LUFS.",
+          "Keep the Atten meter under ~3 dB on the loudest hits; if it slams, ease the threshold back."],
+      he:["שים את L2 אחרון על ערוץ המאסטר.",
+          "כוון Out Ceiling ל־{ceiling_db} dB.",
+          "הורד את ה־Threshold בערך {gain_db} dB — כל dB של threshold מוסיף dB של עוצמה.",
+          "בדוק על מד LUFS אחרי ה־L2 — כוון לסביבות {target_lufs} LUFS.",
+          "שמור את מד ה־Atten מתחת ל־3 dB בהיטים הכי חזקים; אם הוא נמחץ — שחרר את ה־Threshold."]}},
+    'Limiter No6':{limiter:{
+      en:["Put Limiter No6 last on the master bus.",
+          "Switch on the ISP protection stage (the last module) and set its ceiling to {ceiling_db} dB — it catches inter-sample peaks.",
+          "Use the peak limiter section for the loudness: raise its input gain by about +{gain_db} dB.",
+          "No6 meters in dB only — read LUFS on a meter after it (SPAN or Youlean, both free) and aim for {target_lufs} LUFS.",
+          "If it starts pumping, let the RMS compressor stage take the first 1–2 dB instead."],
+      he:["שים את Limiter No6 אחרון על ערוץ המאסטר.",
+          "הפעל את שלב ה־ISP protection (המודול האחרון) וכוון את התקרה שלו ל־{ceiling_db} dB — הוא תופס פיקים בין־דגימות.",
+          "את העוצמה עושים במקטע ה־peak limiter: הרם את גיין הכניסה שלו בערך +{gain_db} dB.",
+          "No6 מודד רק dB — קרא LUFS על מד אחריו (SPAN או Youlean, שניהם חינמיים) וכוון ל־{target_lufs} LUFS.",
+          "אם מתחיל פאמפינג, תן לשלב ה־RMS compressor לקחת את ה־1–2 dB הראשונים במקום."]}},
+    'Fruity Limiter':{
+      limiter:{
+      en:["Drop Fruity Limiter in the last slot of the Master mixer track and stay on the LIMIT tab.",
+          "Set CEIL to {ceiling_db} dB.",
+          "Raise GAIN by about +{gain_db} dB, watching the gain-reduction curve at the top.",
+          "Read loudness on a LUFS meter after it (Youlean is free) — target {target_lufs} LUFS.",
+          "If the curve is constantly slammed, back GAIN off — loudness that never breathes just sounds small."],
+      he:["זרוק Fruity Limiter בסלוט האחרון של ערוץ המאסטר במיקסר, והישאר בלשונית LIMIT.",
+          "כוון CEIL ל־{ceiling_db} dB.",
+          "הרם את GAIN בערך +{gain_db} dB, תוך מבט על עקומת ה־gain reduction למעלה.",
+          "קרא לאודנס על מד LUFS אחריו (Youlean חינמי) — יעד {target_lufs} LUFS.",
+          "אם העקומה נמחצת כל הזמן — הורד את ה־GAIN. עוצמה שלא נושמת נשמעת קטנה."]},
+      sidechain:{
+      en:["In the Mixer, click the kick's track, then right-click the arrow at the bottom of the bass track and choose \"Sidechain to this track\".",
+          "Drop Fruity Limiter on the bass track and switch to the COMP tab.",
+          "Set SIDECHAIN to 1 — the kick feed you just created.",
+          "Set RATIO around 4:1 and lower THRES until the bass ducks a few dB on each kick.",
+          "Keep REL fast (~60–100 ms) so the {freq} Hz region gets out of the kick's way and back before the next hit."],
+      he:["במיקסר, סמן את ערוץ הקיק, ואז קליק ימני על החץ בתחתית ערוץ הבס ובחר \"Sidechain to this track\".",
+          "זרוק Fruity Limiter על ערוץ הבס ועבור ללשונית COMP.",
+          "כוון SIDECHAIN ל־1 — הזנת הקיק שיצרת עכשיו.",
+          "כוון RATIO בסביבות 4:1 והורד את THRES עד שהבס צולל כמה dB על כל קיק.",
+          "שמור REL מהיר (60–100 ms) כך שאזור ה־{freq} Hz מפנה מקום לקיק וחוזר לפני המכה הבאה."]}},
+    'Adaptive Limiter':{limiter:{
+      en:["Insert Adaptive Limiter last on the Stereo Out, after any EQ.",
+          "Set Out Ceiling to {ceiling_db} dB and enable True Peak Detection.",
+          "Raise Gain by about +{gain_db} dB.",
+          "Add Logic's Loudness Meter after it and aim for {target_lufs} LUFS integrated.",
+          "If the drums start smearing, pull Gain back — the last dB is rarely worth it."],
+      he:["הכנס Adaptive Limiter אחרון על ה־Stereo Out, אחרי כל EQ.",
+          "כוון Out Ceiling ל־{ceiling_db} dB והפעל True Peak Detection.",
+          "הרם את ה־Gain בערך +{gain_db} dB.",
+          "הוסף את ה־Loudness Meter של Logic אחריו וכוון ל־{target_lufs} LUFS Integrated.",
+          "אם התופים מתחילים להימרח — הורד את הגיין. ה־dB האחרון כמעט אף פעם לא שווה את זה."]}},
+    'Ableton Compressor':{sidechain:{
+      en:["Drop Compressor on the bass track and unfold the sidechain panel (the triangle in the title bar).",
+          "Turn Sidechain on and set Audio From to the kick track.",
+          "Use the headphone (listen) button once to confirm you're keying off the kick, then switch it off.",
+          "Set Ratio around 4:1, fast Attack, Release around 100 ms.",
+          "Lower Threshold until each kick pulls the bass down a few dB — the {freq} Hz zone should stop fighting the kick."],
+      he:["זרוק Compressor על ערוץ הבס ופתח את פאנל הסיידצ׳יין (המשולש בכותרת המכשיר).",
+          "הפעל Sidechain וכוון Audio From לערוץ הקיק.",
+          "השתמש רגע בכפתור האוזניות (listen) כדי לוודא שאתה מקבל את הקיק, ואז כבה אותו.",
+          "כוון Ratio בסביבות 4:1, Attack מהיר, Release בסביבות 100 ms.",
+          "הורד את ה־Threshold עד שכל קיק מוריד את הבס כמה dB — אזור ה־{freq} Hz צריך להפסיק להילחם בקיק."]}},
+    'Logic Compressor':{sidechain:{
+      en:["Insert Compressor on the bass track.",
+          "In the plugin header, open the Side Chain menu (top right) and choose the kick track.",
+          "Set Ratio around 4:1, fast Attack, Release around 100 ms — Platinum Digital is the cleanest circuit for ducking.",
+          "Lower Threshold until the gain-reduction meter dips a few dB on every kick.",
+          "Bypass-compare: the low end around {freq} Hz should sound tighter, not quieter."],
+      he:["הכנס Compressor על ערוץ הבס.",
+          "בכותרת הפלאגין, פתח את תפריט ה־Side Chain (למעלה מימין) ובחר את ערוץ הקיק.",
+          "כוון Ratio בסביבות 4:1, Attack מהיר, Release בסביבות 100 ms — Platinum Digital הוא המעגל הכי נקי לדאקינג.",
+          "הורד את ה־Threshold עד שמד ה־gain reduction צולל כמה dB על כל קיק.",
+          "השווה מול bypass: הלואו־אנד סביב {freq} Hz צריך להישמע הדוק יותר, לא שקט יותר."]}},
+    'Pro-DS':{deess:{
+      en:["Insert Pro-DS on the vocal track, before any reverb or delay sends.",
+          "Set the mode to Single Vocal.",
+          "Use Audition to hear what's being detected and center the side-chain filter around {freq} Hz.",
+          "Lower Threshold until only esses light up the detection — aim for 3–5 dB of reduction.",
+          "Cap Range at about 5 dB so it can never dull the whole vocal."],
+      he:["הכנס Pro-DS על ערוץ הווקאל, לפני הסנדים לריוורב או דיליי.",
+          "כוון את המצב ל־Single Vocal.",
+          "השתמש ב־Audition כדי לשמוע מה מזוהה, ומרכז את פילטר הסיידצ׳יין סביב {freq} Hz.",
+          "הורד את ה־Threshold עד שרק ה־S־ים מדליקים את הזיהוי — כוון ל־3–5 dB הפחתה.",
+          "הגבל את ה־Range לבערך 5 dB כדי שלעולם לא יעמעם את כל הווקאל."]}},
+    'DeEsser 2':{deess:{
+      en:["Insert DeEsser 2 on the vocal track.",
+          "Set Frequency to {freq} Hz.",
+          "Turn on Filter Solo to hear exactly the band being tamed, then turn it off.",
+          "Lower Threshold until esses trigger 3–5 dB of reduction.",
+          "Keep reduction around 3–5 dB even on the loudest lines — more starts to lisp."],
+      he:["הכנס DeEsser 2 על ערוץ הווקאל.",
+          "כוון Frequency ל־{freq} Hz.",
+          "הפעל Filter Solo כדי לשמוע בדיוק את הפס שמרוסן, ואז כבה.",
+          "הורד את ה־Threshold עד שה־S־ים מפעילים הפחתה של 3–5 dB.",
+          "שמור על הפחתה של 3–5 dB גם בשורות החזקות — יותר מזה מתחיל להישמע כמו ליספ."]}},
+    'BitterSweet':{transient:{
+      en:["Drop BitterSweet on the drum bus.",
+          "Turn the big central knob toward Bitter — that pushes transients forward. Start around +15–20%.",
+          "Leave the mode on Main; set the transient Speed to Fast for drums.",
+          "A/B with the power switch, and watch the limiter after it — sharper attacks eat headroom."],
+      he:["זרוק BitterSweet על באס התופים.",
+          "סובב את הכפתור המרכזי הגדול לכיוון Bitter — זה דוחף את הטרנזיינטים קדימה. התחל סביב +15–20%.",
+          "השאר את המצב על Main; כוון את ה־Speed ל־Fast לתופים.",
+          "השווה עם מתג ההפעלה, ושים עין על הלימיטר שאחריו — אטאקים חדים אוכלים headroom."]}},
+    'Drum Buss':{transient:{
+      en:["Group the drums and drop Drum Buss on the group.",
+          "Raise the Transients knob — around 15–20% brings the attack forward without dirt.",
+          "Keep Crunch and Boom at zero unless you want distortion or sub — this fix is about punch.",
+          "Level-match with Trim, then A/B with the device switch."],
+      he:["קבץ את התופים וזרוק Drum Buss על הקבוצה.",
+          "הרם את כפתור ה־Transients — בסביבות 15–20% האטאק יוצא קדימה בלי לכלוך.",
+          "השאר Crunch ו־Boom על אפס אלא אם אתה רוצה עיוות או סאב — התיקון הזה הוא על פאנץ׳.",
+          "אזן ווליום עם Trim, ואז השווה עם מתג המכשיר."]}},
+  };
+  // resolve steps for a plugin name + fix type; legacy composite names match by containment.
+  // Returns null when we have nothing real to say — the button simply doesn't render.
+  function wtGet(name,type){
+    let w=WALKTHROUGHS[name];
+    if(!w){ const q=normPl(name); for(const k in WALKTHROUGHS){ if(q.includes(normPl(k))){ w=WALKTHROUGHS[k]; break; } } }
+    const s=w&&w[type]; if(!s) return null;
+    return (LANG==='he'&&s.he)?s.he:s.en;                     // es/fr/de/pt read EN — honest, never machine-garbled
+  }
+  function wtSteps(steps,rx){
+    return steps.map(s=>'<li>'+esc(s).replace(/\{(\w+)\}/g,(mm,k)=>rx[k]!==undefined?`<b>${esc(String(rx[k]))}</b>`:mm)+'</li>').join('');
+  }
   function rxBlock(rx){
     if(!rx||!RX_PLUG[rx.type]) return '';
     const res=resolveRxPlugin(rx.type);
+    const wt=wtGet(res.name,rx.type);
     const rows=RX_PARAMS[rx.type](rx).map(r=>`<div class="rx-p"><i>${esc(r[0])}</i><b>${esc(r[1])}</b></div>`).join('');
     return `<div class="rx">
       <div class="rx-head"><svg width="12" height="12" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="34" r="19" stroke="currentColor" stroke-width="4"/><path d="M32 34 L43.5 22" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>
@@ -1774,6 +2283,7 @@
       <div class="rx-grid"><div class="rx-p plug"><i>Plugin</i><b>${esc(res.name)}</b></div>${rows}</div>
       ${res.missing?`<div class="rx-miss">${esc(ui('rx_missing'))} <b>${esc(res.name)}</b></div>`:''}
       <div class="rx-note">${esc(ui('rx_start'))}</div>
+      ${wt?`<div class="wt"><button class="wt-btn" type="button"><span class="tri">▸</span>${esc(ui('wt_btn'))}</button><ol class="wt-steps">${wtSteps(wt,rx)}</ol></div>`:''}
     </div>`;
   }
   function renderSuiteChips(){
@@ -1802,13 +2312,29 @@
     const m=rep.meta||{}, raw=rep._raw||{};
     const e={ name:String(fname||'').replace(/\.[^.]+$/,''), ts:Date.now(), overall:rep.overall,
       lufs:(typeof raw.lufs==='number')?raw.lufs:null, bpm:m.bpm||null, key:m.key||null,
-      genre:m.genre||null, aiCount:(rep.ai_signals&&typeof rep.ai_signals.count==='number')?rep.ai_signals.count:null };
+      genre:m.genre||null, aiCount:(rep.ai_signals&&typeof rep.ai_signals.count==='number')?rep.ai_signals.count:null,
+      rep:rep };   // full report — so the desk can reopen it and v2-compare survives a reload
     const h=loadHistory(); const last=h[h.length-1];
     // re-opening the same report (e.g. batch table clicks) shouldn't stack duplicates
     if(last && last.name===e.name && last.overall===e.overall && e.ts-last.ts<60000) return;
-    h.push(e); if(h.length>50) h.splice(0, h.length-50);
-    try{ localStorage.setItem(HIST_KEY, JSON.stringify(h)); }catch(err){}
+    h.push(e); if(h.length>30) h.splice(0, h.length-30);
+    try{ localStorage.setItem(HIST_KEY, JSON.stringify(h)); }
+    catch(err){ // quota hit: keep tiles, drop stored reports on all but the newest 5
+      try{ h.slice(0,-5).forEach(x=>{ delete x.rep; }); localStorage.setItem(HIST_KEY, JSON.stringify(h)); }catch(e2){}
+    }
     renderHistory();
+  }
+  // Reopen a past report from the desk — the loop survives a reload: v1 is
+  // restored from storage, so "upload my new version" compares against it.
+  function openHistoryReport(e){
+    $('rName').textContent=e.name;
+    analyzeTarget='report'; isDemo=false; currentFile=null;
+    v1Report=e.rep;
+    renderReport(e.rep);
+    // no audio file after a reload — hide the player instead of showing the wrong track
+    if(audioEl){ audioEl.pause(); }
+    $('player').classList.add('hidden');
+    show('report'); animateRings(); animateDial(e.rep.overall);
   }
   function renderHistory(){
     if(!$('histWrap')) return;
@@ -1818,14 +2344,17 @@
     $('histClear').style.display = has?'':'none';
     $('histChart').style.display = h.length>1?'':'none';
     // tiles — newest first; every saved number lives in the tile (LED readout style)
-    $('histRow').innerHTML = [...h].reverse().map(e=>{
+    $('histRow').innerHTML = [...h].reverse().map((e,ri)=>{
       let d=''; try{ d=new Date(e.ts).toLocaleDateString(LANG,{month:'short',day:'numeric'}); }catch(err){ d=new Date(e.ts).toLocaleDateString(); }
       const bits=[(e.lufs!=null? e.lufs+' LUFS':''),(e.bpm? e.bpm+' BPM':''),(e.key||''),(e.aiCount!=null? 'AI '+e.aiCount:'')].filter(Boolean).join(' · ');
-      return `<div class="ht"><div class="hv mono">${e.overall}<small>/100</small></div>`+
+      return `<div class="ht${e.rep?' clk':''}" data-i="${h.length-1-ri}"><div class="hv mono">${e.overall}<small>/100</small></div>`+
         `<div class="hn">${esc(e.name)}</div>`+
         `<div class="hd">${esc(d)}${e.genre?' · '+esc(e.genre):''}</div>`+
         (bits?`<div class="hd hm">${esc(bits)}</div>`:'')+`</div>`;
     }).join('');
+    $('histRow').querySelectorAll('.ht.clk').forEach(t=>t.addEventListener('click',()=>{
+      const e=loadHistory()[+t.dataset.i]; if(e&&e.rep) openHistoryReport(e);
+    }));
     // sparkline — overall-score progression, channel-meter bars (chronological, LTR)
     if(h.length>1){
       const n=h.length, bw=6, gap=4, H=42, W=n*(bw+gap)-gap;
