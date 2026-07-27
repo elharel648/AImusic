@@ -799,7 +799,6 @@
         <div class="who"><div class="badge" data-i18n="verdict_badge">A&R Verdict</div><div class="ov" data-i18n="verdict_sub">A read on where your track stands</div></div>
       </div>
       <h1 class="display" id="verdictH">Your track is strong.</h1>
-      <div class="signoff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> <span data-i18n="signoff">reviewed like a demo — honest, not nice</span></div>
     </div>
 
     <div class="priority">
@@ -907,7 +906,7 @@
       <a href="#" data-modal="terms" data-i18n="ft_terms">Terms</a>
     </div>
   </div>
-  <div class="foot-bottom"><span>© 2026 A&R·AI</span><span class="mono" data-i18n="signoff">reviewed like a demo — honest, not nice</span></div>
+  <div class="foot-bottom"><span>© 2026 A&R·AI</span></div>
 </footer>
 
 <!-- ═══════ MODALS: auth + legal ═══════ -->
@@ -1515,7 +1514,7 @@
     // footer
     x.strokeStyle='rgba(237,234,228,0.10)'; x.beginPath(); x.moveTo(72,596); x.lineTo(W-72,596); x.stroke();
     x.textAlign=A; x.fillStyle='rgba(237,234,228,0.35)'; x.font=`13px ${mono}`;
-    x.fillText('✓ '+ui('signoff').toUpperCase(), L, 620);
+    x.fillText('A&R · AI', L, 620);
     return c;
   }
   function shareCard(){
