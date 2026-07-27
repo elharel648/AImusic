@@ -128,7 +128,16 @@
   .foot-bottom{ max-width:880px; margin:0 auto; padding:18px 28px 26px; display:flex; justify-content:space-between; gap:14px;
     font-size:11.5px; color:var(--ink-faint); flex-wrap:wrap; }
   .foot-bottom .mono{ font-family:var(--font-mono); font-size:10px; letter-spacing:0.08em; text-transform:uppercase; }
-  @media (max-width:640px){ .foot-inner{ grid-template-columns:1fr 1fr; } .foot-brand{ grid-column:1/-1; } }
+  @media (max-width:640px){
+    .foot-inner{ grid-template-columns:1fr 1fr; } .foot-brand{ grid-column:1/-1; }
+    /* top bar was the page's only horizontal-overflow source at 390px (en 430px, he 451px) */
+    .bar-inner{ padding:0 16px; }
+    .brand{ gap:8px; } .brand small{ display:none; }
+    .bar-right{ gap:6px; }
+    .auth-btn{ padding:0 11px; }
+    .lang-picker{ max-width:96px; padding:0 22px 0 9px; background-position:right 8px center; }
+    :root[dir="rtl"] .lang-picker{ padding:0 9px 0 22px; background-position:left 8px center; }
+  }
 
   /* modal */
   .modal-back{ position:fixed; inset:0; z-index:60; background:color-mix(in srgb,var(--ground) 72%,transparent);
