@@ -4,8 +4,12 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 *.bak
+server.log
+*.log
 # transient data — regenerable via tools/ (see README)
 data/
 calibration/
 sample.wav
 *.conv.wav
+# local Claude Code settings (contains local perms / ids)
+.claude/

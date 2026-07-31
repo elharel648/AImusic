@@ -66,27 +66,32 @@ def score(truth, est):
 
 
 def run_one(job):
-    """(stem, truth_str) -> (category|'download_fail'|'analyze_fail', detail)."""
-    stem, truth_str = job
+    """(stem, truth_str, genre) -> (category|'download_fail'|'analyze_fail', detail)."""
+    stem, truth_str, genre = job
     from analyze import analyze
     truth = parse_key(truth_str)
     if truth is None:
         return ("bad_annotation", stem)
+    local = os.path.join(ROOT, "calibration", "giantsteps-key", "audio", stem + ".mp3")
+    keep_mp3 = os.path.exists(local)          # cached by key_experiment downloads
     mp3 = wav = None
     try:
-        fd, mp3 = tempfile.mkstemp(suffix=".mp3"); os.close(fd)
-        part = mp3 + ".part"
-        r = subprocess.run(["curl", "-sfL", "--max-time", "180", "-o", part,
-                            MIRROR % stem], capture_output=True)
-        if r.returncode != 0 or not os.path.exists(part) or os.path.getsize(part) < 100_000:
-            if os.path.exists(part):
-                os.remove(part)
-            return ("download_fail", stem)
-        os.replace(part, mp3)
+        if keep_mp3:
+            mp3 = local
+        else:
+            fd, mp3 = tempfile.mkstemp(suffix=".mp3"); os.close(fd)
+            part = mp3 + ".part"
+            r = subprocess.run(["curl", "-sfL", "--max-time", "180", "-o", part,
+                                MIRROR % stem], capture_output=True)
+            if r.returncode != 0 or not os.path.exists(part) or os.path.getsize(part) < 100_000:
+                if os.path.exists(part):
+                    os.remove(part)
+                return ("download_fail", stem)
+            os.replace(part, mp3)
         fd, wav = tempfile.mkstemp(suffix=".wav"); os.close(fd)
         subprocess.run(["ffmpeg", "-y", "-i", mp3, "-ac", "2", "-ar", "44100", wav],
                        check=True, capture_output=True, timeout=120)
-        d = analyze(wav, "default")
+        d = analyze(wav, genre)
         est = parse_key(str(d.get("key", "")))
         if est is None:
             return ("analyze_fail", stem)
@@ -94,7 +99,8 @@ def run_one(job):
     except Exception as e:
         return ("analyze_fail", f"{stem}: {e}")
     finally:
-        for p in (mp3, wav, (mp3 or "") + ".part"):
+        for p in ((None if keep_mp3 else mp3), wav,
+                  (None if keep_mp3 else (mp3 or "") + ".part")):
             if p and os.path.exists(p):
                 os.remove(p)
 
@@ -103,6 +109,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--genre", default="edm",
+                    help="genre passed to analyze(). GiantSteps IS EDM, so "
+                         "'edm' validates the EDM profile path (EDMM); "
+                         "'default' validates the everything-else path (EDMA)")
     a = ap.parse_args()
 
     jobs = []
@@ -110,7 +120,7 @@ def main():
         if fn.endswith(".key"):
             stem = fn[:-4]                                 # e.g. 1004923.LOFI
             truth = open(os.path.join(ANN_DIR, fn)).read().strip()
-            jobs.append((stem, truth))
+            jobs.append((stem, truth, a.genre))
     if a.limit:
         jobs = jobs[:a.limit]
     print(f"validating key detection on {len(jobs)} GiantSteps tracks "
@@ -147,7 +157,13 @@ def main():
         "source": "giantsteps_key",
     }
     out = json.load(open(NORMS)) if os.path.exists(NORMS) else {}
-    out["key_validation"] = result
+    # Keyed by the genre passed to analyze(): the corpus is EDM, so "edm"
+    # measures the EDMM path and "default" the EDMA path used everywhere else.
+    kv = out.get("key_validation")
+    if not isinstance(kv, dict) or "exact" in kv:       # legacy flat shape
+        kv = {}
+    kv[a.genre] = result
+    out["key_validation"] = kv
     out["key_validation_generated"] = str(date.today())
     with open(NORMS, "w") as f:
         json.dump(out, f, indent=2)

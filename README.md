@@ -22,7 +22,7 @@ anr-ai/
 ```bash
 cd anr-ai
 python3 -m venv .venv
-.venv/bin/pip install -r engine/requirements.txt
+.venv/bin/pip install -r requirements.txt
 cd engine
 ../.venv/bin/uvicorn server:app --reload --port 8000
 # open http://127.0.0.1:8000
@@ -71,7 +71,7 @@ export ANR_USE_LLM=1                  # explicit opt-in — this costs money (~$
 ## Tests
 
 ```bash
-.venv/bin/pytest tests/ -v     # 17 tests: accuracy vs ground truth, robustness, i18n, LLM merge/fallback
+.venv/bin/pytest tests/ -v     # 22 tests: accuracy vs ground truth, robustness, i18n, LLM merge/fallback
 ```
 
 Real mobile-viewport check (Chrome CDP device emulation):

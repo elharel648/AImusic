@@ -1,0 +1,27 @@
+# A&R AI — engine + server dependencies (pinned to the versions the product
+# was validated with; see engine/norms_data.json accuracy figures).
+# Python 3.9. System dependency: ffmpeg (decode/encode, codec-impact check).
+fastapi==0.128.8
+uvicorn==0.39.0
+python-multipart==0.0.20
+numpy==2.0.2
+scipy==1.13.1
+librosa==0.11.0
+soundfile==0.13.1
+pyloudnorm==0.2.0
+
+# deep vocal analysis (optional but shipped): Demucs stem separation
+torch==2.8.0
+torchaudio==2.8.0
+demucs==4.0.1
+
+# ML tagging (genre / vocals / danceability) — optional; engine degrades
+# gracefully when missing (ml_available() gate)
+essentia-tensorflow==2.1b6.dev1389
+
+# LLM narrative (optional; enabled via ANR_USE_LLM=1 + ANTHROPIC_API_KEY)
+anthropic==0.120.0
+
+# dev
+pytest==8.4.2
+requests==2.32.5

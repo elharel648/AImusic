@@ -52,7 +52,7 @@ FAMILY = {"electronic": "Electronic", "techno": "Electronic", "house": "Electron
           "rock": "Rock", "metal": "Rock", "punkrock": "Rock"}
 METRICS = ["bpm", "intro_sec", "lufs", "low_mid_ratio", "stereo_width",
            "dynamic_range_db", "timing_rigidity", "section_repetition",
-           "spectral_uniformity", "duration_sec"]
+           "spectral_uniformity", "duration_sec", "tonal_bands"]
 MIN_FREE_GB = 8
 ANALYZE_CAP_SEC = 240      # analyze first 4 min: intro/structure live there
 MIN_N_REPLACE = 300        # replace FMA genre row only with this much data
@@ -187,13 +187,14 @@ def write_norms():
     out.setdefault("genres", {})
     for fam, frows in sorted(by_fam.items()):
         col = lambda k: [r[k] for r in frows]
+        src = "+".join(sorted({r.get("source", "mtg_jamendo") for r in frows}))
         entry = {
             "bpm": [int(pct(col("bpm"), 10)), int(pct(col("bpm"), 90))],
             "intro_sec": [round(pct(col("intro_sec"), 10), 1),
                           round(pct(col("intro_sec"), 90), 1)],
             "lufs": [round(pct(col("lufs"), 25), 1), round(pct(col("lufs"), 75), 1)],
             "low_mid_ratio_p90": round(pct(col("low_mid_ratio"), 90), 3),
-            "n": len(frows), "source": "mtg_jamendo", "full_length": True,
+            "n": len(frows), "source": src, "full_length": True,
         }
         if len(frows) >= MIN_N_REPLACE:
             out["genres"][fam] = entry
@@ -203,14 +204,46 @@ def write_norms():
             print(f"{fam}: n={len(frows)} < {MIN_N_REPLACE} -> FMA row kept "
                   f"(measured intro {entry['intro_sec']})")
 
+    # Tonal-balance target per family: quartile curve per band, across rows
+    # that carry tonal_bands (older rows don't — tonal n can lag the family n).
+    from analyze import TONAL_CENTERS
+    MIN_N_TONAL = 30
+    out.setdefault("tonal", {})
+    for fam, frows in sorted(by_fam.items()):
+        curves = [r["tonal_bands"] for r in frows
+                  if isinstance(r.get("tonal_bands"), list)
+                  and len(r["tonal_bands"]) == len(TONAL_CENTERS)]
+        if len(curves) < MIN_N_TONAL:
+            print(f"tonal[{fam}]: n={len(curves)} < {MIN_N_TONAL} — skipped")
+            continue
+        band = lambda i, q: round(pct([c[i] for c in curves], q), 1)
+        out["tonal"][fam] = {
+            "freqs": [int(f) for f in TONAL_CENTERS],
+            "p25": [band(i, 25) for i in range(len(TONAL_CENTERS))],
+            "p50": [band(i, 50) for i in range(len(TONAL_CENTERS))],
+            "p75": [band(i, 75) for i in range(len(TONAL_CENTERS))],
+            "n": len(curves),
+            "source": "+".join(sorted({r.get("source", "mtg_jamendo")
+                                       for r in frows if r.get("tonal_bands")})),
+        }
+        print(f"tonal[{fam}]: n={len(curves)}")
+
     # Full-length human tell baseline. FMA per-row data was deleted, so this is
     # a SEPARATE section; the 30s-clip human_baseline stays untouched.
     col = lambda k: [r[k] for r in rows]
     hb = {k: {"p95": round(pct(col(k), 95), 3), "p99": round(pct(col(k), 99), 3)}
           for k in ("timing_rigidity", "section_repetition", "spectral_uniformity")}
     hb["dynamic_range_db_p05"] = round(pct(col("dynamic_range_db"), 5), 2)
+    # Full distribution (every 5th percentile) so the report can place a track
+    # against real humans ("more rigid than 97% of human music"), not just
+    # threshold it. Kept compact: 19 numbers per metric.
+    qs = list(range(5, 100, 5))
+    hb["quantiles"] = {"q": qs} | {
+        k: [round(pct(col(k), q), 3) for q in qs]
+        for k in ("timing_rigidity", "section_repetition",
+                  "spectral_uniformity", "dynamic_range_db")}
     hb["n"] = len(rows)
-    hb["source"] = "mtg_jamendo"
+    hb["source"] = "+".join(sorted({r.get("source", "mtg_jamendo") for r in rows}))
     hb["analyzed_first_sec"] = ANALYZE_CAP_SEC
     out["human_baseline_full"] = hb
     out["jamendo_generated"] = str(date.today())

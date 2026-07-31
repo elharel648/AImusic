@@ -17,7 +17,10 @@ Model override:  ANR_MODEL=claude-sonnet-5  (default: claude-opus-4-8)
 """
 from __future__ import annotations
 import json
+import logging
 import os
+
+_log = logging.getLogger("anr")
 
 DEFAULT_MODEL = "claude-opus-4-8"
 
@@ -73,6 +76,22 @@ def llm_available() -> bool:
     return os.environ.get("ANR_USE_LLM") == "1"
 
 
+def llm_ready() -> bool:
+    """llm_available() AND a credential actually resolves. This is what the
+    health probe reports — opt-in with a missing key would otherwise show
+    llm:true while every report silently fell back to template text."""
+    if not llm_available():
+        return False
+    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return True
+    try:  # `ant auth login` profile — the client resolves it or raises
+        import anthropic
+        anthropic.Anthropic()
+        return True
+    except Exception:
+        return False
+
+
 def _build_user_message(report: dict, raw: dict, genre: str) -> str:
     slim_raw = {k: v for k, v in raw.items() if k not in ("energy_curve", "norms")}
     slim_raw["energy_curve_summary"] = {
@@ -105,15 +124,21 @@ def enrich_report(report: dict, raw: dict, lang: str = "en", genre: str = "melod
             model=model,
             max_tokens=8000,
             thinking={"type": "adaptive"},
+            # No cache_control: the persona is ~300 tokens, well under the
+            # 1024-token minimum cacheable prefix — a marker here would be a no-op.
             system=[{
                 "type": "text",
                 "text": SYSTEM.replace("{language}", LANG_NAMES.get(lang, "English")),
-                "cache_control": {"type": "ephemeral"},   # persona is stable → cache it
             }],
             output_config={"format": {"type": "json_schema", "schema": _SCHEMA}},
             messages=[{"role": "user", "content": _build_user_message(report, raw, genre)}],
         )
 
+        stop = getattr(response, "stop_reason", None)
+        if stop not in (None, "end_turn"):
+            # truncation/refusal would otherwise be indistinguishable from success
+            _log.warning("LLM stopped with %r — serving template text", stop)
+            return report
         text = next((b.text for b in response.content if b.type == "text"), None)
         if not text:
             return report
@@ -124,6 +149,9 @@ def enrich_report(report: dict, raw: dict, lang: str = "en", genre: str = "melod
         report["priority"] = data["priority"]
         report["producer_quote"] = data["producer_quote"]
         report["suno_prompt"] = data["suno_prompt"]
+        # The LLM authors one platform-neutral prompt; drop the template parts
+        # so the client shows the LLM's text on every platform instead.
+        report.pop("prompt", None)
         if report.get("ai_signals"):
             report["ai_signals"]["note"] = data["ai_note"]
         by_id = {f["id"]: f for f in data.get("findings", [])}
@@ -136,5 +164,8 @@ def enrich_report(report: dict, raw: dict, lang: str = "en", genre: str = "melod
         report["source"] = "llm"
         return report
     except Exception:
+        # Fail-safe by design, but never invisible: without this log line an
+        # expired key looks identical to the LLM layer working perfectly.
+        _log.exception("LLM narrative failed — serving template text")
         report["source"] = "template"
         return report
