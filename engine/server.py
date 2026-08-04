@@ -141,6 +141,15 @@ def _deep_vocal_measures(path: str) -> dict:
         out = {}
         v, _, vsr = _load(stems["vocals"])
         v22 = librosa.resample(v, orig_sr=vsr, target_sr=ANALYSIS_SR) if vsr != ANALYSIS_SR else v
+        # The separated stem is DIRECT evidence of vocals — better than the
+        # classifier's probability (which reads processed/chopped EDM vocals
+        # as low as 0.43 on tracks with prominent singing). If the isolated
+        # vocal is essentially silent (<5s of frames above -40 dBFS in the
+        # 90s head), report that instead of measuring artifacts as a voice.
+        vr0 = librosa.feature.rms(y=v22)[0]
+        active_sec = float((vr0 > 10 ** (-40 / 20)).sum()) * 512 / ANALYSIS_SR
+        if active_sec < 5.0:
+            return {"stem_level": True, "vocal_stem_silent": True}
         out.update(measure_vocal_bands(v22, ANALYSIS_SR))
         out.update(measure_vocal_performance(v22, ANALYSIS_SR))
         n, _, nsr = _load(stems["no_vocals"])
@@ -330,18 +339,35 @@ def _analyze_sync(tmp_path: str, ext: str, filename: str | None,
                                          resolved_genre))
         # Deep vocal analysis (opt-in, slow): separate the vocal with Demucs
         # and re-measure sibilance/presence on the isolated vocal, mud on the
-        # accompaniment. Only when the ML layer actually hears vocals.
+        # accompaniment.
+        # The user's toggle is an explicit "this track has vocals" — so the
+        # classifier only vetoes the 60s Demucs run when it's SURE there are
+        # none (<=0.25; measured: instrumentals ~0.10, real vocal EDM 0.43+).
+        # The separated stem itself then decides, and whatever happened is
+        # reported back as deep_status — a silent skip looks like a broken
+        # feature and violates the honesty promise.
         # A reference upload only feeds the A/B panel — the client reads _raw.
         # Skip the slow narrative layers (Demucs, LLM); measurements stay full.
         if purpose == "reference":
             deep = "0"
-        if deep == "1" and raw.get("ml_voice_prob", 0) > 0.6 and stems_available():
-            try:
-                raw.update(_deep_vocal_measures(path))
-            except Exception:
-                import logging
-                logging.getLogger("anr").exception("stem separation failed for %s", filename)
+        deep_status = None
+        if deep == "1":
+            if not stems_available():
+                deep_status = "unavailable"
+            elif raw.get("ml_voice_prob", 0) <= 0.25:
+                deep_status = "no_vocals"
+            else:
+                try:
+                    dv = _deep_vocal_measures(path)
+                    raw.update(dv)
+                    deep_status = "no_vocals" if dv.get("vocal_stem_silent") else "ran"
+                except Exception:
+                    import logging
+                    logging.getLogger("anr").exception("stem separation failed for %s", filename)
+                    deep_status = "failed"
         report = build_insights(raw, lang)
+        if deep_status:
+            report["deep_status"] = deep_status
         report["source"] = "template"
         if llm_available() and purpose != "reference":
             # Song-specific narrative written by Claude, grounded in the raw

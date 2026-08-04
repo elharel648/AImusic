@@ -520,11 +520,20 @@ def measure_vocal_performance(vocal: np.ndarray, sr: int) -> dict:
         return {}
     midi = 12 * np.log2(f0 / 440.0) + 69
     dev_cents = 100 * (midi - np.round(midi))
-    return {
+    out = {
         "pitch_dev_cents": round(float(np.median(np.abs(dev_cents))), 1),
         "pitch_within_10c": round(float(np.mean(np.abs(dev_cents) <= 10)), 2),
         "voiced_sec": round(float(f0.size * 512 / sr), 1),
     }
+    # Delivery dynamics: p90-p10 spread of the active vocal's RMS, in dB.
+    # A human performance breathes (verses soft, hooks loud) — a spread under
+    # ~4 dB reads as one flat intensity the whole way through.
+    rms = librosa.feature.rms(y=vocal)[0]
+    act = rms[rms > 10 ** (-40 / 20)]
+    if act.size >= 40:                            # ≥ ~1s of audible vocal
+        lo, hi = np.percentile(20 * np.log10(act), [10, 90])
+        out["vocal_dyn_db"] = round(float(hi - lo), 1)
+    return out
 
 
 def measure_vocal_bands(mono: np.ndarray, sr: int) -> dict:

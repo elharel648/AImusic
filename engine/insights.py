@@ -182,8 +182,12 @@ def build_insights(m: dict, lang: str = "en") -> dict:
     # ── Sibilance (only when the ML layer actually hears vocals) ──
     # stem_level: measured on the Demucs-isolated vocal, not the full mix —
     # the prescription is no longer a proxy, so its confidence rises to high.
+    # Vocals are "heard" when the classifier is confident OR the Demucs stem
+    # proved them directly (stem evidence beats the classifier — processed EDM
+    # vocals can score as low as 0.43 on tracks with prominent singing).
+    stem_vocals = bool(m.get("stem_level")) and not m.get("vocal_stem_silent")
     sib = m.get("sibilance_ratio", 0)
-    if m.get("ml_voice_prob", 0) > 0.6 and sib > 0.10:
+    if (m.get("ml_voice_prob", 0) > 0.6 or stem_vocals) and sib > 0.10:
         stem = bool(m.get("stem_level"))
         findings.append({
             "id": "Sibilance", "k": L("label_Sibilance"), "score": max(45, int(100 - (sib - 0.10) * 400)), "sev": "warn",
@@ -201,13 +205,20 @@ def build_insights(m: dict, lang: str = "en") -> dict:
     # active) and intonation bars (35/15 cents) are curated engineering
     # judgment, not corpus-measured — the measured value is always shown so
     # the reader can disagree with the bar, not with the number.
-    if m.get("stem_level") and m.get("ml_voice_prob", 0) > 0.6:
+    if stem_vocals:
         bal = m.get("vocal_mix_db")
         dev = m.get("pitch_dev_cents")
+        vdyn = m.get("vocal_dyn_db")
         tuned = (dev is not None and dev <= 5
                  and m.get("pitch_within_10c", 0) >= 0.85)
+        # Extreme quantization: essentially zero deviation on essentially every
+        # frame. Human singing — even well-tuned — keeps a few cents of drift;
+        # this is the "autotune is doing all the work" signature.
+        hardtune = (dev is not None and dev <= 2
+                    and m.get("pitch_within_10c", 0) >= 0.98)
         vocal_measure = ([[f"{bal} dB", L("ml_voc_bal")]] if bal is not None else []) \
             + ([[f"{dev}¢", L("ml_voc_dev")]] if dev is not None else []) \
+            + ([[f"{vdyn} dB", L("ml_voc_dyn")]] if vdyn is not None else []) \
             + ([[f"{m['voiced_sec']}s", L("ml_voc_voiced")]] if m.get("voiced_sec") else [])
         if bal is not None and bal < -12:
             findings.append({
@@ -226,6 +237,25 @@ def build_insights(m: dict, lang: str = "en") -> dict:
                 "why": [L("voc_pitch_why1", cents=int(dev)), L("voc_stem_why")],
                 "measure": vocal_measure,
                 "fix": {"daw": L("voc_pitch_fix_daw"), "suno": L("voc_pitch_fix_suno")},
+            })
+        elif hardtune:
+            findings.append({
+                "id": "Vocal", "k": L("label_Vocal"), "score": 72, "sev": "warn",
+                "headline": L("voc_hardtune_head", cents=dev),
+                "why": [L("voc_hardtune_why1", cents=dev,
+                           pct=int(m.get("pitch_within_10c", 0) * 100)),
+                        L("voc_hardtune_why2"), L("voc_stem_why")],
+                "measure": vocal_measure,
+                "fix": {"daw": L("voc_hardtune_fix_daw"), "suno": L("voc_hardtune_fix_suno")},
+            })
+        elif vdyn is not None and vdyn < 4:
+            findings.append({
+                "id": "Vocal", "k": L("label_Vocal"),
+                "score": max(50, 90 - int((4 - vdyn) * 10)), "sev": "warn",
+                "headline": L("voc_flat_head"),
+                "why": [L("voc_flat_why1", db=vdyn), L("voc_flat_why2"), L("voc_stem_why")],
+                "measure": vocal_measure,
+                "fix": {"daw": L("voc_flat_fix_daw"), "suno": L("voc_flat_fix_suno")},
             })
         elif vocal_measure:
             findings.append({
@@ -508,6 +538,13 @@ def _priority(lang, weakest, m, L):
         return L("prio_master", lufs=m["lufs"], llo=m["norms"]["lufs"][0])
     if wid == "Mix":
         return L("prio_mix")
+    # Everything else: build the line from the finding itself — its headline
+    # and DAW fix are already specific, measured and translated. The
+    # "work on {k} first — it's the weakest link" template read as canned
+    # boilerplate by the second report.
+    fix = (weakest.get("fix") or {}).get("daw")
+    if fix:
+        return f"{weakest['headline']} {fix}"
     return L("prio_generic", k=L("name_" + wid))
 
 
