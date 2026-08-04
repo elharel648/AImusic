@@ -556,8 +556,7 @@
 
   .player{ margin:22px 0 6px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:16px 18px 14px; display:flex; flex-direction:column; gap:12px; }
   .player .p-row{ display:flex; align-items:center; gap:14px; }
-  .player .sx-strip{ flex:1; height:96px; cursor:pointer; min-width:0; }
-  .player .sx-strip canvas{ display:block; width:100%; height:96px; }
+  .player .sx-strip{ flex:1; cursor:pointer; min-width:0; }
   .player.noaudio .pp, .player.noaudio .time{ display:none; }
   .player.noaudio .sx-strip{ cursor:default; }
   .player.hidden{ display:none; }
@@ -944,8 +943,73 @@
   .sx-read.warn{ color:var(--ink); }
   .sx-read.warn .led{ background:var(--warn); box-shadow:0 0 8px color-mix(in srgb,var(--warn) 60%,transparent); }
   .sx-read b{ color:var(--ink); font-weight:600; font-family:var(--font-mono); font-size:12.5px; unicode-bidi:isolate; }
-  .sx-strip{ position:relative; direction:ltr; }   /* the timeline always flows left→right */
-  .sx-strip canvas{ display:block; width:100%; height:96px; cursor:crosshair; }
+  /* the timeline always flows left→right — Material Design bidi: media timelines
+     never flip, Hebrew explicitly. Chapters use the YouTube grammar: segments
+     with 2px gaps, only the hovered one swells; notes ride a dedicated pin lane. */
+  .sx-strip{ position:relative; direction:ltr; }
+  .sx-segs{ position:relative; display:flex; gap:2px; height:84px; align-items:flex-end; margin-top:14px; }
+  .sx-seg{ position:relative; height:100%; display:flex; align-items:flex-end; gap:2px; padding:0 1px;
+    transition:transform .13s var(--ease), opacity .13s var(--ease); transform-origin:bottom; }
+  @media (hover:hover) and (pointer:fine){
+    .sx-segs:hover .sx-seg{ opacity:.55; }
+    .sx-segs .sx-seg:hover{ opacity:1; transform:scaleY(1.06); }
+  }
+  .sx-seg i{ flex:1; background:var(--ink-faint); opacity:.5; border-radius:1.5px 1.5px 0 0; min-height:2px; }
+  .sx-seg.intro i{ background:var(--good); opacity:.42; }
+  .sx-seg.intro.late i{ background:var(--warn); }
+  .sx-seg i.played{ background:var(--amber); opacity:.95; }
+  .sx-region{ position:absolute; top:-5px; bottom:-2px; border-radius:6px; pointer-events:none; opacity:0; border:1px solid transparent;
+    transition:opacity .2s var(--ease), left .2s var(--ease), width .2s var(--ease); }
+  .sx-region.on{ opacity:1; }
+  .sx-ph{ position:absolute; top:-7px; bottom:-2px; width:2px; background:var(--amber); border-radius:2px; pointer-events:none;
+    box-shadow:0 0 10px color-mix(in srgb,var(--amber) 50%,transparent); z-index:2; }
+  .sx-ph::after{ content:""; position:absolute; top:-5px; left:-4px; width:10px; height:10px; border-radius:50%;
+    background:var(--amber); box-shadow:0 0 8px color-mix(in srgb,var(--amber) 80%,transparent); }
+  .sx-hline{ position:absolute; top:-5px; bottom:-2px; width:1px; background:color-mix(in srgb,var(--ink) 35%,transparent); pointer-events:none; z-index:3; }
+  .sx-chband{ display:flex; gap:2px; margin-top:8px; }
+  .sx-chb{ height:24px; border-radius:5px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center;
+    justify-content:center; gap:8px; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.1em; color:var(--ink-dim);
+    overflow:hidden; white-space:nowrap; text-transform:uppercase; }
+  .sx-chb.intro{ color:var(--good); background:var(--good-dim); }
+  .sx-chb.intro.late{ color:var(--warn); background:var(--warn-dim); }
+  .sx-chb small{ color:var(--ink-faint); font-size:9px; }
+  .sx-pins{ position:absolute; top:0; left:0; right:0; height:0; z-index:4; }
+  .sx-pin{ position:absolute; transform:translateX(-50%); width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+    font-family:var(--font-mono); font-size:10px; font-weight:700; cursor:pointer; border:1.5px solid; background:var(--surface); padding:0;
+    transition:transform .13s var(--ease), box-shadow .13s var(--ease); }
+  @media (hover:hover) and (pointer:fine){ .sx-pin:hover{ transform:translateX(-50%) scale(1.18); } }
+  .sx-pin.crit{ color:var(--crit); border-color:var(--crit); }
+  .sx-pin.warn{ color:var(--warn); border-color:var(--warn); }
+  .sx-pin.good{ color:var(--good); border-color:var(--good); }
+  .sx-pin.on{ background:currentColor; box-shadow:0 0 14px currentColor; }
+  .sx-pin.on span{ color:var(--bg, #fff); filter:invert(1) grayscale(1) contrast(9); }
+  /* the producer's notes rail: every row is a second render of playhead state */
+  .sx-notes{ display:flex; flex-direction:column; gap:7px; margin:2px 0 16px; }
+  .sx-note{ position:relative; display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid var(--line); border-radius:var(--r-sm);
+    background:none; cursor:pointer; text-align:start; font:inherit; color:var(--ink); width:100%; overflow:hidden;
+    transition:border-color .15s var(--ease), background .15s var(--ease); }
+  .sx-note:hover{ border-color:var(--line-2); background:var(--surface-2); }
+  .sx-note.on{ border-color:currentColor; }
+  .sx-note.crit.on{ color:var(--crit); background:var(--crit-dim); }
+  .sx-note.warn.on{ color:var(--warn); background:var(--warn-dim); }
+  .sx-note.good.on{ color:var(--good); background:var(--good-dim); }
+  .sx-note.on .nx, .sx-note.on .nt{ color:var(--ink); }
+  .sx-note .nn{ width:20px; height:20px; border-radius:50%; display:grid; place-items:center; flex-shrink:0;
+    font-family:var(--font-mono); font-size:9.5px; font-weight:700; border:1.5px solid; }
+  .sx-note.crit .nn{ color:var(--crit); border-color:var(--crit); }
+  .sx-note.warn .nn{ color:var(--warn); border-color:var(--warn); }
+  .sx-note.good .nn{ color:var(--good); border-color:var(--good); }
+  .sx-note .nt{ font-family:var(--font-mono); font-size:10px; color:var(--ink-faint); direction:ltr; flex-shrink:0; min-width:78px; font-variant-numeric:tabular-nums; }
+  .sx-note .nx{ flex:1; font-size:13px; line-height:1.45; }
+  .sx-note .na{ color:var(--ink-faint); flex-shrink:0; font-size:11px; }
+  .sx-note .np{ position:absolute; bottom:0; inset-inline-start:0; height:2px; width:0%; background:currentColor; opacity:.85; }
+  .player.noaudio .sx-notes .na{ display:none; }
+  /* the voice line inherits the speaking finding's severity */
+  .gt-cap.crit{ border-inline-start-color:var(--crit); background:var(--crit-dim); }
+  .gt-cap.good{ border-inline-start-color:var(--good); background:var(--good-dim); }
+  /* the tour takes over: only the timeline and the voice stay lit */
+  .player.touring :is(.sx-notes,.sx-reads,.fixprev){ opacity:.28; pointer-events:none; }
+  .sx-notes,.sx-reads,.fixprev{ transition:opacity .25s var(--ease); }
   .sx-tip{ position:absolute; top:-4px; transform:translate(-50%,-100%); background:var(--raise); border:1px solid var(--line-2);
     border-radius:var(--r-sm); padding:3px 9px; font-size:10px; color:var(--ink); pointer-events:none; white-space:nowrap; z-index:2; }
   /* hovering a measured moment: the producer speaks first, the number supports */
@@ -1220,13 +1284,20 @@
       <div class="p-row">
         <button class="pp" id="ppBtn" aria-label="Play / pause"><svg id="ppIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
         <div class="sx-strip" id="sxStrip">
-          <canvas id="structCanvas"></canvas>
+          <div class="sx-pins" id="sxPins"></div>
+          <div class="sx-segs" id="sxSegs">
+            <div class="sx-region" id="sxRegion"></div>
+            <div class="sx-ph" id="sxPh" hidden></div>
+            <div class="sx-hline" id="sxHline" hidden></div>
+          </div>
+          <div class="sx-chband" id="sxChband"></div>
           <div class="sx-tip mono" id="sxTip" hidden></div>
         </div>
         <div class="time mono" id="wfTime">0:00 / 0:00</div>
         <button class="gt-btn" id="gtBtn" type="button"><span class="gt-dot" aria-hidden="true"></span> <span data-i18n="gt_btn">Listen with me</span></button>
       </div>
       <div class="gt-cap" id="gtCap" hidden></div>
+      <div class="sx-notes" id="sxNotes" hidden></div>
       <div class="sx-reads" id="sxReads"></div>
       <div class="fixprev" id="fixPrevRow" hidden>
         <button class="lsn tgl" id="fixPrevBtn"></button>
@@ -2443,29 +2514,122 @@
     return reads;
   }
 
+  // ─────────── the intelligent timeline (DOM): chapters, pins, notes rail ───────────
+  let sxBars=[], sxNotes=[], sxNoteRows=[], sxActive=-1, sxSurf=-1;
   function drawStructure(rep){
     const raw=rep._raw||{}; const curve=raw.energy_curve;
     const wrap=$('player');
-    // the strip needs an energy curve; without one the player only earns its
-    // place when there is real audio to play (then sxPaint falls back to a flat shape)
     if((!curve||curve.length<8) && !audioEl){ wrap.classList.add('hidden'); return; }
     wrap.classList.remove('hidden');
-    sxRep=rep; sxProg=0; sxHover=-1; sxMom=sxMoments(rep); gtStop();
+    sxRep=rep; sxProg=0; sxMom=sxMoments(rep); gtStop();
     $('sxReads').innerHTML=sxConclusions(raw).map(([sev,html])=>
       `<div class="sx-read${sev==='warn'?' warn':''}"><span class="led"></span><div>${html}</div></div>`).join('');
-    cancelAnimationFrame(sxEntryRAF); cancelAnimationFrame(sxIdleRAF); sxIdleRAF=0;
-    if(sxReduce()){ sxAnim=1; sxPaint(); return; }
-    sxAnim=0;
-    const t0=performance.now(), D=950;
-    const tick=now=>{
-      sxAnim=Math.min(1,Math.max(0,(now-t0)/D)); sxPaint();
-      if(sxAnim<1) sxEntryRAF=requestAnimationFrame(tick);
-      else sxIdleRAF=requestAnimationFrame(sxLoop);   // hand off to the living loop
-    };
-    sxEntryRAF=requestAnimationFrame(tick);
+    buildTimeline(rep);
+    cancelAnimationFrame(sxIdleRAF); sxIdleRAF=0;
+    sxIdleRAF=requestAnimationFrame(sxLoop);   // playhead motion is information — runs under reduced-motion too
+    sxPaint();
   }
 
-  // idle loop: peak-ring breathing + playhead tracking while the report is on screen
+  function buildTimeline(rep){
+    const raw=rep._raw||{};
+    const curve=(raw.energy_curve&&raw.energy_curve.length>7)? raw.energy_curve
+      : Array.from({length:96},(_,i)=>0.3+0.5*Math.abs(Math.sin(i*0.3)));   // audio without a curve: neutral shape
+    const dur=raw.duration_sec||0;
+    const introFrac=dur? Math.max(0,Math.min(.95,(raw.intro_sec||0)/dur)) : 0;
+    const norms=(raw.norms&&raw.norms.intro_sec)||null;
+    const late=!!(norms && (raw.intro_sec||0)>norms[1]);   // amber only when the intro is actually flagged
+    const segsEl=$('sxSegs'), chb=$('sxChband'), pinsEl=$('sxPins'), notesEl=$('sxNotes');
+    segsEl.querySelectorAll('.sx-seg').forEach(e=>e.remove());
+    chb.innerHTML=''; pinsEl.innerHTML=''; notesEl.innerHTML='';
+    sxBars=[]; sxNoteRows=[]; sxActive=-1; sxSurf=-1;
+    $('sxRegion').classList.remove('on');
+    const n=curve.length;
+    // chapters: only what we MEASURED — intro and body (never invent a "drop")
+    const CHAP=[];
+    if(introFrac>0.02) CHAP.push({f0:0, f1:introFrac, cls:'intro'+(late?' late':''), name:ui('lg_intro'), t:0});
+    CHAP.push({f0:CHAP.length?introFrac:0, f1:1, cls:'', name:ui('lg_body'), t:CHAP.length?(raw.intro_sec||0):0});
+    CHAP.forEach(ch=>{
+      const seg=document.createElement('div');
+      seg.className='sx-seg'+(ch.cls?' '+ch.cls:'');
+      seg.style.width=((ch.f1-ch.f0)*100)+'%';
+      const i0=Math.floor(ch.f0*n), i1=Math.max(i0+1,Math.ceil(ch.f1*n));
+      for(let i=i0;i<i1;i++){
+        const b=document.createElement('i');
+        b.style.height=Math.max(3,(curve[i]||0)*94)+'%';
+        b.dataset.f=(i+0.5)/n;
+        seg.appendChild(b); sxBars.push(b);
+      }
+      segsEl.appendChild(seg);
+      const cell=document.createElement('div');
+      cell.className='sx-chb'+(ch.cls?' '+ch.cls:'');
+      cell.style.width=((ch.f1-ch.f0)*100)+'%';
+      cell.innerHTML=`${esc(ch.name)} <small>${fmt(ch.t)}</small>`;
+      chb.appendChild(cell);
+    });
+    // notes = the measured problem moments + the peak (point at what works too)
+    sxNotes=sxMom.map(m=>({t0:m.t0, t1:m.t1, sev:m.sev, text:m.text}));
+    if(dur && typeof raw.peak_moment_sec==='number' && raw.peak_moment_sec>0)
+      sxNotes.push({t0:Math.max(0,raw.peak_moment_sec-3), t1:Math.max(0,raw.peak_moment_sec-3),
+                    sev:'good', text:ui('gt_peak'), peakAt:raw.peak_moment_sec});
+    sxNotes.forEach((m,i)=>{
+      if(!dur) return;
+      const mid=((m.peakAt!=null? m.peakAt : (m.t0+m.t1)/2)/dur)*100;
+      const p=document.createElement('button');
+      p.type='button'; p.className='sx-pin '+m.sev;
+      p.style.left=Math.max(1.5,Math.min(98.5,mid))+'%';
+      p.innerHTML=`<span>${i+1}</span>`; p.setAttribute('aria-label',(i+1)+' · '+m.text);
+      p.addEventListener('click',e=>{ e.stopPropagation(); gtStop(); sxActivate(i,true); });
+      pinsEl.appendChild(p);
+      const row=document.createElement('button');
+      row.type='button'; row.className='sx-note '+m.sev;
+      const tl=m.t0===m.t1? fmt(m.peakAt!=null?m.peakAt:m.t0) : fmt(m.t0)+'–'+fmt(m.t1);
+      row.innerHTML=`<span class="nn">${i+1}</span><span class="nt">${tl}</span><span class="nx">${bidi(esc(m.text))}</span><span class="na">▸</span><span class="np"></span>`;
+      row.addEventListener('click',()=>{ gtStop(); sxActivate(i,true); });
+      notesEl.appendChild(row); sxNoteRows.push(row);
+    });
+    notesEl.hidden=!sxNoteRows.length;
+    $('sxPh').hidden=false;
+  }
+
+  // activate note i: say it, mark its region, loop it (wavesurfer grammar)
+  function sxActivate(i, andPlay){
+    const m=sxNotes[i]; if(!m||!sxRep) return;
+    sxActive=i; sxSurf=i;
+    const isLoop=m.t0!==m.t1;
+    fxReset();
+    loopSpan=isLoop? [m.t0, m.t1] : null;
+    sxSay(m);
+    const reg=$('sxRegion'), dur=(sxRep._raw||{}).duration_sec||0;
+    if(dur&&isLoop){
+      const col=m.sev==='crit'?'var(--crit)':m.sev==='good'?'var(--good)':'var(--warn)';
+      reg.className='sx-region on';
+      reg.style.borderColor=col;
+      reg.style.background=m.sev==='crit'?'var(--crit-dim)':m.sev==='good'?'var(--good-dim)':'var(--warn-dim)';
+      reg.style.left=(m.t0/dur*100)+'%';
+      reg.style.width=(Math.max(.012,(m.t1-m.t0)/dur)*100)+'%';
+    } else reg.classList.remove('on');
+    sxNoteRows.forEach((r,j)=>{ r.classList.toggle('on', j===i); if(j!==i) r.querySelector('.np').style.width='0%'; });
+    if(audioEl){
+      audioEl.currentTime=m.t0;
+      if(andPlay&&audioEl.paused) togglePlay(); else updateTime();
+    }
+    sxPaint();
+  }
+  function sxSay(m){
+    const cap=$('gtCap');
+    cap.hidden=false; cap.textContent=m.text;
+    cap.className='gt-cap '+(m.sev==='crit'?'crit':m.sev==='good'?'good':'');
+    cap.classList.remove('sw'); void cap.offsetWidth; cap.classList.add('sw');
+    document.querySelectorAll('.sx-pin').forEach((p,j)=>p.classList.toggle('on', sxNotes[j]===m));
+  }
+  function sxClear(){
+    sxActive=-1; sxSurf=-1; loopSpan=null;
+    $('sxRegion').classList.remove('on');
+    document.querySelectorAll('.sx-pin').forEach(p=>p.classList.remove('on'));
+    sxNoteRows.forEach(r=>{ r.classList.remove('on'); r.querySelector('.np').style.width='0%'; });
+  }
+
+  // idle loop: playhead tracking while the report is on screen
   function sxLoop(){
     if(!sxRep || !screens.report.classList.contains('active')){ sxIdleRAF=0; return; }
     sxProg=(audioEl&&audioEl.duration)? audioEl.currentTime/audioEl.duration : 0;
@@ -2474,157 +2638,112 @@
   }
 
   function sxPaint(){
-    const rep=sxRep; if(!rep) return;
-    const raw=rep._raw||{};
-    const curve=(raw.energy_curve&&raw.energy_curve.length>7)? raw.energy_curve
-      : Array.from({length:200},(_,i)=>0.3+0.5*Math.abs(Math.sin(i*0.3)));   // audio without a curve: neutral shape
-    const strip=$('sxStrip'), canvas=$('structCanvas');
-    const w=strip.clientWidth, h=96;
-    if(!w) return;
-    const dpr=devicePixelRatio||1;
-    canvas.width=w*dpr; canvas.height=h*dpr;
-    const c=canvas.getContext('2d'); c.scale(dpr,dpr); c.clearRect(0,0,w,h);
-    const cs=getComputedStyle(document.documentElement);
-    const bodyCol=cs.getPropertyValue('--ink-dim').trim(), warn=cs.getPropertyValue('--warn').trim(),
-          amber=cs.getPropertyValue('--amber').trim(), good=cs.getPropertyValue('--good').trim();
-    const dur=raw.duration_sec||0;
-    const introFrac=dur?(raw.intro_sec||0)/dur:0;
-    const peakFrac=(dur&&typeof raw.peak_moment_sec==='number')? raw.peak_moment_sec/dur : -1;
-    const norms=(raw.norms&&raw.norms.intro_sec)||null;
-    const introCol=(norms && (raw.intro_sec||0)>norms[1]) ? warn : good;   // amber only when the intro is actually flagged
-    const n=curve.length, bw=w/n, top=18;
-    for(let i=0;i<n;i++){
-      const frac=i/n;
-      const local=sxAnim>=1?1:sxEase(Math.max(0,Math.min(1,sxAnim*1.55-frac*0.55)));
-      if(local<=0) continue;
-      const bh=Math.max(2,curve[i]*(h-top)*local);
-      const isIntro=frac<introFrac, played=sxProg>0&&frac<=sxProg;
-      c.fillStyle = played? amber : isIntro? introCol : bodyCol;
-      c.globalAlpha = i===sxHover?1 : played?0.95 : isIntro?0.5 : 0.8;
-      c.beginPath();
-      if(c.roundRect) c.roundRect(i*bw,h-bh,Math.max(1.5,bw-2),bh,2); else c.rect(i*bw,h-bh,Math.max(1.5,bw-2),bh);
-      c.fill();
+    if(!sxRep) return;
+    const dur=(sxRep._raw||{}).duration_sec || (audioEl&&audioEl.duration) || 0;
+    $('sxPh').style.left=(Math.max(0,Math.min(1,sxProg))*100)+'%';
+    sxBars.forEach(b=>b.classList.toggle('played', +b.dataset.f<=sxProg));
+    const t=sxProg*dur;
+    // Overcast: the active row renders its own loop progress
+    if(sxActive>=0 && loopSpan && sxNoteRows[sxActive]){
+      sxNoteRows[sxActive].querySelector('.np').style.width=
+        (Math.max(0,Math.min(1,(t-loopSpan[0])/((loopSpan[1]-loopSpan[0])||1)))*100)+'%';
     }
-    c.globalAlpha=1;
-    const lblA=sxAnim>=1?1:Math.max(0,(sxAnim-0.45)/0.55);   // labels fade in on the second half of the entrance
-    if(introFrac>0.01&&introFrac<0.95){
-      c.globalAlpha=0.9*lblA; c.fillStyle=introCol; c.fillRect(introFrac*w-0.5,12,1.5,h-12);
-      if(introFrac*w>72&&lblA>0){
-        c.globalAlpha=lblA; c.font=`600 9px ${SX_MONO}`; c.textAlign='left'; c.direction='ltr';
-        c.fillText(`${ui('lg_intro').toUpperCase()} · ${fmt(raw.intro_sec||0)}`, 2, 8);
-      }
+    // SoundCloud: the note surfaces itself as the playhead crosses it
+    if(audioEl && !audioEl.paused && dur && !gtOn){
+      const c=sxNotes.findIndex(m=> t>=m.t0-1 && t<=(m.t0===m.t1? m.t0+4 : m.t1));
+      if(c!==sxSurf){ sxSurf=c; if(c>=0 && c!==sxActive) sxSay(sxNotes[c]); }
     }
-    if(peakFrac>0&&peakFrac<1){
-      const pop=sxAnim>=1?1:sxEase(Math.max(0,(sxAnim-0.7)/0.3));
-      if(pop>0){
-        const px=peakFrac*w;
-        const pb=Math.max(2,(curve[Math.min(n-1,Math.floor(peakFrac*n))]||0)*(h-top));
-        const py=Math.max(10,h-pb-10);
-        c.globalAlpha=pop; c.fillStyle=amber;
-        c.beginPath(); c.arc(px,py,3.5*pop,0,Math.PI*2); c.fill();
-        const breathe=sxReduce()?0.5:(Math.sin(performance.now()/480)+1)/2;
-        c.globalAlpha=pop*(0.55-0.35*breathe);
-        c.strokeStyle=amber; c.lineWidth=1.2;
-        c.beginPath(); c.arc(px,py,7+4*breathe*pop,0,Math.PI*2); c.stroke();
-        c.globalAlpha=pop; c.font=`600 9px ${SX_MONO}`; c.direction='ltr'; c.textAlign='left';
-        const lbl=`${ui('lg_peak').toUpperCase()} · ${fmt(raw.peak_moment_sec)}`;
-        const tw=c.measureText(lbl).width;
-        let lx=Math.min(w-tw-2, Math.max(2, px-tw/2));   // label lives in the top headroom, centered on the dot
-        if(introFrac>0.01&&introFrac*w>72)
-          lx=Math.max(lx, c.measureText(`${ui('lg_intro').toUpperCase()} · ${fmt(raw.intro_sec||0)}`).width+14);
-        c.fillStyle=amber; c.fillText(lbl, lx, 8);
-        c.globalAlpha=pop*0.35; c.fillRect(px-0.5,12,1,Math.max(0,py-12-9));   // hairline ties the label to its moment
-      }
-    }
-    // measured problem stretches: quiet underlines — visible, never shouting
-    if(dur && sxMom.length){
-      const critCol=cs.getPropertyValue('--crit').trim();
-      sxMom.forEach(m=>{
-        const x0=m.t0/dur*w, x1=Math.min(w,m.t1/dur*w);
-        c.globalAlpha=0.75*lblA; c.fillStyle=m.sev==='crit'?critCol:warn;
-        c.fillRect(x0, h-2.5, Math.max(6,x1-x0), 2.5);
-      });
-      c.globalAlpha=1;
-    }
-    if(sxProg>0&&sxProg<=1){ c.globalAlpha=0.95; c.fillStyle=amber; c.fillRect(sxProg*w-0.75,6,1.5,h-6); }
-    c.globalAlpha=1;
   }
 
-  // strip interactions: hover scrub-preview, click = listen from that point
+  // strip interactions: hover = hairline + producer-first tooltip, click = seek or loop-a-moment
   (function(){
-    const strip=$('sxStrip'), tip=$('sxTip');
+    const strip=$('sxStrip'), segs=$('sxSegs'), tip=$('sxTip'), hl=$('sxHline');
     if(!strip) return;
+    const rect=()=>segs.getBoundingClientRect();
     strip.addEventListener('pointermove',e=>{
       if(!sxRep) return;
-      const r=strip.getBoundingClientRect(), x=Math.max(0,Math.min(r.width,e.clientX-r.left));
-      const raw=sxRep._raw||{}, dur=raw.duration_sec||0, curve=raw.energy_curve||[];
-      sxHover=Math.floor(x/r.width*curve.length);
-      const t=dur*x/r.width;
-      // producer language first: a measured moment under the cursor speaks in
-      // the finding's own words — the timestamp becomes the supporting number
-      const m=sxMom.find(m=>t>=m.t0&&t<=m.t1);
+      const r=rect(), x=Math.max(0,Math.min(r.width,e.clientX-r.left));
+      const raw=sxRep._raw||{}, dur=raw.duration_sec||0, t=dur*x/r.width;
+      const m=sxNotes.find(m=> t>=m.t0 && t<=(m.t0===m.t1? m.t0+2 : m.t1));
       if(m){ tip.textContent=`${m.text} · ${fmt(t)}`; tip.classList.add('insight'); }
       else{
         const zone=(raw.intro_sec>3&&t<raw.intro_sec)? ui('lg_intro') : ui('lg_body');
         tip.textContent=`${fmt(t)} · ${zone}`; tip.classList.remove('insight');
       }
       tip.style.left=Math.max(60,Math.min(r.width-60,x))+'px'; tip.hidden=false;
-      if(!sxIdleRAF) sxPaint();
+      hl.hidden=false; hl.style.left=x+'px';
     });
-    strip.addEventListener('pointerleave',()=>{ sxHover=-1; tip.hidden=true; if(!sxIdleRAF) sxPaint(); });
+    strip.addEventListener('pointerleave',()=>{ tip.hidden=true; hl.hidden=true; });
     strip.addEventListener('click',e=>{
+      if(e.target.closest('.sx-pin')) return;
       if(!audioEl||!audioEl.duration) return;
       gtStop();   // a manual move ends the guided tour — the artist took the wheel
-      // a manual seek overrides an active worst-stretch loop (band solo may stay)
-      if(loopSpan){ loopSpan=null; document.querySelectorAll('.lsn.on[data-act="loop"]').forEach(b=>b.classList.remove('on')); }
-      const r=strip.getBoundingClientRect();
-      const t=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*audioEl.duration;
-      // clicking a measured moment loops IT — the insight guides the listening
-      const m=sxMom.find(m=>t>=m.t0&&t<=m.t1);
-      if(m){ loopSpan=[m.t0,m.t1]; audioEl.currentTime=m.t0; }
-      else audioEl.currentTime=t;
+      const r=rect(), f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+      const dur=(sxRep._raw||{}).duration_sec||audioEl.duration, t=f*dur;
+      const mi=sxNotes.findIndex(m=> m.t0!==m.t1 && t>=m.t0 && t<=m.t1);
+      if(mi>=0){ sxActivate(mi,true); return; }   // clicking a measured moment loops it
+      sxClear();
+      document.querySelectorAll('.lsn.on[data-act="loop"]').forEach(b=>b.classList.remove('on'));
+      audioEl.currentTime=f*audioEl.duration;
       if(audioEl.paused) togglePlay(); else updateTime();
       if(!sxIdleRAF){ sxProg=audioEl.currentTime/audioEl.duration; sxPaint(); }
     });
   })();
 
+  // keyboard grammar (W3C APG + player conventions) — report screen, real audio only
+  addEventListener('keydown',e=>{
+    if(!screens.report.classList.contains('active') || !audioEl) return;
+    const tag=(e.target.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='textarea'||tag==='select'||e.target.isContentEditable) return;
+    const dur=audioEl.duration||0; if(!dur) return;
+    const seek=d=>{ gtStop(); sxClear(); audioEl.currentTime=Math.max(0,Math.min(dur-0.2,audioEl.currentTime+d)); updateTime(); };
+    if(e.code==='Space'){ e.preventDefault(); gtStop(); togglePlay(); }
+    else if(e.key==='ArrowRight') seek(5);
+    else if(e.key==='ArrowLeft') seek(-5);
+    else if(e.key==='PageUp') seek(15);
+    else if(e.key==='PageDown') seek(-15);
+    else if(e.key==='Home'){ gtStop(); sxClear(); audioEl.currentTime=0; updateTime(); }
+    else if(e.key==='Escape'){ gtStop(); sxClear(); updateTime(); }
+    else if(/^[1-9]$/.test(e.key) && sxNotes[+e.key-1]){ gtStop(); sxActivate(+e.key-1,true); }
+  });
+
   // ─────────── listen with me: the producer drives the transport ───────────
-  // A short guided pass built ONLY from measured anchors: where the song truly
-  // starts, the worst measured stretches (the finding narrates in its own
-  // words), and the peak. Any manual action hands the wheel back.
+  // A guided pass over MEASURED anchors only. Any manual action hands back the wheel.
   let gtTimer=null, gtOn=false;
   function gtStop(){
     gtOn=false; clearTimeout(gtTimer); loopSpan=null;
     const b=$('gtBtn'), cap=$('gtCap');
     if(b) b.classList.remove('on');
     if(cap) cap.hidden=true;
+    $('player').classList.remove('touring');
   }
   function gtStart(){
     if(!audioEl||!sxRep) return;
     const raw=sxRep._raw||{}, steps=[];
     if(raw.intro_sec>3) steps.push({t:Math.max(0,raw.intro_sec-3), d:7, txt:ui('gt_intro')});
-    sxMom.slice(0,2).forEach(m=>steps.push({t:m.t0, d:Math.min(9,Math.max(5,m.t1-m.t0)), txt:m.text, loop:[m.t0,m.t1]}));
-    if(typeof raw.peak_moment_sec==='number' && raw.peak_moment_sec>0)
-      steps.push({t:Math.max(0,raw.peak_moment_sec-3), d:8, txt:ui('gt_peak')});
+    sxNotes.forEach((m,i)=>{ if(m.sev!=='good') steps.push({note:i, d:Math.min(9,Math.max(5,(m.t1-m.t0)||6))}); });
+    const pk=sxNotes.findIndex(m=>m.peakAt!=null);
+    if(pk>=0) steps.push({note:pk, d:8});
     if(!steps.length) return;
-    gtOn=true; $('gtBtn').classList.add('on');
-    const cap=$('gtCap');
-    const say=txt=>{ cap.hidden=false; cap.textContent=txt; cap.classList.remove('sw'); void cap.offsetWidth; cap.classList.add('sw'); };
+    gtOn=true; $('gtBtn').classList.add('on'); $('player').classList.add('touring');
     let i=0;
     const step=()=>{
       if(!gtOn||!audioEl) return gtStop();
       if(i>=steps.length){
         audioEl.pause(); setPlayIcon(false); loopSpan=null;
-        say(ui('gt_done'));
-        $('gtBtn').classList.remove('on'); gtOn=false;
-        gtTimer=setTimeout(()=>{ $('gtCap').hidden=true; },5000);
+        sxSay({text:ui('gt_done'), sev:''});
+        $('gtBtn').classList.remove('on'); $('player').classList.remove('touring'); gtOn=false;
+        gtTimer=setTimeout(()=>{ $('gtCap').hidden=true; }, 5000);
         return;
       }
       const s=steps[i++];
-      fxReset(); loopSpan=s.loop||null;
-      audioEl.currentTime=s.t;
-      if(audioEl.paused) togglePlay();
-      say(s.txt);
+      if(s.note!=null){ sxActivate(s.note, true); }
+      else{
+        fxReset(); loopSpan=null; sxClear();
+        audioEl.currentTime=s.t;
+        if(audioEl.paused) togglePlay();
+        sxSay({text:s.txt, sev:''});
+      }
       gtTimer=setTimeout(step, s.d*1000);
     };
     step();
