@@ -124,3 +124,89 @@ We are not building software for musicians.
 We are building the moment when a musician finally says: **"Now I get it."**
 
 That moment is our product. Everything else is merely the interface.
+
+---
+
+# Volume II — Product Psychology
+
+*Understanding the Mind of the Music Creator*
+
+## Chapter 2 — The Artist's Mind
+
+We are not designing for users. We are designing for people who have spent hours creating something deeply personal. When someone uploads a spreadsheet they expect data. When someone uploads a document they expect corrections. **When someone uploads a song, they are exposing a part of themselves.** The product must never forget this.
+
+## Music Is Identity
+
+People attach their identity to their music. Criticizing a mix can feel like criticizing the person. Most feedback tools ignore this — they become technical, cold, mechanical. **We are allowed to be brutally honest. We are never allowed to be emotionally lazy.**
+
+## The Emotional Timeline
+
+Every artist arrives carrying excitement, hope, fear, insecurity, expectation, curiosity. Every screen either reduces anxiety or increases it. **Design is emotional regulation.**
+
+## The Silent Question
+
+Not "What is my LUFS?" Not "What's my stereo width?" The real question is: **"Is my song actually good?"** They may never type it. Every interaction must respect that it exists.
+
+## Confidence Before Criticism
+
+Never begin by listing problems. Begin by establishing reality — *"Your track already has a strong groove"* — only then: *"One thing is holding it back."* Confidence creates openness. Fear creates defensiveness.
+
+## The Brain Cannot Process Twenty Problems
+
+Never show every issue equally. Every report answers: *"If you only had one hour, what should you fix first?"* Everything else is secondary.
+
+## People Don't Want Data. They Want Direction.
+
+Charts are evidence. Direction is value. A report without direction is unfinished. **Every insight must reduce uncertainty** — if the user finishes reading and still wonders "so what should I actually do?", the interface failed.
+
+## The Brain Loves Stories
+
+Beginning: **what already works.** Middle: **what prevents progress.** End: **what happens next.** Never isolated widgets — a journey.
+
+## Trust Is Built Through Small Moments
+
+"We don't know." "This measurement has medium confidence." "We couldn't detect vocals reliably." **Admitting uncertainty increases credibility. Never fake certainty.**
+
+## Software vs. A Producer
+
+Software tells you facts. A producer tells you what matters. **Significance over completeness, always.**
+
+## Curiosity Drives Retention
+
+Every report should create one thought: *"I wonder if I can improve this."* Curiosity → progress → retention. Feedback must create energy — never leave users defeated; always leave them believing improvement is possible. **Hope is part of the product.**
+
+## Avoid Perfectionism
+
+Never imply "everything is wrong." Communicate **"you're closer than you think."** Artists continue creating when they feel progress; they quit when they feel overwhelmed.
+
+## The Psychology of One Thing
+
+People remember one idea, not ten. Every report must answer: *"What is the ONE thing I will remember tomorrow?"* If there isn't one obvious answer, the report contains too much.
+
+## Design For Returning Users
+
+Report 1: curiosity. Report 5: recognition. Report 10: relationship. Report 50: mentorship. The product evolves from analyzer → producer → trusted creative partner. Day 1: "This tool analyzes my music." Day 30: "This tool understands my music." Day 180: **"This producer knows my habits."**
+
+## Emotional Principles
+
+Strengthen: understanding, progress, confidence, trust, curiosity, calm.
+Never create: confusion, shame, fear, information overload, emotional distance.
+
+## ✦ Design Review Questions — Volume II
+
+1. Does this reduce anxiety or increase it?
+2. Does this guide or merely inform?
+3. Is there one clear takeaway?
+4. Does this feel like something a producer would say?
+5. Does the user know exactly what to do next?
+6. Does this encourage another upload?
+7. Does this strengthen trust?
+8. Does this respect the emotional investment behind the music?
+9. Would the artist feel understood after reading this?
+10. Does this help creativity instead of interrupting it?
+
+## ✦ Closing Manifesto — Volume II
+
+Artists do not upload files. **They upload vulnerability.** Every pixel, every sentence, every interaction must respect that.
+
+We are not building an analysis platform. We are building **the safest place on the internet to receive honest musical feedback.**
