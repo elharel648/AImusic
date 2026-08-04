@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A&R AI — Your AI Music Producer</title>
+<title>A&R AI — An honest producer's ear for your music</title>
 <meta name="description" content="Upload a track and get an honest A&R read — real measurements, one clear fix, and the exact Suno prompt to regenerate it better.">
-<meta property="og:title" content="A&R AI — Your AI Music Producer">
+<meta property="og:title" content="A&R AI — An honest producer's ear for your music">
 <meta property="og:description" content="An honest read on your track, like a demo landing on an A&R's desk. Real measurements, not vibes.">
 <meta property="og:type" content="website">
 <!-- __ORIGIN__ is filled by the server per-request (crawlers need absolute URLs;
@@ -1362,8 +1362,6 @@
       <button id="rmP" data-i18n="mode_pro">Full studio</button>
     </div>
 
-    <div class="telemetry" id="telemetry"></div>
-
     <div class="priority">
       <div class="pic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg></div>
       <div><div class="lbl" data-i18n="fix_one">If you fix one thing</div><p id="priorityP">—</p>
@@ -1375,6 +1373,9 @@
     </div>
 
     <div class="patterns" id="patterns" hidden></div>
+
+    <!-- Law One: the producer already spoke (verdict + priority) — only now the engineer's numbers -->
+    <div class="telemetry" id="telemetry"></div>
 
     <div class="vdiff" id="vdiffBanner">
       <span class="vi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg></span>
@@ -2631,15 +2632,31 @@
     if(dur && typeof raw.peak_moment_sec==='number' && raw.peak_moment_sec>0)
       sxNotes.push({t0:Math.max(0,raw.peak_moment_sec-3), t1:Math.max(0,raw.peak_moment_sec-3),
                     sev:'good', text:ui('gt_peak'), peakAt:raw.peak_moment_sec});
+    // pins: moments landing within ~2.6% of each other collapse into ONE
+    // counted pin (SoundCloud's avatar-wall lesson) — clicking cycles its notes
+    const groups=[];
     sxNotes.forEach((m,i)=>{
       if(!dur) return;
       const mid=((m.peakAt!=null? m.peakAt : (m.t0+m.t1)/2)/dur)*100;
+      const g=groups.find(g=>Math.abs(g.mid-mid)<2.6);
+      if(g){ g.idx.push(i); g.mid=(g.mid*(g.idx.length-1)+mid)/g.idx.length; }
+      else groups.push({mid, idx:[i]});
+    });
+    groups.forEach(g=>{
+      const sev=g.idx.some(i=>sxNotes[i].sev==='crit')?'crit'
+              : g.idx.some(i=>sxNotes[i].sev==='warn')?'warn':'good';
       const p=document.createElement('button');
-      p.type='button'; p.className='sx-pin '+m.sev;
-      p.style.left=Math.max(1.5,Math.min(98.5,mid))+'%';
-      p.innerHTML=`<span>${i+1}</span>`; p.setAttribute('aria-label',(i+1)+' · '+m.text);
-      p.addEventListener('click',e=>{ e.stopPropagation(); gtStop(); sxActivate(i,true); });
+      p.type='button'; p.className='sx-pin '+sev;
+      p.style.left=Math.max(1.5,Math.min(98.5,g.mid))+'%';
+      p.dataset.idx=g.idx.join(',');
+      p.innerHTML=`<span>${g.idx.length>1? '×'+g.idx.length : g.idx[0]+1}</span>`;
+      p.setAttribute('aria-label', g.idx.map(i=>(i+1)+' · '+sxNotes[i].text).join(' | '));
+      let cur=0;
+      p.addEventListener('click',e=>{ e.stopPropagation(); gtStop(); sxActivate(g.idx[cur++%g.idx.length],true); });
       pinsEl.appendChild(p);
+    });
+    sxNotes.forEach((m,i)=>{
+      if(!dur) return;
       const row=document.createElement('button');
       row.type='button'; row.className='sx-note '+m.sev;
       const tl=m.t0===m.t1? fmt(m.peakAt!=null?m.peakAt:m.t0) : fmt(m.t0)+'–'+fmt(m.t1);
@@ -2680,7 +2697,9 @@
     cap.hidden=false; cap.textContent=m.text;
     cap.className='gt-cap '+(m.sev==='crit'?'crit':m.sev==='good'?'good':'');
     cap.classList.remove('sw'); void cap.offsetWidth; cap.classList.add('sw');
-    document.querySelectorAll('.sx-pin').forEach((p,j)=>p.classList.toggle('on', sxNotes[j]===m));
+    const mi=sxNotes.indexOf(m);
+    document.querySelectorAll('.sx-pin').forEach(p=>
+      p.classList.toggle('on', (p.dataset.idx||'').split(',').includes(String(mi))));
   }
   function sxClear(){
     sxActive=-1; sxSurf=-1; loopSpan=null;
@@ -2708,8 +2727,9 @@
       sxNoteRows[sxActive].querySelector('.np').style.width=
         (Math.max(0,Math.min(1,(t-loopSpan[0])/((loopSpan[1]-loopSpan[0])||1)))*100)+'%';
     }
-    // SoundCloud: the note surfaces itself as the playhead crosses it
-    if(audioEl && !audioEl.paused && dur && !gtOn){
+    // SoundCloud: the note surfaces itself as the playhead crosses it —
+    // but never over an explicit selection (the artist picked what to hear)
+    if(audioEl && !audioEl.paused && dur && !gtOn && sxActive<0){
       const c=sxNotes.findIndex(m=> t>=m.t0-1 && t<=(m.t0===m.t1? m.t0+4 : m.t1));
       if(c!==sxSurf){ sxSurf=c; if(c>=0 && c!==sxActive) sxSay(sxNotes[c]); }
     }
