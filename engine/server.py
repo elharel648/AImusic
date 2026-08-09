@@ -337,6 +337,16 @@ def _analyze_sync(tmp_path: str, ext: str, filename: str | None,
             raw.pop("key_alt", None)      # else a stale runner-up from the
             raw.update(measure_tempo_key(raw["bpm"], _np.array(raw["_chroma_h"]),
                                          resolved_genre))
+        # Genre-aware octave un-fold (audit P0-4): the DSP fold at <70 BPM was
+        # genre-blind. Now that the genre is known, if the RAW tempo sits
+        # inside the genre's measured BPM range and the folded one does not,
+        # the raw value was the right metrical level — restore it.
+        folded_from = raw.get("bpm_folded_from")
+        if folded_from:
+            lo, hi = raw["norms"].get("bpm", (0, 0))
+            if lo and lo <= folded_from <= hi and not (lo <= raw["bpm"] <= hi):
+                raw["bpm_alt"] = raw["bpm"]
+                raw["bpm"] = folded_from
         # Deep vocal analysis (opt-in, slow): separate the vocal with Demucs
         # and re-measure sibilance/presence on the isolated vocal, mud on the
         # accompaniment.

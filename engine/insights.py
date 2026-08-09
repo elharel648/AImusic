@@ -97,9 +97,13 @@ def build_insights(m: dict, lang: str = "en") -> dict:
 
     # ── Low-mid mud ──
     mud = m["low_mid_ratio"]
-    if mud > 0.35:
+    # Bar = measured p90 of human masters in this family (norms), floor 0.30.
+    # The old absolute 0.35 sat ABOVE our own corpus p90 (0.17-0.28) — the
+    # flagship mud finding could barely fire on real music (audit P0-5).
+    mud_bar = max(float(norms.get("low_mid_p90") or 0.35), 0.30) if isinstance(norms, dict) else 0.35
+    if mud > mud_bar:
         findings.append({
-            "id": "Mix", "k": L("label_Mix"), "score": max(40, int(100 - (mud - 0.35) * 200)), "sev": "warn",
+            "id": "Mix", "k": L("label_Mix"), "score": max(40, int(100 - (mud - mud_bar) * 200)), "sev": "warn",
             "headline": L("mix_head"),
             "why": [L("mix_why1", mud=int(mud * 100)), L("mix_why2"), L("mix_why3")],
             "measure": [[f"{int(mud*100)}%", L("ml_energy")]],
@@ -123,7 +127,22 @@ def build_insights(m: dict, lang: str = "en") -> dict:
         })
 
     # ── Stereo ──
-    if not m["is_mono"] and m["stereo_width"] < 0.15:
+    ml_worst = m.get("mono_loss_worst_db")
+    ph = m.get("phase_corr")
+    if not m["is_mono"] and ((ph is not None and ph < 0) or (ml_worst is not None and ml_worst <= -3.5)):
+        # Measured mono-compatibility problem: the actual dB a band loses when
+        # the mix is summed to mono (phones, clubs, broadcast). Negative
+        # full-band correlation = polarity/phase trouble — crit.
+        sev = "crit" if (ph is not None and ph < 0) or (ml_worst is not None and ml_worst <= -6) else "warn"
+        findings.append({
+            "id": "Stereo", "k": L("label_Stereo"),
+            "score": 35 if sev == "crit" else 55, "sev": sev,
+            "headline": L("st_mono_head", db=abs(ml_worst if ml_worst is not None else 0)),
+            "why": [L("st_mono_why1"), L("st_mono_why2")],
+            "measure": [[f"{ml_worst} dB", L("ml_mono_loss")], [f"{ph}", L("ml_phase")]],
+            "fix": {"daw": L("st_mono_fix_daw"), "suno": L("st_mono_fix_suno")},
+        })
+    elif not m["is_mono"] and m["stereo_width"] < 0.15:
         w = m["stereo_width"]
         findings.append({
             "id": "Stereo", "k": L("label_Stereo"), "score": 55, "sev": "warn",
@@ -278,7 +297,9 @@ def build_insights(m: dict, lang: str = "en") -> dict:
         "headline": L("tempo_head_ok" if bpm_ok else "tempo_head_off", bpm=m["bpm"], key=key_disp),
         "why": [L("tempo_why1", blo=blo, bhi=bhi)]
                + ([L("why_hits", n=norms["n_hits"])] if norms.get("n_hits") else []),
-        "measure": [[f"{m['bpm']}", L("ml_bpm")], [m["key"], L("ml_key")]]
+        "measure": [[f"{m['bpm']}", L("ml_bpm")]]
+                   + ([[f"{m['bpm_alt']}", L("ml_bpm_alt")]] if m.get("bpm_alt") else [])
+                   + [[m["key"], L("ml_key")]]
                    + ([[m["key_alt"], L("ml_key_alt")]] if m.get("key_alt") else [])
                    + ([[f"{int(m['key_confidence']*100)}%", L("ml_key_conf")]] if m.get("key_confidence") else []),
     })
@@ -575,7 +596,8 @@ def _prompt_parts(m, findings):
     if "Master" in fix_ids:
         fixes.append("**louder, punchy modern master**")
     if "Mix" in fix_ids:
-        fixes.append("**clean low-mids, no 250 Hz mud**")
+        hz = int(m.get("mud_peak_hz") or 250)
+        fixes.append(f"**clean low-mids, no {hz} Hz mud**")
     if "Dynamics" in fix_ids:
         fixes.append("**dynamic, less compressed**")
     if "Stereo" in fix_ids:

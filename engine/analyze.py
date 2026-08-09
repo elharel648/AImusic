@@ -50,10 +50,13 @@ def get_norms(genre: str) -> dict:
     hits = (_MEASURED.get("hits") or {}).get(genre)
     if hits:
         base["bpm"] = tuple(hits["bpm"])
-        base["lufs"] = tuple(hits["lufs"])
         base["n_hits"] = hits["n"]
-        prov["bpm"] = prov["lufs"] = {"n": hits["n"], "source": hits.get("source"),
-                                      "generated": _MEASURED.get("hits_generated")}
+        prov["bpm"] = {"n": hits["n"], "source": hits.get("source"),
+                       "generated": _MEASURED.get("hits_generated")}
+        # NOTE (audit P0-7): hits["lufs"] is Spotify's API `loudness` field —
+        # a different meter, never cross-validated against our BS.1770
+        # measurement. Until it is, the LUFS range stays curated (an honest
+        # producer's read) instead of wearing a measured corpus's badge.
     # Tier B: intro/structure norms need FULL tracks; our genres map onto the
     # corpus' coarser families. Entries carry full_length only when they came
     # from complete audio (MTG-Jamendo tars / Jamendo API), never 30s clips.
@@ -64,6 +67,8 @@ def get_norms(genre: str) -> dict:
     if fma and fma.get("full_length"):
         base["intro_sec"] = tuple(fma["intro_sec"])
         base["n_fma"] = fma["n"]
+        if fma.get("low_mid_ratio_p90"):
+            base["low_mid_p90"] = float(fma["low_mid_ratio_p90"])   # measured human-master p90
         prov["intro_sec"] = {"n": fma["n"], "source": fma.get("source"),
                              "generated": _MEASURED.get("jamendo_generated")}
     # Tonal-balance target curve: quartile band per family, measured from the
@@ -103,15 +108,21 @@ def measure_loudness(path: str) -> dict:
         tp = max(tp, float(np.max(np.abs(over))))
     true_peak_db = 20 * np.log10(tp) if tp > 0 else -np.inf
 
-    # Loudness range proxy (EBU R128 LRA-style): spread of short-term loudness.
+    # Loudness range per EBU Tech 3342: distribution of short-term (3 s)
+    # loudness, absolute gate at -70 LUFS, then a RELATIVE gate 20 LU below
+    # the absolute-gated energy mean (this -20 gate is what most homebrew
+    # implementations miss), LRA = p95 - p10 of the surviving blocks.
     try:
-        hop = sr  # 1s windows, 3s blocks
+        hop = sr  # 3 s blocks, 1 s hop (Tech 3342 allows >=1 Hz update)
         st = []
         for i in range(0, max(1, len(arr) - 3 * sr), hop):
             block = arr[i:i + 3 * sr]
             if len(block) >= sr:
                 st.append(meter.integrated_loudness(block))
-        st = [x for x in st if np.isfinite(x) and x > -70]
+        st = np.array([x for x in st if np.isfinite(x) and x > -70.0])
+        if len(st) >= 4:
+            ref = 10 * np.log10(np.mean(10 ** (st / 10)))    # energy mean of abs-gated blocks
+            st = st[st >= ref - 20.0]                        # relative gate (Tech 3342)
         lra = round(float(np.percentile(st, 95) - np.percentile(st, 10)), 1) if len(st) >= 4 else None
     except Exception:
         lra = None
@@ -123,10 +134,27 @@ def measure_loudness(path: str) -> dict:
     if not np.isfinite(true_peak_db):
         true_peak_db = -70.0
 
+    # Real clipping = runs of consecutive samples parked at the ceiling.
+    # A clean limited master at -0.2 dBTP is HOT, not clipped — conflating the
+    # two told well-mastered tracks they were distorted (audit P0 finding).
+    clip_runs = 0
+    ceiling = max(np.max(np.abs(arr)), 1e-9) * 0.9995
+    for ch in range(arr.shape[1]):
+        at = np.abs(arr[:, ch]) >= ceiling
+        if at.any():
+            edges = np.diff(at.astype(np.int8))
+            starts = np.where(edges == 1)[0]
+            ends = np.where(edges == -1)[0]
+            n = min(len(starts), len(ends))
+            if n:
+                clip_runs += int(np.sum((ends[:n] - starts[:n]) >= 4))   # >=4 samples pinned
+    hot = bool(tp >= 10 ** (-0.3 / 20))
     return {
         "lufs": round(float(loudness), 1),
         "true_peak_db": round(true_peak_db, 1),
-        "clipping": bool(tp >= 10 ** (-0.3 / 20)),   # true peak above -0.3 dBTP
+        "clipping": bool(clip_runs >= 8 and hot),    # measured waveform clipping
+        "clip_runs": clip_runs,
+        "tp_hot": hot,                                # ceiling above -0.3 dBTP (not clipping by itself)
         "lra": lra,
     }
 
@@ -205,7 +233,11 @@ def measure_tempo_key(tempo: float, chroma_frames: np.ndarray,
     """Key/BPM from precomputed beat-track tempo + HARMONIC chroma
     (percussion-free; computed once in analyze())."""
     tempo = float(np.atleast_1d(tempo)[0])
-    # Fold obvious half/double-time errors into the plausible dance range.
+    # Fold obvious half/double-time errors into the plausible dance range —
+    # but REMEMBER the raw value: the fold is genre-blind (a legit 65 BPM
+    # half-time trap track is not an error), so the server un-folds it when
+    # the resolved genre's measured BPM range says the raw value was right.
+    tempo_raw = tempo
     if tempo < 70:
         tempo *= 2
     elif tempo > 190:
@@ -217,23 +249,52 @@ def measure_tempo_key(tempo: float, chroma_frames: np.ndarray,
         chroma = chroma_frames.mean(axis=1) if chroma_frames.size else np.zeros(12)
     if chroma.std() == 0:
         return {"bpm": int(round(tempo)), "key": "—", "key_confidence": 0.0}
-    major, minor = ((_EDMM_MAJOR, _EDMM_MINOR) if genre in _EDM_GENRES
-                    else (_EDMA_MAJOR, _EDMA_MINOR))
-    scores = []
-    for root in range(12):
-        for profile, mode in ((major, "major"), (minor, "minor")):
-            if profile.std() == 0:      # EDMM major is flat: correlation undefined,
-                continue                # minor-vs-minor margin still ranks tonics
-            r = float(np.corrcoef(chroma, np.roll(profile, root))[0, 1])
-            scores.append((r, root, mode))
-    scores.sort(reverse=True)
-    (r1, root, mode), (r2, root2, mode2) = scores[0], scores[1]
-    conf = _calibrated_key_conf(r1 - r2)
+    if genre in _EDM_GENRES:
+        # EDMM's flat major profile made EDM mode STRUCTURALLY incapable of
+        # ever reporting a major key (engine audit P0-1). Validated fix on
+        # GiantSteps (n=604, cached chroma): EDMM-minor stays primary; flip
+        # to EDMA-major only when EDMA's major-vs-minor margin exceeds 0.12.
+        # Result: exact 56.8% / MIREX 65.5 vs 57.1 / 65.4 minor-only — and
+        # major keys are representable. Major-branch exact rate is a MEASURED
+        # 27% (10/37; dominant confusion = the relative minor, 12/37), so
+        # major answers ship with conf 0.27 and the relative minor as rival.
+        sa = []
+        for root_ in range(12):
+            for profile, mode_ in ((_EDMA_MAJOR, "major"), (_EDMA_MINOR, "minor")):
+                sa.append((float(np.corrcoef(chroma, np.roll(profile, root_))[0, 1]), root_, mode_))
+        best_maj = max((s for s in sa if s[2] == "major"), key=lambda s: s[0])
+        best_min_a = max((s for s in sa if s[2] == "minor"), key=lambda s: s[0])
+        sm = sorted(((float(np.corrcoef(chroma, np.roll(_EDMM_MINOR, root_))[0, 1]), root_)
+                     for root_ in range(12)), reverse=True)
+        if best_maj[0] - best_min_a[0] > 0.12:
+            root, mode = best_maj[1], "major"
+            conf = 0.27
+            root2, mode2 = (root + 9) % 12, "minor"     # relative minor = measured dominant confusion
+        else:
+            root, mode = sm[0][1], "minor"
+            conf = _calibrated_key_conf(sm[0][0] - sm[1][0])
+            root2, mode2 = sm[1][1], "minor"
+    else:
+        scores = []
+        for root_ in range(12):
+            for profile, mode_ in ((_EDMA_MAJOR, "major"), (_EDMA_MINOR, "minor")):
+                r = float(np.corrcoef(chroma, np.roll(profile, root_))[0, 1])
+                scores.append((r, root_, mode_))
+        scores.sort(reverse=True)
+        (r1, root, mode), (r2, root2, mode2) = scores[0], scores[1]
+        conf = _calibrated_key_conf(r1 - r2)
     out = {
         "bpm": int(round(tempo)),
         "key": f"{PITCH_CLASSES[root]} {mode}",
         "key_confidence": round(conf, 2),
     }
+    if int(round(tempo_raw)) != int(round(tempo)):
+        out["bpm_folded_from"] = int(round(tempo_raw))
+    # MIREX two-candidate convention: tempo is metrically ambiguous by nature,
+    # so the other plausible level always rides along instead of a fake "100%".
+    alt = tempo / 2 if tempo >= 100 else tempo * 2   # 124 -> 62 (half-time), 88 -> 176
+    if 40 <= alt <= 400:
+        out["bpm_alt"] = int(round(alt))
     if conf < 0.55:                     # genuinely uncertain -> name the rival
         out["key_alt"] = f"{PITCH_CLASSES[root2]} {mode2}"
     return out
@@ -378,15 +439,45 @@ def measure_mud(mono: np.ndarray, sr: int) -> dict:
 
 
 def measure_stereo(stereo, mono, sr) -> dict:
-    """Stereo width via L/R correlation. 1.0 = mono, lower = wider."""
+    """Stereo image, measured (engine audit P0-6):
+    - full-band L/R correlation -> width (clamped 0..2; negative corr flagged)
+    - per-band correlation and MONO-SUM ENERGY LOSS via windowed cross-spectra
+      (Parseval: band energies and Re(L·R*) accumulated per rfft chunk).
+      Mono loss is the honest mono-compatibility number — the actual dB a band
+      loses when the file is summed to mono, not a proxy coefficient."""
     if stereo is None:
         return {"stereo_width": 0.0, "is_mono": True}
     L, R = stereo[:, 0], stereo[:, 1]
     if np.std(L) == 0 or np.std(R) == 0:
         return {"stereo_width": 0.0, "is_mono": True}
     corr = float(np.corrcoef(L, R)[0, 1])
-    width = round(1 - corr, 2)          # 0 = fully correlated (mono-ish), higher = wider
-    return {"stereo_width": width, "is_mono": False}
+    width = round(float(np.clip(1 - corr, 0.0, 2.0)), 2)
+    bands = {"low": (20, 150), "mid": (150, 2500), "high": (2500, 16000)}
+    acc = {k: [0.0, 0.0, 0.0] for k in bands}          # [E_L, E_R, Re(cross)]
+    N = 1 << 18
+    freqs = np.fft.rfftfreq(N, 1.0 / sr)
+    masks = {k: (freqs >= lo) & (freqs < hi) for k, (lo, hi) in bands.items()}
+    for i in range(0, len(L) - N + 1, N):
+        FL = np.fft.rfft(L[i:i + N]); FR = np.fft.rfft(R[i:i + N])
+        for k, msk in masks.items():
+            acc[k][0] += float(np.sum(np.abs(FL[msk]) ** 2))
+            acc[k][1] += float(np.sum(np.abs(FR[msk]) ** 2))
+            acc[k][2] += float(np.sum((FL[msk] * np.conj(FR[msk])).real))
+    band_corr, mono_loss = {}, {}
+    for k, (el, er, cx) in acc.items():
+        if el > 0 and er > 0:
+            band_corr[k] = round(cx / np.sqrt(el * er), 2)
+            e_stereo = (el + er) / 2.0
+            e_mono = (el + er + 2 * cx) / 4.0            # |L+R|^2/4 expanded
+            mono_loss[k] = round(float(10 * np.log10(max(e_mono, 1e-12) / max(e_stereo, 1e-12))), 1)
+    out = {"stereo_width": width, "is_mono": False,
+           "phase_corr": round(corr, 2)}
+    if band_corr:
+        out["band_corr"] = band_corr
+        out["mono_loss_db"] = mono_loss
+        out["mono_loss_worst_db"] = min(mono_loss.values())
+        out["mono_loss_worst_band"] = min(mono_loss, key=mono_loss.get)
+    return out
 
 
 def measure_ai_tells(mono: np.ndarray, sr: int, beats: np.ndarray, chroma_frames: np.ndarray) -> dict:
