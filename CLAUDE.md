@@ -19,6 +19,7 @@ Read `PRODUCT_BIBLE.md` first. It is the constitution; these are the bylaws.
 ## Engineering conventions
 - **Single-file frontend**: `web/index.html` (CSS + JS inline). Engine: `engine/*.py` (FastAPI, `../.venv/bin/uvicorn server:app --reload --port 8000` from `engine/`).
 - **i18n**: every user-facing string exists in ALL 6 languages (en/he/es/fr/de/pt) in the `UI` object. Anchored python replaces with `assert count==1` are the safe way to edit the giant lang lines.
+- **`.mono` forces LTR in Hebrew** (`:root[dir="rtl"] .mono{direction:ltr}`) — it is for numbers/timecodes ONLY. Never put it on an element containing Hebrew prose.
 - **Timeline direction**: media timelines are always LTR, even in Hebrew (Material Design bidi; Hebrew is called out explicitly). Chrome/labels stay RTL. Time strings get `dir="ltr"`.
 - **Motion**: transform/opacity only; UI moves <300ms; ease-out (`--ease: cubic-bezier(.2,0,0,1)`); hover effects gated to `(hover:hover) and (pointer:fine)`; playhead motion is information — keep it under `prefers-reduced-motion`, kill decoration instead.
 - **`hidden` attribute vs CSS**: any class that sets `display` must also ship `.cls[hidden]{display:none}`.
