@@ -13,6 +13,7 @@ import os
 import tempfile
 import subprocess
 import threading
+import json
 import time
 from collections import defaultdict, deque
 from concurrent.futures import ProcessPoolExecutor
@@ -186,6 +187,38 @@ def _to_wav(src: str) -> str:
     return dst
 
 
+# ── usage counters: AGGREGATE INTS ONLY (no IPs, no filenames, no per-user
+# rows) — the three numbers the business runs on: uploads → reports → v2s.
+_STATS_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "usage_stats.json")
+_stats_lock = threading.Lock()
+
+def _bump(key: str):
+    try:
+        with _stats_lock:
+            try:
+                with open(_STATS_PATH) as f:
+                    s = json.load(f)
+            except Exception:
+                s = {}
+            s[key] = int(s.get(key, 0)) + 1
+            tmp = _STATS_PATH + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(s, f)
+            os.replace(tmp, _STATS_PATH)
+    except Exception:
+        pass                                   # counters must never break analysis
+
+
+@app.get("/api/stats")
+def stats():
+    """Aggregate counters only — safe to expose, nothing identifies anyone."""
+    try:
+        with open(_STATS_PATH) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
 @app.get("/api/genres")
 def genres():
     return {"genres": list(GENRE_NORMS.keys())}
@@ -309,6 +342,13 @@ async def analyze_endpoint(request: Request, file: UploadFile = File(...),
 
 def _analyze_sync(tmp_path: str, ext: str, filename: str | None,
                   genre: str, lang: str, deep: str, purpose: str):
+    _bump("uploads")
+    if deep == "1":
+        _bump("deep_requested")
+    if purpose == "v2":
+        _bump("v2_uploads")
+    elif purpose == "reference":
+        _bump("reference_uploads")
     conv = None
     try:
         path = tmp_path
@@ -385,6 +425,7 @@ def _analyze_sync(tmp_path: str, ext: str, filename: str | None,
             report = enrich_report(report, raw, lang, genre)
         report["_raw"] = raw  # keep measurements for debugging / the compare screen
         report["filename"] = filename
+        _bump("reports_ok")
         return JSONResponse(report)
     finally:
         # tmp file is the endpoint's to clean; the converted wav is ours

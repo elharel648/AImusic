@@ -13,3 +13,4 @@ sample.wav
 *.conv.wav
 # local Claude Code settings (contains local perms / ids)
 .claude/
+data/usage_stats.json*

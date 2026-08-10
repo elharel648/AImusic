@@ -368,6 +368,7 @@
   /* listen-to-the-finding row */
   .listen-row{ display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin-top:13px; }
   .fixprev{ display:flex; align-items:center; flex-wrap:wrap; gap:9px; padding:9px 14px 11px; }
+  .fixprev[hidden]{ display:none; }
   .fixprev-note{ font-size:11.5px; color:var(--ink-faint); }
   .prog{ margin-top:14px; padding:13px 16px; border-radius:14px; }
   .prog-lbl{ font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:8px; }
@@ -1070,6 +1071,12 @@
   .sx-pin.good{ color:var(--good); border-color:var(--good); }
   .sx-pin.on{ background:currentColor; box-shadow:0 0 14px currentColor; }
   .sx-pin.on span{ color:var(--bg, #fff); filter:invert(1) grayscale(1) contrast(9); }
+  .sx-pin{ position:absolute; }
+  .sx-pin::after{ content:""; position:absolute; inset:-11px; }   /* 44px touch hit-area, invisible */
+  @media (pointer:coarse){
+    :is(.rmode button, .copy-btn, .plat-row button, .wt-btn, .gt-btn, .morebtn, .demo-btn, .lsn){ min-height:44px; }
+    button.sx-read{ padding:10px 8px; margin:0; width:100%; }
+  }
   /* the producer's notes rail: every row is a second render of playhead state */
   .sx-notes{ display:flex; flex-direction:column; gap:7px; margin:2px 0 16px; }
   .sx-note{ position:relative; display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid var(--line); border-radius:var(--r-sm);
@@ -1722,7 +1729,7 @@
       ref_note:n=>`"${n}" went through the exact same engine as your track — every delta is measured, never guessed.`,
       ref_curve:"Energy over time", ref_m_mud:"low-mid mud", ref_m_width:"stereo width", ref_m_punch:"punch", ref_m_lowend:"kick-bass overlap",
       when_lbl:"worst around", lsn_span:(a,b)=>`loop the worst part ${a}–${b}`,
-      vdiff_txt:(n,d)=>`This looks like a new version of "${n}" from your desk (${d}).`, vdiff_btn:"See what changed",
+      vdiff_txt:(n,d)=>`This looks like a new version of "${n}" from your desk (${d}).`, vdiff_btn:"See what changed", vdiff_guess:n=>`Same genre, same tempo, same length as "${n}" — a new version of it?`,
       bt_demos_eyebrow:"A&R desk — demo day", bt_demos_sub:"Different songs, one honest ranking — sorted by the overall read.",
       bt_demos_hero:n=>`Strongest demo on the desk: <b>${n}</b>`,
       bt_demos_note:"Ranked by the same measured axes as a single-track report — a screening order, never a hit prediction.",
@@ -1737,7 +1744,7 @@
       ref_note:n=>`"${n}" עבר בדיוק את אותו מנוע כמו הטראק שלך — כל דלתא נמדדה, לא נוחשה.`,
       ref_curve:"אנרגיה לאורך זמן", ref_m_mud:"בוץ בלואו-מיד", ref_m_width:"רוחב סטריאו", ref_m_punch:"פאנץ׳", ref_m_lowend:"חפיפת קיק-בס",
       when_lbl:"הכי חמור סביב", lsn_span:(a,b)=>`לופ על הקטע הבעייתי ${a}–${b}`,
-      vdiff_txt:(n,d)=>`נראה כמו גרסה חדשה של "${n}" מהשולחן שלך (${d}).`, vdiff_btn:"מה השתנה",
+      vdiff_txt:(n,d)=>`נראה כמו גרסה חדשה של "${n}" מהשולחן שלך (${d}).`, vdiff_btn:"מה השתנה", vdiff_guess:n=>`אותו ז'אנר, אותו קצב, אותו אורך כמו "${n}" — גרסה חדשה שלו?`,
       bt_demos_eyebrow:"שולחן A&R — יום דמואים", bt_demos_sub:"שירים שונים, דירוג כן אחד — ממוין לפי הציון הכולל.",
       bt_demos_hero:n=>`הדמו החזק ביותר על השולחן: <b>${n}</b>`,
       bt_demos_note:"מדורג לפי אותם צירים נמדדים כמו דוח של טראק בודד — סדר סינון, אף פעם לא ניבוי להיט.",
@@ -1752,7 +1759,7 @@
       ref_note:n=>`"${n}" pasó por exactamente el mismo motor que tu pista — cada delta está medida, nunca adivinada.`,
       ref_curve:"Energía en el tiempo", ref_m_mud:"barro en medios-graves", ref_m_width:"anchura estéreo", ref_m_punch:"pegada", ref_m_lowend:"solape bombo-bajo",
       when_lbl:"peor alrededor de", lsn_span:(a,b)=>`bucle en la peor parte ${a}–${b}`,
-      vdiff_txt:(n,d)=>`Parece una nueva versión de "${n}" de tu mesa (${d}).`, vdiff_btn:"Ver qué cambió",
+      vdiff_txt:(n,d)=>`Parece una nueva versión de "${n}" de tu mesa (${d}).`, vdiff_btn:"Ver qué cambió", vdiff_guess:n=>`Mismo género, mismo tempo, misma duración que "${n}" — ¿una nueva versión?`,
       bt_demos_eyebrow:"Mesa A&R — día de demos", bt_demos_sub:"Canciones distintas, un ranking honesto — ordenado por la lectura general.",
       bt_demos_hero:n=>`La demo más fuerte de la mesa: <b>${n}</b>`,
       bt_demos_note:"Ordenado por los mismos ejes medidos que un informe individual — un orden de cribado, nunca una predicción de éxito.",
@@ -1767,7 +1774,7 @@
       ref_note:n=>`« ${n} » est passé exactement par le même moteur que ton morceau — chaque delta est mesuré, jamais deviné.`,
       ref_curve:"Énergie dans le temps", ref_m_mud:"boue bas-médiums", ref_m_width:"largeur stéréo", ref_m_punch:"punch", ref_m_lowend:"chevauchement kick-basse",
       when_lbl:"pire autour de", lsn_span:(a,b)=>`boucler le pire passage ${a}–${b}`,
-      vdiff_txt:(n,d)=>`On dirait une nouvelle version de « ${n} » de ton bureau (${d}).`, vdiff_btn:"Voir ce qui a changé",
+      vdiff_txt:(n,d)=>`On dirait une nouvelle version de « ${n} » de ton bureau (${d}).`, vdiff_btn:"Voir ce qui a changé", vdiff_guess:n=>`Même genre, même tempo, même durée que "${n}" — une nouvelle version ?`,
       bt_demos_eyebrow:"Bureau A&R — jour de démos", bt_demos_sub:"Des titres différents, un classement honnête — trié par la lecture globale.",
       bt_demos_hero:n=>`La démo la plus forte du bureau : <b>${n}</b>`,
       bt_demos_note:"Classé selon les mêmes axes mesurés qu'un rapport individuel — un ordre de tri, jamais une prédiction de hit.",
@@ -1782,7 +1789,7 @@
       ref_note:n=>`„${n}" lief durch exakt dieselbe Engine wie dein Track — jedes Delta ist gemessen, nie geraten.`,
       ref_curve:"Energie über die Zeit", ref_m_mud:"Tiefmitten-Matsch", ref_m_width:"Stereobreite", ref_m_punch:"Punch", ref_m_lowend:"Kick-Bass-Überlappung",
       when_lbl:"am schlimmsten um", lsn_span:(a,b)=>`schlimmste Stelle loopen ${a}–${b}`,
-      vdiff_txt:(n,d)=>`Sieht aus wie eine neue Version von „${n}" von deinem Tisch (${d}).`, vdiff_btn:"Was hat sich geändert",
+      vdiff_txt:(n,d)=>`Sieht aus wie eine neue Version von „${n}" von deinem Tisch (${d}).`, vdiff_btn:"Was hat sich geändert", vdiff_guess:n=>`Gleiches Genre, gleiches Tempo, gleiche Länge wie "${n}" — eine neue Version davon?`,
       bt_demos_eyebrow:"A&R-Tisch — Demo-Tag", bt_demos_sub:"Verschiedene Songs, ein ehrliches Ranking — sortiert nach der Gesamtlesung.",
       bt_demos_hero:n=>`Stärkste Demo auf dem Tisch: <b>${n}</b>`,
       bt_demos_note:"Gerankt nach denselben gemessenen Achsen wie ein Einzelreport — eine Sichtungsreihenfolge, nie eine Hit-Vorhersage.",
@@ -1797,7 +1804,7 @@
       ref_note:n=>`"${n}" passou exatamente pelo mesmo motor que a tua faixa — cada delta é medido, nunca adivinhado.`,
       ref_curve:"Energia ao longo do tempo", ref_m_mud:"lama nos médios-graves", ref_m_width:"largura estéreo", ref_m_punch:"punch", ref_m_lowend:"sobreposição kick-baixo",
       when_lbl:"pior por volta de", lsn_span:(a,b)=>`loop na pior parte ${a}–${b}`,
-      vdiff_txt:(n,d)=>`Parece uma nova versão de "${n}" da tua mesa (${d}).`, vdiff_btn:"Ver o que mudou",
+      vdiff_txt:(n,d)=>`Parece uma nova versão de "${n}" da tua mesa (${d}).`, vdiff_btn:"Ver o que mudou", vdiff_guess:n=>`Mesmo género, mesmo tempo, mesma duração que "${n}" — uma nova versão?`,
       bt_demos_eyebrow:"Mesa A&R — dia de demos", bt_demos_sub:"Músicas diferentes, um ranking honesto — ordenado pela leitura geral.",
       bt_demos_hero:n=>`A demo mais forte da mesa: <b>${n}</b>`,
       bt_demos_note:"Ordenado pelos mesmos eixos medidos de um relatório individual — uma ordem de triagem, nunca uma previsão de êxito.",
@@ -1985,6 +1992,7 @@
     let apiReport=null, apiError=null, apiDone=false;
     if(fileObj){
       const doPost=()=>{ const fd=new FormData(); fd.append('file',fileObj); fd.append('genre',genreSel); fd.append('lang',LANG); if(deepSel) fd.append('deep','1');
+        if(analyzeTarget==='v2') fd.append('purpose','v2');   // aggregate counter only — the retention KPI
         return fetch('/api/analyze',{method:'POST',body:fd})
           .then(r=> r.ok ? r.json() : r.json().then(e=>Promise.reject(e.detail||'Analysis failed'))); };
       doPost()
@@ -2750,8 +2758,7 @@
       const w=ch.f1-ch.f0;
       cell.style.width=(w*100)+'%';
       cell.title=`${ch.name} · ${fmt(ch.t)}`;
-      // a chapter cell never shows more than it can hold — truncated Hebrew is worse than silence
-      cell.innerHTML = w<0.055 ? '' : (w<0.11 ? esc(ch.name) : `${esc(ch.name)} <small>${fmt(ch.t)}</small>`);
+      cell.innerHTML=`${esc(ch.name)} <small>${fmt(ch.t)}</small>`;
       chb.appendChild(cell);
     });
     // notes = the measured problem moments + the peak (point at what works too)
@@ -2781,6 +2788,14 @@
       let cur=0;
       p.addEventListener('click',e=>{ e.stopPropagation(); gtStop(); sxActivate(g.idx[cur++%g.idx.length],true); });
       pinsEl.appendChild(p);
+    });
+    // a chapter cell never shows more than it can hold — measured in PIXELS,
+    // because a 14% intro that fits on desktop clips mid-glyph on a phone
+    requestAnimationFrame(()=>{
+      chb.querySelectorAll('.sx-chb').forEach((cell,ci)=>{
+        if(cell.scrollWidth>cell.clientWidth+1) cell.innerHTML=esc((CHAP[ci]||{}).name||'');
+        if(cell.scrollWidth>cell.clientWidth+1) cell.textContent='';
+      });
     });
     // a professional timeline owns a time axis — 5 quiet ticks, always LTR
     const ax=$('sxAxis');
@@ -3941,6 +3956,29 @@
       btn.onclick=()=>{ v1Report=e.rep; renderV2(e.rep, rep); show('v2'); animateV2(); };
       el.classList.add('on');
       return;
+    }
+    // Filename match failed — Suno/Udio downloads carry random names, which
+    // silently killed the v2 loop for the core audience. Fall back to MEASURED
+    // similarity: a recent song (<=48h) with the same detected genre, tempo
+    // within ±3 BPM and duration within 15% is almost certainly a regenerate.
+    const raw=rep._raw||{}, meta=rep.meta||{};
+    for(let i=h.length-2;i>=0;i--){
+      const e=h[i];
+      if(!e||!e.rep) continue;
+      if(Date.now()-e.ts > 48*3600*1000) break;          // only the recent desk
+      const em=e.rep.meta||{}, er=e.rep._raw||{};
+      if(!em.bpm||!meta.bpm) continue;
+      const sameGenre=(em.genre||'')===(meta.genre||'');
+      const bpmClose=Math.abs(em.bpm-meta.bpm)<=3;
+      const d1=er.duration_sec, d2=raw.duration_sec;
+      const durClose=d1&&d2 ? Math.abs(d1-d2)/Math.max(d1,d2)<=0.15 : false;
+      if(sameGenre&&bpmClose&&durClose){
+        $('vdiffTxt').textContent=ui('vdiff_guess')(e.name);
+        const btn=$('vdiffBtn'); btn.textContent=ui('vdiff_btn');
+        btn.onclick=()=>{ v1Report=e.rep; renderV2(e.rep, rep); show('v2'); animateV2(); };
+        el.classList.add('on');
+        return;
+      }
     }
   }
   // ── per-song progress: score timeline across every version of THIS song ──
