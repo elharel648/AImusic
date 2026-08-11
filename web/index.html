@@ -108,6 +108,32 @@
   ::selection{ background:var(--amber-dim); }
   :focus-visible{ outline:1.5px solid var(--amber); outline-offset:3px; border-radius:4px; }
 
+  /* ═══ EDITORIAL SPLIT HERO: massive type | the living desk, full height.
+     One structural statement instead of a centered template column. ═══ */
+  .hero-grid{ display:grid; grid-template-columns:1.02fr .98fr; gap:clamp(32px,5vw,72px);
+    align-items:center; min-height:min(78dvh, 720px); padding-top:14px; }
+  .hero-copy{ display:flex; flex-direction:column; align-items:flex-start; }
+  .hero-grid .hero-h{ font-size:clamp(38px,4.1vw,57px); line-height:1.08; letter-spacing:-0.026em; margin:0 0 26px; }
+  .hero-grid .hero-h br{ display:none; }   /* the split column wraps naturally — the mobile-era break fights it */
+  .hero-grid .hero-sub{ margin:0 0 36px; }
+  .hero-grid .demo-row{ margin:0; }
+  /* the desk stands tall — a full-height instrument, not a strip */
+  .hero-grid .drop{ min-height:min(62dvh, 560px); padding:0 32px; margin:0;
+    display:flex; align-items:center; justify-content:center; }
+  .drop-inner{ position:relative; }
+  /* one meaningful light: the lamp over the producer's desk */
+  #s-upload{ position:relative; }
+  #s-upload::before{ content:""; position:absolute; top:-120px; inset-inline-end:-160px;
+    width:640px; height:640px; border-radius:50%; pointer-events:none; z-index:0;
+    background:radial-gradient(circle, color-mix(in srgb, var(--amber) 9%, transparent) 0%, transparent 62%); }
+  #s-upload > *{ position:relative; z-index:1; }
+  @media (max-width:900px){
+    .hero-grid{ grid-template-columns:1fr; min-height:0; gap:28px; }
+    .hero-grid .drop{ min-height:340px; }
+    .hero-grid .hero-h{ font-size:clamp(38px,9vw,52px); }
+    #s-upload::before{ display:none; }
+  }
+
   /* ── machined tray (double bezel): hero surfaces sit in a recess — box-shadow
      rings survive overflow:hidden and never touch each card's own state borders ── */
   .drop, .verdict, .priority, .player, .label-moment{
@@ -123,7 +149,10 @@
   :is(.prio-listen,.gt-btn,.demo-btn,.up,.copy-btn,.morebtn,.rmode button,.desk-hello,.fixbtn,.lsn):active{ transform:scale(.97); }
 
   /* ═══════════════ TOP BAR ═══════════════ */
-  header.bar{ position:sticky; top:0; z-index:30; background:var(--ground); transition:background .3s, box-shadow .3s; }
+  header.bar{ position:sticky; top:10px; z-index:30; background:none; transition:background .3s, box-shadow .3s; padding:0 14px; }
+  .bar-inner{ background:color-mix(in srgb,var(--ground) 74%,transparent);
+    backdrop-filter:blur(18px) saturate(1.4); -webkit-backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid var(--line); border-radius:999px; box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 14px 40px -26px rgba(0,0,0,.55); }
   /* hairline that fades at the edges; warms with amber once the page scrolls */
   header.bar::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:1px; pointer-events:none;
     background:linear-gradient(90deg, transparent, var(--line) 14%, var(--line) 86%, transparent); transition:background .4s; }
@@ -242,7 +271,7 @@
   /* living spectrum — the signature element: a sound horizon between copy and console */
   /* the living spectrum now lives INSIDE the desk — the drop zone breathes, and
      bars rise under the cursor: the page's one signature element, not a backdrop */
-  #heroSpec{ position:absolute; left:0; right:0; bottom:0; display:block; width:100%; height:76px; margin:0; opacity:.5; pointer-events:none; transition:opacity .3s var(--ease);
+  #heroSpec{ position:absolute; left:0; right:0; bottom:0; display:block; width:100%; height:38%; margin:0; opacity:.5; pointer-events:none; transition:opacity .3s var(--ease);
     -webkit-mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image:linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
   /* choreographed entrance: masked line reveals */
   .reveal-line{ display:block; overflow:hidden; }
@@ -1295,24 +1324,26 @@
   <!-- ═══════ SCREEN 1: UPLOAD ═══════ -->
   <section class="screen active" id="s-upload">
     <button class="desk-hello" id="deskHello" type="button" hidden></button>
-    <div class="hero-eyebrow eyebrow fade-up"><span class="pulse"></span> <span data-i18n="hero_eyebrow">A brutally honest ear</span></div>
-    <h1 class="hero-h display" data-i18n-html="hero_h">Why doesn't my song<br>feel <span class="grad">professional</span> yet?</h1>
-    <p class="hero-sub fade-up fd-1" data-i18n-html="hero_sub"><b>Every number measured — never invented.</b> One clear fix. No flattery.</p>
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="hero-eyebrow eyebrow fade-up"><span class="pulse"></span> <span data-i18n="hero_eyebrow">A brutally honest ear</span></div>
+        <h1 class="hero-h display" data-i18n-html="hero_h">Why doesn't my song<br>feel <span class="grad">professional</span> yet?</h1>
+        <p class="hero-sub fade-up fd-1" data-i18n-html="hero_sub"><b>Every number measured — never invented.</b> One clear fix. No flattery.</p>
+        <div class="demo-row fade-up fd-4">
+          <button class="demo-btn" id="demoBtn"><span class="eq"><i></i><i></i><i></i><i></i></span> <span data-i18n="demo_btn">try it with a demo track</span></button>
+        </div>
+      </div>
 
-    <div class="drop fade-up fd-2" id="drop" tabindex="0" role="button" aria-label="Upload a song">
-      <input type="file" id="file" accept=".mp3,.wav,.flac,.m4a,.aac,.ogg" multiple hidden>
-      <canvas id="heroSpec" aria-hidden="true"></canvas>
-      <div class="ic"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 15V3m0 0L8 7m4-4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
-      <div class="big" data-i18n="drop_big">Put your demo on the desk</div>
-      <div class="small" data-i18n-html="drop_small">or <span class="browse">browse your files</span></div>
-      <div class="fmt mono" data-i18n="drop_fmt">MP3 · WAV · FLAC · M4A — up to 100 MB</div>
-      <div class="fmt multi" data-i18n="drop_multi">Pro move: drop 2–12 versions of the same song — we'll find the strongest</div>
-    </div>
-
-    <div class="demo-row fade-up fd-4">
-      <span class="line"></span>
-      <button class="demo-btn" id="demoBtn"><span class="eq"><i></i><i></i><i></i><i></i></span> <span data-i18n="demo_btn">try it with a demo track</span></button>
-      <span class="line"></span>
+      <div class="drop fade-up fd-2" id="drop" tabindex="0" role="button" aria-label="Upload a song">
+        <input type="file" id="file" accept=".mp3,.wav,.flac,.m4a,.aac,.ogg" multiple hidden>
+        <canvas id="heroSpec" aria-hidden="true"></canvas>
+        <div class="drop-inner">
+          <div class="big" data-i18n="drop_big">Put your demo on the desk</div>
+          <div class="small" data-i18n-html="drop_small">or <span class="browse">browse your files</span></div>
+          <div class="fmt mono" data-i18n="drop_fmt">MP3 · WAV · FLAC · M4A — up to 100 MB</div>
+          <div class="fmt multi" data-i18n="drop_multi">Pro move: drop 2–12 versions of the same song — we'll find the strongest</div>
+        </div>
+      </div>
     </div>
 
     <div class="trust fade-up fd-5">
