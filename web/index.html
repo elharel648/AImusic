@@ -134,7 +134,7 @@
 
   /* ── machined tray (double bezel): hero surfaces sit in a recess — box-shadow
      rings survive overflow:hidden and never touch each card's own state borders ── */
-  .verdict, .priority, .player, .label-moment{
+  .priority, .label-moment{
     border-radius:20px;
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.055),
@@ -627,7 +627,7 @@
     font-size:12px; cursor:pointer; transition:all .2s; white-space:nowrap; font-family:var(--font-mono); letter-spacing:0.02em; }
   .btn-ghost:hover{ border-color:var(--line-2); color:var(--ink); }
 
-  .player{ margin:22px 0 6px; border:1px solid var(--line); border-radius:var(--r); background:var(--surface); padding:16px 18px 14px; display:flex; flex-direction:column; gap:12px; }
+  .player{ margin:26px 0 6px; border:none; background:none; padding:0; display:flex; flex-direction:column; gap:12px; }
   .player .p-row{ display:flex; align-items:center; gap:14px; }
   .player .sx-strip{ flex:1; cursor:pointer; min-width:0; }
   .player.noaudio .pp, .player.noaudio .time{ display:none; }
@@ -641,8 +641,7 @@
   .player .time{ font-size:11px; color:var(--ink-faint); min-width:80px; text-align:right; font-family:var(--font-mono); }
 
   /* verdict — hero glass card: text column + score ring beside it, no dead middle */
-  .verdict{ margin:34px 0 0; padding:30px 32px 28px; border:1px solid var(--line); border-radius:var(--r);
-    background:var(--glass); box-shadow:var(--card-shadow); position:relative;
+  .verdict{ margin:64px 0 0; padding:0; border:none; border-radius:0; background:none; box-shadow:none; position:relative;
     display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:36px; row-gap:14px; align-items:center; }
   .verdict-top{ display:contents; }
   .verdict-top .who{ grid-column:1; grid-row:1; align-self:end; }
@@ -684,14 +683,15 @@
   .score-dial .lbl .n{ font-family:var(--font-mono); font-size:56px; font-weight:600; letter-spacing:-0.04em; line-height:1; color:var(--ink); }
   .score-dial .lbl .n::after{ content:"/100"; font-size:13px; color:var(--ink-faint); font-weight:400; letter-spacing:0; margin-left:2px; }
   .score-dial .lbl .u{ font-family:var(--font-mono); font-size:9.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.2em; }
-  .verdict h1{ margin:0; font-size:clamp(26px,4.4vw,38px); line-height:1.22; text-wrap:balance; font-weight:400; max-width:24ch; }
+  .verdict h1{ margin:0; font-size:clamp(30px,3.8vw,46px); line-height:1.18; text-wrap:balance; font-weight:400; max-width:24ch; }
   .verdict h1 em{ font-style:italic; color:var(--amber); } :root[lang="he"] .verdict h1 em{ font-style:normal; }
   .verdict .signoff{ margin-top:24px; color:var(--ink-faint); font-size:11px; display:flex; align-items:center; gap:8px; font-family:var(--font-mono); letter-spacing:0.06em; text-transform:uppercase; }
   .verdict .signoff svg{ color:var(--good); width:12px; height:12px; }
 
-  /* the ONE moment of the report: large, calm, impossible to ignore */
+  /* the ONE moment of the report: large, calm, impossible to ignore — and it
+     carries the report's single light (the lamp shines on the fix) */
   .priority{ margin:34px 0 0; padding:32px 34px; background:var(--surface); border:1px solid color-mix(in srgb,var(--warn) 24%,var(--line)); border-inline-start:2px solid var(--warn); border-radius:var(--r); display:flex; gap:20px; align-items:flex-start;
-    box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 3%,transparent), 0 22px 60px -38px color-mix(in srgb,var(--amber) 55%,transparent); }
+    box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 3%,transparent), 0 22px 60px -38px color-mix(in srgb,var(--amber) 55%,transparent);, 0 0 110px -34px color-mix(in srgb, var(--amber) 38%, transparent) }
   /* rack-module jewel indicator lamp instead of a flat icon chip */
   .priority .pic{ width:14px; height:14px; margin-top:5px; border-radius:50%; flex-shrink:0;
     background:radial-gradient(circle at 35% 30%, #ffdca6, var(--amber) 50%, color-mix(in srgb,var(--amber) 55%,#000) 92%);
@@ -1206,7 +1206,7 @@
 
   /* ═══════════════ "Studio Glass" skin — surface + CTA layer (wins the cascade) ═══════════════ */
   /* major panels become glass: gradient fill, 1px inner top highlight, diffused shadow */
-  .player, .priority, .ai-block, .stBlock, #stBlock, .suno, .structure, .profile,
+  .priority, .ai-block, .stBlock, #stBlock, .suno, .structure, .profile,
   .v2-verdict, .bt-progress, .bt-tablewrap, .modal, .st-check, .st-plat, .st-bars, .bench, .tonal{
     background:var(--glass); box-shadow:var(--card-shadow); }
   .card:hover{ background:rgba(255,255,255,0.028); }
