@@ -108,35 +108,33 @@
   ::selection{ background:var(--amber-dim); }
   :focus-visible{ outline:1.5px solid var(--amber); outline-offset:3px; border-radius:4px; }
 
-  /* ═══ EDITORIAL SPLIT HERO: massive type | the living desk, full height.
-     One structural statement instead of a centered template column. ═══ */
-  .hero-grid{ display:grid; grid-template-columns:1.02fr .98fr; gap:clamp(32px,5vw,72px);
-    align-items:center; min-height:min(78dvh, 720px); padding-top:14px; }
-  .hero-copy{ display:flex; flex-direction:column; align-items:flex-start; }
-  .hero-grid .hero-h{ font-size:clamp(38px,4.1vw,57px); line-height:1.08; letter-spacing:-0.026em; margin:0 0 26px; }
-  .hero-grid .hero-h br{ display:none; }   /* the split column wraps naturally — the mobile-era break fights it */
-  .hero-grid .hero-sub{ margin:0 0 36px; }
-  .hero-grid .demo-row{ margin:0; }
-  /* the desk stands tall — a full-height instrument, not a strip */
-  .hero-grid .drop{ min-height:min(62dvh, 560px); padding:0 32px; margin:0;
-    display:flex; align-items:center; justify-content:center; }
-  .drop-inner{ position:relative; }
-  /* one meaningful light: the lamp over the producer's desk */
-  #s-upload{ position:relative; }
-  #s-upload::before{ content:""; position:absolute; top:-120px; inset-inline-end:-160px;
-    width:640px; height:640px; border-radius:50%; pointer-events:none; z-index:0;
-    background:radial-gradient(circle, color-mix(in srgb, var(--amber) 9%, transparent) 0%, transparent 62%); }
-  #s-upload > *{ position:relative; z-index:1; }
+  /* ═══ THE EMPTY ROOM: one sentence in space, one breathing line of sound.
+     The whole window is already the drop target — the screen IS the desk. ═══ */
+  .hero-min{ min-height:calc(100dvh - 96px); display:flex; flex-direction:column; }
+  .hero-core{ flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
+    text-align:center; padding-bottom:4vh; }
+  .hero-core .hero-h{ font-size:clamp(38px,5.4vw,72px); line-height:1.12; letter-spacing:-0.027em;
+    margin:0 0 26px; max-width:19ch; }
+  .hero-core .hero-h br{ display:none; }
+  .hero-core .hero-sub{ font-size:15px; margin:0 0 52px; max-width:none; }
+  :root[dir="rtl"] .hero-core .hero-h, :root[dir="rtl"] .hero-core .hero-sub{ text-align:center; }
+  .hero-actions{ display:flex; align-items:center; gap:20px; flex-wrap:wrap; justify-content:center; }
+  /* the one living element: sound, edge to edge, at the floor of the room */
+  html, body{ overflow-x:clip; }
+  .hero-foot{ position:relative; height:120px; flex-shrink:0; width:100vw; margin-inline:calc(50% - 50vw); }
+  #heroSpec{ position:absolute; inset:0; width:100%; height:100%;
+    margin:0; opacity:.5; pointer-events:none; display:block; transition:opacity .3s var(--ease); }
+  body.dragging #heroSpec{ opacity:1; }
+  #s-upload:hover #heroSpec{ opacity:.8; }
   @media (max-width:900px){
-    .hero-grid{ grid-template-columns:1fr; min-height:0; gap:28px; }
-    .hero-grid .drop{ min-height:340px; }
-    .hero-grid .hero-h{ font-size:clamp(38px,9vw,52px); }
-    #s-upload::before{ display:none; }
+    .hero-min{ min-height:calc(100dvh - 80px); }
+    .hero-core .hero-h{ font-size:clamp(34px,9vw,48px); }
+    .hero-foot{ height:80px; } #heroSpec{ height:80px; }
   }
 
   /* ── machined tray (double bezel): hero surfaces sit in a recess — box-shadow
      rings survive overflow:hidden and never touch each card's own state borders ── */
-  .drop, .verdict, .priority, .player, .label-moment{
+  .verdict, .priority, .player, .label-moment{
     border-radius:20px;
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.055),
@@ -144,7 +142,6 @@
       0 0 0 7px var(--line),
       0 36px 90px -52px rgba(0,0,0,.6);
   }
-  .drop{ margin-inline:2px; }
   /* pressed physics: every primary control gives under the finger */
   :is(.prio-listen,.gt-btn,.demo-btn,.up,.copy-btn,.morebtn,.rmode button,.desk-hello,.fixbtn,.lsn):active{ transform:scale(.97); }
 
@@ -341,30 +338,20 @@
   .glass::after{ content:""; position:absolute; inset:0 0 auto 0; height:1px; border-radius:inherit;
     background:linear-gradient(90deg, transparent 4%, color-mix(in srgb,var(--ink) 26%, transparent) 30%, color-mix(in srgb,var(--amber) 36%, transparent) 50%, color-mix(in srgb,var(--ink) 26%, transparent) 70%, transparent 96%);
     pointer-events:none; }
-  .drop{ position:relative; overflow:hidden; border:1px solid var(--line-2); border-radius:var(--r); padding:88px 32px 120px; text-align:center; cursor:pointer;
-    background:var(--surface); transition:border-color .25s, background .25s, box-shadow .35s; position:relative;
-    box-shadow:0 30px 70px -46px rgba(0,0,0,.9); }
-  .drop .fmt.mono{ direction:ltr; unicode-bidi:isolate; }   /* spec line: never bidi-shuffled; the .multi line is real prose */
-  .drop:hover{ border-color:var(--ink-faint); transform:translateY(-2px); box-shadow:0 34px 90px -58px rgba(0,0,0,.55); }
-  .drop:hover #heroSpec{ opacity:.95; }
-  .drop.drag{ border-color:var(--amber); background:var(--amber-dim); }
-  .drop.drag #heroSpec{ opacity:1; }
+  .drop{ position:static; overflow:visible; border:none; border-radius:999px; padding:17px 36px; margin:0;
+    background:var(--ink); color:var(--ground); cursor:pointer; text-align:center;
+    display:inline-flex; align-items:center;
+    box-shadow:0 18px 50px -22px color-mix(in srgb,var(--ink) 40%,transparent);
+    transition:transform .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease); }
+  .drop:hover{ transform:translateY(-2px); box-shadow:0 24px 60px -24px color-mix(in srgb,var(--ink) 55%,transparent); }
+  .drop:active{ transform:scale(.98); }
+  .drop.drag, body.dragging .drop{ background:var(--amber); color:#151006; transform:scale(1.05); }
   /* WeTransfer choreography: files entering the WINDOW make the whole scene
      respond — the stage dims, the desk lifts, the copy becomes a command */
   body.dragging #s-upload :is(.hero-eyebrow,.hero-h,.hero-sub,.genre-row,.demo-row,.trust,.preview-wrap){ opacity:.3; }
   #s-upload :is(.hero-eyebrow,.hero-h,.hero-sub,.genre-row,.demo-row,.trust,.preview-wrap){ transition:opacity .2s var(--ease); }
-  body.dragging .drop{ border-color:var(--amber); background:var(--amber-dim); transform:scale(1.02); box-shadow:0 40px 110px -60px color-mix(in srgb,var(--amber) 30%,#000); }
-  body.dragging .drop #heroSpec{ opacity:1; }
-  body.dragging .drop .big{ letter-spacing:.01em; }
-  .drop>*{ position:relative; }   /* content rides above the spectrum */
-  .drop #heroSpec{ position:absolute; }
-  .drop .ic{ display:none; }   /* the living spectrum is the icon — a box on top is noise */
-  .drop .ic_legacy{ width:52px; height:52px; margin:0 auto 18px; border:1px solid var(--line-2); border-radius:var(--r-sm);
-    display:grid; place-items:center; color:var(--ink-dim); transition:color .25s,border-color .25s; }
-  .drop:hover .ic{ color:var(--ink); border-color:var(--ink-dim); }
-  .drop .big{ font-size:25px; font-weight:600; margin-bottom:8px; letter-spacing:-0.015em; }
-  .drop .small{ font-size:14px; color:var(--ink-dim); }
-  .drop .browse{ color:var(--amber); font-weight:500; text-decoration:underline; text-underline-offset:3px; }
+  .drop .big{ font-size:15.5px; font-weight:650; margin:0; letter-spacing:-0.01em; }
+  .drop .small, .drop .fmt, .drop .ic{ display:none; }
   .fmt{ margin-top:14px; font-size:10.5px; color:var(--ink-faint); letter-spacing:0.08em; text-transform:uppercase; }
 
   .genre-row{ margin-top:26px; display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
@@ -585,7 +572,11 @@
   .demo-btn .eq i:nth-child(1){height:5px;animation-delay:0s}.demo-btn .eq i:nth-child(2){height:11px;animation-delay:.2s}.demo-btn .eq i:nth-child(3){height:7px;animation-delay:.4s}.demo-btn .eq i:nth-child(4){height:12px;animation-delay:.1s}
   @keyframes eq{ 0%,100%{transform:scaleY(.35)} 50%{transform:scaleY(1)} }
 
-  .trust{ margin-top:46px; display:flex; gap:0; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:16px; }
+  .trust{ margin-top:26px; display:flex; gap:22px; flex-wrap:wrap; justify-content:center; border-top:none; padding-top:0;
+    font-family:var(--font-mono); }
+  .trust .t svg{ display:none; }
+  .trust .t{ font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); }
+  :root[lang="he"] .trust .t{ letter-spacing:.03em; }
   .trust .t{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-faint); padding-right:28px; }
   :root[dir="rtl"] .trust .t{ padding-right:0; padding-left:28px; }
   .trust .t svg{ color:var(--ink-faint); flex-shrink:0; width:13px; height:13px; }
@@ -1215,7 +1206,7 @@
 
   /* ═══════════════ "Studio Glass" skin — surface + CTA layer (wins the cascade) ═══════════════ */
   /* major panels become glass: gradient fill, 1px inner top highlight, diffused shadow */
-  .drop, .player, .priority, .ai-block, .stBlock, #stBlock, .suno, .structure, .profile,
+  .player, .priority, .ai-block, .stBlock, #stBlock, .suno, .structure, .profile,
   .v2-verdict, .bt-progress, .bt-tablewrap, .modal, .st-check, .st-plat, .st-bars, .bench, .tonal{
     background:var(--glass); box-shadow:var(--card-shadow); }
   .card:hover{ background:rgba(255,255,255,0.028); }
@@ -1324,25 +1315,23 @@
   <!-- ═══════ SCREEN 1: UPLOAD ═══════ -->
   <section class="screen active" id="s-upload">
     <button class="desk-hello" id="deskHello" type="button" hidden></button>
-    <div class="hero-grid">
-      <div class="hero-copy">
-        <div class="hero-eyebrow eyebrow fade-up"><span class="pulse"></span> <span data-i18n="hero_eyebrow">A brutally honest ear</span></div>
+    <div class="hero-min">
+      <div class="hero-core">
         <h1 class="hero-h display" data-i18n-html="hero_h">Why doesn't my song<br>feel <span class="grad">professional</span> yet?</h1>
         <p class="hero-sub fade-up fd-1" data-i18n-html="hero_sub"><b>Every number measured — never invented.</b> One clear fix. No flattery.</p>
-        <div class="demo-row fade-up fd-4">
+        <div class="hero-actions fade-up fd-2">
+          <div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload a song">
+            <input type="file" id="file" accept=".mp3,.wav,.flac,.m4a,.aac,.ogg" multiple hidden>
+            <div class="big" data-i18n="drop_big">Put your demo on the desk</div>
+            <div class="small" data-i18n-html="drop_small">or <span class="browse">browse your files</span></div>
+            <div class="fmt mono" data-i18n="drop_fmt">MP3 · WAV · FLAC · M4A — up to 100 MB</div>
+            <div class="fmt multi" data-i18n="drop_multi">Pro move: drop 2–12 versions of the same song — we'll find the strongest</div>
+          </div>
           <button class="demo-btn" id="demoBtn"><span class="eq"><i></i><i></i><i></i><i></i></span> <span data-i18n="demo_btn">try it with a demo track</span></button>
         </div>
       </div>
-
-      <div class="drop fade-up fd-2" id="drop" tabindex="0" role="button" aria-label="Upload a song">
-        <input type="file" id="file" accept=".mp3,.wav,.flac,.m4a,.aac,.ogg" multiple hidden>
+      <div class="hero-foot">
         <canvas id="heroSpec" aria-hidden="true"></canvas>
-        <div class="drop-inner">
-          <div class="big" data-i18n="drop_big">Put your demo on the desk</div>
-          <div class="small" data-i18n-html="drop_small">or <span class="browse">browse your files</span></div>
-          <div class="fmt mono" data-i18n="drop_fmt">MP3 · WAV · FLAC · M4A — up to 100 MB</div>
-          <div class="fmt multi" data-i18n="drop_multi">Pro move: drop 2–12 versions of the same song — we'll find the strongest</div>
-        </div>
       </div>
     </div>
 
