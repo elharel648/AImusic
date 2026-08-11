@@ -11,6 +11,8 @@ data/
 calibration/
 sample.wav
 *.conv.wav
-# local Claude Code settings (contains local perms / ids)
-.claude/
+# local Claude Code settings (contains local perms / ids) — but skills ARE the repo's
+.claude/*
+!.claude/skills/
 data/usage_stats.json*
+
