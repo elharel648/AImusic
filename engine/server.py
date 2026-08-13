@@ -448,6 +448,14 @@ def index(request: Request):
     return HTMLResponse(html)
 
 
+@app.get("/studio")
+def studio():
+    """The from-scratch rack UI — same live API, zero legacy CSS."""
+    from fastapi.responses import FileResponse
+    p = WEB_DIR / "studio.html"
+    return FileResponse(str(p)) if p.exists() else JSONResponse({"error": "not built"}, 404)
+
+
 @app.get("/og.png")
 def og_image():
     """Social share card (og:image / twitter:image)."""

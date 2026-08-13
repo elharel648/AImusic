@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A&R·AI — STUDIO RACK</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   THE RACK — built from scratch. One room, one light source per meaning.
+   Obsidian #030304 · hairline rgba(255,255,255,.07)
+   SIGNAL green #3DF5A6 · ML violet #A78BFA · ALERT red #FF5C5C
+   ═══════════════════════════════════════════════════════════════════ */
+@font-face{ font-family:"Space Grotesk"; src:url("/fonts/SpaceGrotesk.woff2") format("woff2");
+  font-weight:300 700; font-display:swap; unicode-range:U+0000-00FF,U+2013-2014,U+2018-201D,U+2026; }
+@font-face{ font-family:"SF Hebrew App"; src:url("/fonts/SFHebrew.woff2") format("woff2"); font-display:swap; }
+:root{
+  --bg:#030304; --panel:#0A0B0D; --panel-2:#0E1013;
+  --hair:rgba(255,255,255,.07); --hair-2:rgba(255,255,255,.13);
+  --ink:#EDEFF2; --dim:#8B939C; --faint:#4E555D;
+  --sig:#3DF5A6; --sig-dim:rgba(61,245,166,.13);
+  --ml:#A78BFA;  --ml-dim:rgba(167,139,250,.13);
+  --alert:#FF5C5C; --alert-dim:rgba(255,92,92,.13);
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  --sans:"Space Grotesk","SF Hebrew App",-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.2,0,0,1);
+}
+*{ box-sizing:border-box; margin:0; }
+html,body{ background:var(--bg); overflow-x:clip; }
+body{ min-height:100dvh; color:var(--ink); font-family:var(--sans);
+  display:flex; flex-direction:column; padding-bottom:118px; }
+button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
+.mono{ font-family:var(--mono); font-variant-numeric:tabular-nums; }
+
+/* ── top strip: identity only, nothing else ── */
+.id{ display:flex; align-items:center; justify-content:space-between;
+  padding:22px clamp(20px,4vw,54px) 0; }
+.id .brand{ font-family:var(--mono); font-size:12px; letter-spacing:.34em; color:var(--dim); }
+.id .brand b{ color:var(--ink); font-weight:600; }
+.id .state{ font-family:var(--mono); font-size:9px; letter-spacing:.22em; color:var(--faint);
+  display:inline-flex; align-items:center; gap:8px; text-transform:uppercase; }
+.id .state i{ width:6px; height:6px; border-radius:50%; background:var(--sig); box-shadow:0 0 10px var(--sig); }
+
+/* ── the stage grid: orb center, four instruments around ── */
+.stage{ flex:1; width:min(1180px,100%); margin:0 auto; padding:clamp(18px,4vh,44px) clamp(20px,4vw,54px);
+  display:grid; gap:clamp(14px,2vw,26px);
+  grid-template-columns:1fr minmax(300px,380px) 1fr;
+  grid-template-areas: "master orb mix" "scan orb tempo";
+  align-items:stretch; }
+@media (max-width:980px){
+  .stage{ grid-template-columns:1fr; grid-template-areas:"orb" "master" "mix" "scan" "tempo"; }
+}
+
+/* ═══ THE MASTER SCORE ORB ═══ */
+.orb-cell{ grid-area:orb; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; }
+.orb{ position:relative; width:min(300px,72vw); aspect-ratio:1; border-radius:50%;
+  display:grid; place-items:center; }
+.orb::before{ content:""; position:absolute; inset:-14%; border-radius:50%;
+  background:radial-gradient(circle, var(--orb-glow, rgba(61,245,166,.16)) 0%, transparent 62%);
+  filter:blur(6px); }
+.orb .ring{ position:absolute; inset:0; border-radius:50%;
+  background:conic-gradient(var(--orb-c,var(--sig)) calc(var(--score,0)*1%), rgba(255,255,255,.06) 0);
+  -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+  mask:radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+  filter:drop-shadow(0 0 12px var(--orb-glow, rgba(61,245,166,.5)));
+  transform:rotate(180deg); transition:--score 1s; }
+.orb .glass{ position:absolute; inset:18px; border-radius:50%;
+  background:linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.01) 46%), var(--panel);
+  border:1px solid var(--hair-2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09), inset 0 -30px 60px -40px var(--orb-glow, rgba(61,245,166,.35)); }
+.orb .val{ position:relative; text-align:center; }
+.orb .val b{ font-family:var(--mono); font-weight:600; font-size:clamp(64px,8vw,88px); line-height:1;
+  color:var(--ink); text-shadow:0 0 34px var(--orb-glow, rgba(61,245,166,.55)); }
+.orb .val small{ display:block; margin-top:10px; font-family:var(--mono); font-size:9px;
+  letter-spacing:.3em; color:var(--faint); text-transform:uppercase; }
+.orb .val .tag{ display:inline-block; margin-top:8px; font-family:var(--mono); font-size:8.5px;
+  letter-spacing:.16em; color:var(--dim); border:1px solid var(--hair); border-radius:999px; padding:3px 10px; }
+.verdict{ max-width:34ch; text-align:center; font-size:15.5px; line-height:1.65; color:var(--dim); text-wrap:balance; }
+.verdict b{ color:var(--ink); font-weight:600; }
+
+/* ═══ INSTRUMENT PANELS (borderless glass, hairline top-light) ═══ */
+.unit{ position:relative; border-radius:18px; padding:22px 24px 20px;
+  background:linear-gradient(180deg, rgba(255,255,255,.035), transparent 44%), var(--panel);
+  border:1px solid var(--hair);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.055), 0 30px 70px -50px rgba(0,0,0,.9);
+  display:flex; flex-direction:column; gap:16px; min-height:190px; }
+.unit .head{ display:flex; align-items:center; justify-content:space-between; }
+.unit .head .t{ font-family:var(--mono); font-size:9px; letter-spacing:.26em; color:var(--faint); text-transform:uppercase; }
+.unit .head .led{ width:7px; height:7px; border-radius:50%; background:var(--u,var(--sig)); box-shadow:0 0 9px var(--u,var(--sig)); }
+.unit .read{ font-size:13px; line-height:1.6; color:var(--dim); margin-top:auto; }
+.unit .read b{ color:var(--ink); font-weight:600; font-family:var(--mono); font-size:12px; }
+.u-master{ grid-area:master; --u:var(--sig); }
+.u-mix{ grid-area:mix; --u:var(--alert); }
+.u-scan{ grid-area:scan; --u:var(--ml); }
+.u-tempo{ grid-area:tempo; --u:var(--sig); }
+
+/* mastering VU: current vs target, one glowing column */
+.vu{ display:flex; align-items:flex-end; gap:18px; }
+.vu .col{ flex:1; }
+.vu .nums{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; direction:ltr; }
+.vu .nums .cur{ font-family:var(--mono); font-size:30px; font-weight:600; color:var(--ink);
+  text-shadow:0 0 18px rgba(61,245,166,.45); }
+.vu .nums .tgt{ font-family:var(--mono); font-size:11px; color:var(--faint); }
+.vu .bar{ position:relative; height:10px; border-radius:6px; background:var(--panel-2); direction:ltr;
+  border:1px solid var(--hair); overflow:hidden; }
+.vu .bar i{ position:absolute; inset:0; width:calc(var(--p,0)*1%); border-radius:6px;
+  background:linear-gradient(90deg, color-mix(in srgb, var(--sig) 55%, transparent), var(--sig));
+  box-shadow:0 0 14px rgba(61,245,166,.5); transition:width 1.1s var(--ease) .2s; }
+.vu .bar em{ position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--ink);
+  inset-inline-start:calc(var(--t,0)*1%); border-radius:2px; opacity:.9; }
+.vu .lbl{ display:flex; justify-content:space-between; margin-top:8px; direction:ltr;
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.14em; color:var(--faint); }
+
+/* mix EQ curve: canvas with the measured notch */
+.eqwrap{ position:relative; height:96px; }
+.eqwrap canvas{ position:absolute; inset:0; width:100%; height:100%; }
+.eqwrap .hz{ position:absolute; font-family:var(--mono); font-size:9px; color:var(--alert);
+  letter-spacing:.1em; text-shadow:0 0 10px var(--alert-dim); transform:translateX(50%); }
+
+/* AI/HUMAN texture scanner: measured spectrum position, honest labels */
+.scan{ display:flex; flex-direction:column; gap:12px; }
+.scan .track{ position:relative; height:10px; border-radius:6px; overflow:visible; direction:ltr;
+  background:linear-gradient(90deg, var(--sig-dim), var(--panel-2) 45%, var(--ml-dim));
+  border:1px solid var(--hair); }
+.scan .track i{ position:absolute; top:-5px; width:2.5px; height:20px; border-radius:2px;
+  background:var(--ml); box-shadow:0 0 14px var(--ml);
+  inset-inline-start:calc(var(--x,50)*1%); transition:inset-inline-start 1.1s var(--ease) .3s; }
+.scan .poles{ display:flex; justify-content:space-between; direction:ltr;
+  font-family:var(--mono); font-size:8.5px; letter-spacing:.2em; color:var(--faint); text-transform:uppercase; }
+.scan .tells{ display:flex; gap:8px; flex-wrap:wrap; }
+.scan .tell{ font-family:var(--mono); font-size:9px; letter-spacing:.08em; color:var(--ml);
+  border:1px solid color-mix(in srgb, var(--ml) 35%, transparent); border-radius:6px; padding:3px 9px;
+  background:var(--ml-dim); }
+
+/* tempo/key: hardware digits */
+.tk{ display:flex; gap:14px; }
+.tk .cell{ flex:1; border:1px solid var(--hair); border-radius:12px; padding:14px 12px 12px;
+  background:var(--panel-2); text-align:center; }
+.tk .cell b{ display:block; font-family:var(--mono); font-size:26px; font-weight:600; color:var(--ink);
+  text-shadow:0 0 16px rgba(61,245,166,.35); direction:ltr; }
+.tk .cell span{ display:block; margin-top:6px; font-family:var(--mono); font-size:8.5px;
+  letter-spacing:.22em; color:var(--faint); text-transform:uppercase; }
+
+/* ═══ THE DOCK: transport pinned to the floor ═══ */
+.dock{ position:fixed; inset-inline:0; bottom:0; z-index:40;
+  background:color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3);
+  border-top:1px solid var(--hair); padding:14px clamp(20px,4vw,54px) 16px; }
+.dock .row{ display:flex; align-items:center; gap:18px; max-width:1180px; margin:0 auto; }
+.pp{ width:46px; height:46px; border-radius:50%; flex-shrink:0;
+  border:1px solid var(--hair-2); background:var(--panel);
+  display:grid; place-items:center; color:var(--ink);
+  transition:transform .15s var(--ease), border-color .15s var(--ease), box-shadow .2s var(--ease); }
+.pp:hover{ border-color:var(--sig); box-shadow:0 0 18px -6px var(--sig); }
+.pp:active{ transform:scale(.94); }
+.pp[disabled]{ opacity:.35; cursor:default; box-shadow:none; }
+.wave{ position:relative; flex:1; height:56px; cursor:pointer; direction:ltr; }
+.wave canvas{ position:absolute; inset:0; width:100%; height:100%;
+  filter:drop-shadow(0 0 9px rgba(61,245,166,.28)); }
+.tc{ font-family:var(--mono); font-size:11.5px; color:var(--dim); direction:ltr;
+  font-variant-numeric:tabular-nums; flex-shrink:0; min-width:96px; text-align:center; }
+.dock .name{ font-family:var(--mono); font-size:10px; letter-spacing:.1em; color:var(--faint);
+  max-width:190px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; direction:ltr; flex-shrink:0; }
+
+/* drop state: the whole room answers */
+body.drag::after{ content:attr(data-dropmsg); position:fixed; inset:0; z-index:60;
+  display:grid; place-items:center; font-size:clamp(40px,7vw,84px); font-weight:650;
+  color:var(--ink); background:color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter:blur(10px); letter-spacing:-.02em; }
+.hint{ text-align:center; font-family:var(--mono); font-size:9.5px; letter-spacing:.2em;
+  color:var(--faint); text-transform:uppercase; padding:10px 0 2px; }
+.hint b{ color:var(--dim); }
+input[type=file]{ display:none; }
+
+/* loading shimmer on the orb while analyzing */
+body.busy .orb .ring{ background:conic-gradient(var(--ml) 18%, rgba(255,255,255,.06) 0);
+  animation:spin 1.1s linear infinite; }
+@keyframes spin{ to{ transform:rotate(540deg); } }
+@media (prefers-reduced-motion:reduce){ *{ transition:none!important; animation:none!important; } }
+</style>
+</head>
+<body data-dropmsg="שחרר.">
+<header class="id">
+  <span class="brand"><b>A&amp;R</b>·AI — RACK</span>
+  <label class="state" for="file" style="cursor:pointer"><i></i> <span id="stateTxt">מוכן · גרור שיר לכל מקום</span></label>
+  <input type="file" id="file" accept=".mp3,.wav,.flac,.m4a,.aac,.ogg">
+</header>
+
+<main class="stage">
+  <section class="unit u-master">
+    <div class="head"><span class="t">MASTERING · LUFS</span><i class="led"></i></div>
+    <div class="vu"><div class="col">
+      <div class="nums"><span class="cur" id="lufsCur">—</span><span class="tgt mono" id="lufsTgt"></span></div>
+      <div class="bar" id="vuBar"><i></i><em></em></div>
+      <div class="lbl"><span>-24</span><span>-14</span><span>-6</span></div>
+    </div></div>
+    <p class="read" id="masterRead">—</p>
+  </section>
+
+  <section class="orb-cell">
+    <div class="orb" id="orb" style="--score:0">
+      <span class="ring"></span><span class="glass"></span>
+      <div class="val"><b id="score">—</b><small>PRODUCER'S READ · 100</small><span class="tag" id="genreTag">—</span></div>
+    </div>
+    <p class="verdict" id="verdict">גרור שיר לכל מקום במסך — הראק יקרא אותו.</p>
+  </section>
+
+  <section class="unit u-mix">
+    <div class="head"><span class="t">MIX · SPECTRUM</span><i class="led"></i></div>
+    <div class="eqwrap"><canvas id="eq"></canvas><span class="hz" id="eqHz" hidden></span></div>
+    <p class="read" id="mixRead">—</p>
+  </section>
+
+  <section class="unit u-scan">
+    <div class="head"><span class="t">TEXTURE SCAN · ML</span><i class="led"></i></div>
+    <div class="scan">
+      <div class="track" id="scanTrack" style="--x:50"><i></i></div>
+      <div class="poles"><span>HUMAN RANGE</span><span>AI RANGE</span></div>
+      <div class="tells" id="tells"></div>
+    </div>
+    <p class="read" id="scanRead">—</p>
+  </section>
+
+  <section class="unit u-tempo">
+    <div class="head"><span class="t">TEMPO · KEY</span><i class="led"></i></div>
+    <div class="tk">
+      <div class="cell"><b id="bpm">—</b><span>BPM</span></div>
+      <div class="cell"><b id="keyv">—</b><span>KEY</span></div>
+      <div class="cell"><b id="tpv">—</b><span>TRUE PEAK</span></div>
+    </div>
+    <p class="read" id="tempoRead">—</p>
+  </section>
+</main>
+
+<footer class="dock">
+  <div class="row">
+    <button class="pp" id="pp" disabled aria-label="נגן"><svg id="ppIc" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    <div class="wave" id="wave"><canvas id="wf"></canvas></div>
+    <span class="tc" id="tc">0:00 / 0:00</span>
+    <span class="name" id="trk">—</span>
+  </div>
+  <div class="hint">כל מספר על המסך — <b>נמדד</b>. הציון והספים — קריאת מפיק.</div>
+</footer>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+let REP=null, audio=null, dur=0, curve=[];
+
+/* ── waveform dock ── */
+function drawWave(prog){
+  const cv=$('wf'), w=cv.clientWidth, h=cv.clientHeight, dpr=devicePixelRatio||1;
+  cv.width=w*dpr; cv.height=h*dpr;
+  const c=cv.getContext('2d'); c.scale(dpr,dpr); c.clearRect(0,0,w,h);
+  const n=curve.length||96, bw=w/n;
+  for(let i=0;i<n;i++){
+    const v=curve[i]!=null?curve[i]:0.08;
+    const bh=Math.max(2,v*(h-8));
+    const played=(i+0.5)/n<=prog;
+    c.fillStyle=played?'#3DF5A6':'rgba(237,239,242,.22)';
+    c.fillRect(i*bw, h-bh, Math.max(1.2,bw-2), bh);
+  }
+}
+function tick(){
+  if(audio&&dur){ drawWave(audio.currentTime/dur); $('tc').textContent=`${fmt(audio.currentTime)} / ${fmt(dur)}`; }
+  requestAnimationFrame(tick);
+}
+$('wave').addEventListener('click',e=>{
+  if(!audio||!dur) return;
+  const r=$('wave').getBoundingClientRect();
+  audio.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*dur;
+  if(audio.paused) togglePlay();
+});
+function togglePlay(){
+  if(!audio) return;
+  if(audio.paused){ audio.play(); $('ppIc').innerHTML='<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'; }
+  else{ audio.pause(); $('ppIc').innerHTML='<path d="M8 5v14l11-7z"/>'; }
+}
+$('pp').addEventListener('click',togglePlay);
+
+/* ── EQ curve: long-term tonal bands + the measured mud notch ── */
+function drawEQ(rep){
+  const cv=$('eq'), w=cv.clientWidth, h=cv.clientHeight, dpr=devicePixelRatio||1;
+  cv.width=w*dpr; cv.height=h*dpr;
+  const c=cv.getContext('2d'); c.scale(dpr,dpr); c.clearRect(0,0,w,h);
+  const raw=rep._raw||{};
+  const bands=(raw.tonal_bands&&raw.tonal_bands.length? raw.tonal_bands
+              : (raw.energy_curve||[]).filter((_,i)=>i%4===0)).slice(0,24);
+  if(!bands.length) return;
+  const min=Math.min(...bands), max=Math.max(...bands), span=(max-min)||1;
+  const pts=bands.map((v,i)=>[ (i/(bands.length-1))*w, h-8-((v-min)/span)*(h-22) ]);
+  c.beginPath(); c.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++){
+    const [x0,y0]=pts[i-1],[x1,y1]=pts[i];
+    c.quadraticCurveTo(x0,y0,(x0+x1)/2,(y0+y1)/2);
+  }
+  c.strokeStyle='rgba(237,239,242,.75)'; c.lineWidth=1.6;
+  c.shadowColor='rgba(61,245,166,.5)'; c.shadowBlur=10; c.stroke();
+  // measured mud marker
+  const mud=raw.mud_peak_hz, ratio=raw.low_mid_ratio;
+  if(mud && ratio!=null){
+    const x=Math.log(mud/30)/Math.log(16000/30)*w;
+    c.shadowColor='rgba(255,92,92,.8)'; c.shadowBlur=12;
+    c.strokeStyle='#FF5C5C'; c.lineWidth=1.4;
+    c.beginPath(); c.moveTo(x,10); c.lineTo(x,h-6); c.stroke();
+    const hz=$('eqHz'); hz.hidden=false; hz.textContent=`${mud} Hz`;
+    hz.style.insetInlineStart=''; hz.style.left=(x)+'px'; hz.style.top='0px';
+  } else { $('eqHz').hidden=true; }
+}
+
+/* ── render everything from a real report ── */
+function render(rep, fileName){
+  REP=rep;
+  const raw=rep._raw||{}, meta=rep.meta||{};
+  curve=raw.energy_curve||[]; dur=raw.duration_sec||0;
+  // orb
+  const s=rep.overall||0;
+  const col = s>=80? 'var(--sig)' : s>=60? '#22D3EE' : 'var(--alert)';
+  const glow= s>=80? 'rgba(61,245,166,.5)' : s>=60? 'rgba(34,211,238,.45)' : 'rgba(255,92,92,.4)';
+  const orb=$('orb'); orb.style.setProperty('--orb-c',col); orb.style.setProperty('--orb-glow',glow);
+  animNum($('score'), s, 900); orb.style.setProperty('--score', s);
+  $('genreTag').textContent=(meta.genre||'—').toUpperCase();
+  $('verdict').innerHTML=(rep.verdict||'').replace(/</g,'&lt;');
+  // mastering VU  (bar maps -24..-6 LUFS)
+  const lufs=raw.lufs, norms=(raw.norms||{}).lufs||[-9,-6];
+  $('lufsCur').textContent=lufs!=null? lufs.toFixed(1):'—';
+  $('lufsTgt').textContent=`TARGET ${norms[0]}…${norms[1]}`;
+  const p=lufs!=null? Math.max(0,Math.min(100,(lufs+24)/18*100)) : 0;
+  const t=Math.max(0,Math.min(100,(norms[0]+24)/18*100));
+  $('vuBar').querySelector('i').style.setProperty('--p',p);
+  $('vuBar').querySelector('em').style.setProperty('--t',t);
+  const mf=(rep.findings||[]).find(f=>f.id==='Master');
+  $('masterRead').textContent=mf? mf.headline : '';
+  // mix
+  drawEQ(rep);
+  const mixf=(rep.findings||[]).find(f=>f.id==='Mix');
+  $('mixRead').textContent=mixf? mixf.headline : 'לא נמדדה הצטברות חריגה בתחום הנמוך-אמצע.';
+  // texture scan — honest: tell count 0..3 positions the marker; labels are the measured tells
+  const ai=rep.ai_signals||{};
+  const x=Math.min(96, 8 + (ai.count||0)*30);
+  $('scanTrack').style.setProperty('--x', x);
+  $('tells').innerHTML=(ai.tells||[]).map(t=>`<span class="tell">${String(t.t||t).replace(/</g,'&lt;')}${t.pct?` · ${t.pct}%`:''}</span>`).join('')
+    || '<span class="tell" style="color:var(--sig);border-color:color-mix(in srgb,var(--sig) 35%,transparent);background:var(--sig-dim)">אפס סימנים</span>';
+  $('scanRead').textContent=ai.headline||'';
+  // tempo/key/tp
+  $('bpm').textContent=meta.bpm||'—';
+  $('keyv').textContent=(meta.key||'—').replace(' minor','m').replace(' major','');
+  $('tpv').textContent=raw.true_peak_db!=null? raw.true_peak_db+'dB' : '—';
+  const tf=(rep.findings||[]).find(f=>f.id==='Tempo');
+  $('tempoRead').textContent=tf? tf.headline:'';
+  $('trk').textContent=fileName||'demo';
+  drawWave(0); $('tc').textContent=`0:00 / ${fmt(dur)}`;
+  $('stateTxt').textContent='נותח · גרור שיר נוסף להחלפה';
+}
+function animNum(el, to, ms){
+  const t0=performance.now();
+  (function f(now){ const p=Math.min(1,(now-t0)/ms), e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(to*e); if(p<1) requestAnimationFrame(f); })(t0);
+}
+
+/* ── ingest: whole window is the target ── */
+async function analyze(file){
+  document.body.classList.add('busy'); $('stateTxt').textContent='מקשיב…';
+  try{
+    const fd=new FormData(); fd.append('file',file); fd.append('genre','auto'); fd.append('lang','he');
+    const r=await fetch('/api/analyze',{method:'POST',body:fd});
+    if(!r.ok) throw new Error((await r.json()).detail||'analysis failed');
+    const rep=await r.json();
+    if(audio){ audio.pause(); URL.revokeObjectURL(audio.src); }
+    audio=new Audio(URL.createObjectURL(file)); $('pp').disabled=false;
+    audio.addEventListener('loadedmetadata',()=>{ if(!dur) dur=audio.duration; });
+    render(rep, file.name);
+  }catch(e){ $('stateTxt').textContent='שגיאה — נסה שוב'; }
+  finally{ document.body.classList.remove('busy'); }
+}
+let depth=0;
+addEventListener('dragenter',e=>{ if([...(e.dataTransfer?.types||[])].includes('Files')){ e.preventDefault(); if(++depth===1) document.body.classList.add('drag'); }});
+addEventListener('dragover',e=>{ if(document.body.classList.contains('drag')){ e.preventDefault(); e.dataTransfer.dropEffect='copy'; }});
+addEventListener('dragleave',()=>{ if(depth>0&&--depth===0) document.body.classList.remove('drag'); });
+addEventListener('drop',e=>{ if(!document.body.classList.contains('drag'))return;
+  e.preventDefault(); depth=0; document.body.classList.remove('drag');
+  const f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) analyze(f); });
+$('file').addEventListener('change',e=>{ const f=e.target.files[0]; if(f) analyze(f); e.target.value=''; });
+
+/* boot with the demo so the rack is alive immediately */
+fetch('/api/demo?lang=he').then(r=>r.json()).then(rep=>render(rep,'Nightdrive (demo)')).catch(()=>{});
+addEventListener('resize',()=>{ if(REP){ drawEQ(REP); drawWave(audio&&dur? audio.currentTime/dur:0); } });
+requestAnimationFrame(tick);
+addEventListener('keydown',e=>{ if(e.code==='Space'&&audio){ e.preventDefault(); togglePlay(); }});
+</script>
+</body>
+</html>
