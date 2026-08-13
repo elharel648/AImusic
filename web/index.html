@@ -32,7 +32,9 @@
      --amber is the ACCENT slot (name kept so every existing reference follows);
      it now carries cyan, while --warn keeps true amber for semantics. */
   :root {
-    --ground:#0B0C0E; --surface:#101114; --surface-2:#14161A; --raise:#191B20;
+    --ground:#050608; --surface:#0B0D10; --surface-2:#0F1115; --raise:#14161B;
+    --violet:#A78BFA; --violet-dim:rgba(167,139,250,0.12);
+    --glowA:rgba(34,211,238,0.30); --glowV:rgba(167,139,250,0.30);
     --line:rgba(255,255,255,0.075); --line-2:rgba(255,255,255,0.14);
     --hilite:rgba(255,255,255,0.055);
     --ink:#F4F5F7; --ink-dim:#9BA1AC; --ink-faint:#767B86;
@@ -49,6 +51,8 @@
   }
   :root[data-theme="light"]{
     --ground:#F6F7F9; --surface:#FDFDFE; --surface-2:#FFFFFF; --raise:#FFFFFF;
+    --violet:#7C5CE0; --violet-dim:rgba(124,92,224,0.10);
+    --glowA:transparent; --glowV:transparent;
     --line:rgba(18,24,32,0.09); --line-2:rgba(18,24,32,0.17);
     --hilite:rgba(255,255,255,0.85);
     --ink:#15181D; --ink-dim:#5C636E; --ink-faint:#71787F;
@@ -61,6 +65,8 @@
   }
   @media (prefers-color-scheme:light){ :root:not([data-theme]){
     --ground:#F6F7F9; --surface:#FDFDFE; --surface-2:#FFFFFF; --raise:#FFFFFF;
+    --violet:#7C5CE0; --violet-dim:rgba(124,92,224,0.10);
+    --glowA:transparent; --glowV:transparent;
     --line:rgba(18,24,32,0.09); --line-2:rgba(18,24,32,0.17);
     --hilite:rgba(255,255,255,0.85);
     --ink:#15181D; --ink-dim:#5C636E; --ink-faint:#71787F;
@@ -732,6 +738,52 @@
   .patterns .pt-line{ font-size:13px; color:var(--ink-dim); line-height:1.55; }
   /* display:flex above would defeat the hidden attribute — keep it authoritative */
   .patterns[hidden], .prio-act[hidden]{ display:none; }
+
+  /* ═══ STICKY INSTRUMENT: the timeline stays under your hands while you read.
+     When stuck: obsidian glass, structural reads fold away, the voice stays. ═══ */
+  #s-report .player{ position:sticky; top:60px; z-index:22; }
+  .player :is(.sx-reads,.fixprev){ max-height:420px; overflow:hidden;
+    transition:max-height .3s var(--ease), opacity .25s var(--ease), margin .3s var(--ease); }
+  .player.stuck{ background:color-mix(in srgb, var(--ground) 84%, transparent);
+    backdrop-filter:blur(16px) saturate(1.3); -webkit-backdrop-filter:blur(16px) saturate(1.3);
+    margin-inline:calc(50% - 50vw); padding:10px calc(50vw - 50%) 12px;
+    border-bottom:1px solid var(--line); }
+  .player.stuck :is(.sx-reads,.fixprev){ max-height:0; opacity:0; margin:0; pointer-events:none; }
+  @media (max-width:900px){ #s-report .player{ position:static; } }
+
+  /* ═══ FABFILTER BLOOM: the data glows, the chrome does not ═══ */
+  .sx-segs{ filter:drop-shadow(0 0 12px var(--glowA)); }
+  .sx-ph{ box-shadow:0 0 14px var(--glowA), 0 0 3px var(--amber); }
+  .sx-pin.on{ box-shadow:0 0 20px currentColor, 0 0 5px currentColor; }
+  .score-dial .n{ text-shadow:0 0 22px var(--glowV); }
+  .card .mnum{ text-shadow:0 0 14px var(--glowA); }
+  .measure .mv{ text-shadow:0 0 12px var(--glowA); }
+  .bx-val{ text-shadow:0 0 14px var(--glowA); }
+  /* Raycast edge: interactive chrome answers hover with a 1px neon ring */
+  @media (hover:hover) and (pointer:fine){
+    :is(.gt-btn,.rmode button,.copy-btn,.plat-row button,.desk-hello):hover{
+      box-shadow:0 0 0 1px color-mix(in srgb, var(--amber) 45%, transparent), 0 0 16px -6px var(--glowA); }
+  }
+  /* glass tiles: instruments get glass + a violet answer on hover */
+  .bx{ background:linear-gradient(180deg, rgba(255,255,255,.035), transparent 42%), color-mix(in srgb, var(--surface) 72%, transparent); }
+  @media (hover:hover) and (pointer:fine){
+    .bx:hover{ border-color:color-mix(in srgb, var(--violet) 45%, var(--line)); box-shadow:0 0 26px -14px var(--glowV); }
+  }
+
+  /* ═══ THE RAIL: the sleeping rnav becomes a studio-side navigator (wide pro) ═══ */
+  @media (min-width:1280px){
+    #s-report .rnav{ position:fixed; inset-inline-start:max(14px, calc(50% - 620px)); top:50%; transform:translateY(-50%);
+      z-index:24; display:flex; flex-direction:column; align-items:stretch; gap:4px; margin:0; padding:10px; width:136px;
+      background:color-mix(in srgb, var(--ground) 82%, transparent);
+      backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+      border:1px solid var(--line); border-radius:14px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+    #s-report .rnav a{ padding:7px 10px; border-radius:8px; }
+    #s-report .rnav a.on{ color:var(--amber); background:var(--amber-dim);
+      box-shadow:inset 2px 0 0 var(--amber), 0 0 14px -6px var(--glowA); }
+    :root[dir="rtl"] #s-report .rnav a.on{ box-shadow:inset -2px 0 0 var(--amber), 0 0 14px -6px var(--glowA); }
+    #s-report .rnav .rnav-copy{ margin:6px 0 0; }
+  }
 
   /* ── the desk greets returning artists — relationship, not a form ── */
   .desk-hello{ display:inline-flex; width:fit-content; direction:inherit; align-items:center; gap:9px; margin:0 0 26px;
@@ -1415,6 +1467,7 @@
       <div class="new"><button class="btn-ghost" id="againBtn"><span class="ic" aria-hidden="true">↺</span> <span data-i18n="new_song">New song</span></button></div>
     </div>
 
+    <div id="playerSentinel" aria-hidden="true"></div>
     <!-- unified player: the energy strip IS the seek surface; structure reads live here too -->
     <div class="player glass hidden" id="player">
       <div class="p-row">
@@ -4233,6 +4286,15 @@
     deepChk.addEventListener('change',()=>{ deepSel=deepChk.checked; localStorage.setItem('anr_deep', deepSel?'1':'0'); syncTrustTime(); });
   }
   syncTrustTime();
+  // sticky instrument: when the player pins under the nav, fold the reads away
+  (function(){
+    const s=$('playerSentinel'), pl=$('player');
+    if(!s||!pl) return;
+    new IntersectionObserver(es=>es.forEach(en=>{
+      pl.classList.toggle('stuck', !en.isIntersecting && screens.report.classList.contains('active'));
+    }),{rootMargin:'-60px 0px 0px 0px'}).observe(s);
+  })();
+
   // ─────────── progressive disclosure: essentials vs full studio ───────────
   // the engine computes everything either way — the mode only decides how
   // much lands on the reader at once
