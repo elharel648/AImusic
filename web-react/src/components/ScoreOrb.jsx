@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 /** THE MASTER SCORE ORB — glass sphere, conic ring, bloom tuned to the read. */
-export default function ScoreOrb({ score = 82, genre = 'MELODIC TECHNO', verdict = '' }) {
+export default function ScoreOrb({ score = 82, genre = 'MELODIC TECHNO', verdict = '', compact = false }) {
   const [n, setN] = useState(0)
   useEffect(() => {
     const t0 = performance.now()
@@ -19,9 +19,9 @@ export default function ScoreOrb({ score = 82, genre = 'MELODIC TECHNO', verdict
   const glow = score >= 80 ? 'rgba(61,245,166,.5)' : score >= 60 ? 'rgba(34,211,238,.45)' : 'rgba(255,92,92,.4)'
 
   return (
-    <section className="flex flex-col items-center justify-center gap-7" style={{ gridArea: 'orb' }}>
+    <section className="flex flex-col items-center justify-center gap-7">
       <div
-        className="relative grid place-items-center rounded-full w-[min(300px,72vw)] aspect-square"
+        className={`relative grid place-items-center rounded-full aspect-square ${compact ? 'w-[190px]' : 'w-[min(300px,72vw)]'}`}
         style={{ '--score': n, '--orb-c': c, '--orb-glow': glow }}
       >
         <span
@@ -34,7 +34,7 @@ export default function ScoreOrb({ score = 82, genre = 'MELODIC TECHNO', verdict
           style={{ boxShadow: `inset 0 1px 0 rgba(255,255,255,.09), inset 0 -30px 60px -40px ${glow}` }}
         />
         <div className="relative text-center">
-          <b className="digits block font-semibold leading-none text-[clamp(64px,8vw,88px)]"
+          <b className={`digits block font-semibold leading-none ${compact ? 'text-[52px]' : 'text-[clamp(64px,8vw,88px)]'}`}
              style={{ textShadow: `0 0 34px ${glow}` }}>{n}</b>
           <small className="digits mt-2.5 block text-[9px] uppercase tracking-[.3em] text-faint">
             producer's read · 100
@@ -44,7 +44,7 @@ export default function ScoreOrb({ score = 82, genre = 'MELODIC TECHNO', verdict
           </span>
         </div>
       </div>
-      {verdict && (
+      {!compact && verdict && (
         <p className="max-w-[34ch] text-center text-[15.5px] leading-[1.65] text-dim [text-wrap:balance]">
           {verdict}
         </p>

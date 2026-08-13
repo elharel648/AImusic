@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import Sidebar from './components/Sidebar.jsx'
+import Header from './components/Header.jsx'
 import ScoreOrb from './components/ScoreOrb.jsx'
 import LufsMeter from './components/LufsMeter.jsx'
 import MixDiagnostics from './components/MixDiagnostics.jsx'
@@ -68,32 +70,45 @@ export default function App() {
   const keyShort = (rep.meta?.key || '—').replace(' minor', 'm').replace(' major', '')
 
   return (
-    <div dir="rtl" className="flex min-h-dvh flex-col pb-[118px]">
-      <header className="flex items-center justify-between px-[clamp(20px,4vw,54px)] pt-[22px]">
-        <span className="digits text-xs tracking-[.34em] text-dim"><b className="font-semibold text-ink">A&R</b>·AI — RACK · REACT</span>
-        <span className="digits inline-flex items-center gap-2 text-[9px] uppercase tracking-[.22em] text-faint">
-          <i className="h-1.5 w-1.5 rounded-full bg-sig shadow-[0_0_10px_var(--color-sig)]" />
-          {busy ? 'מקשיב…' : 'גרור שיר לכל מקום'}
-        </span>
-      </header>
+    <div dir="rtl" className="min-h-dvh bg-black">
+      <Sidebar />
 
-      <main className="mx-auto grid w-[min(1180px,100%)] flex-1 items-stretch gap-[clamp(14px,2vw,26px)] px-[clamp(20px,4vw,54px)] py-[clamp(18px,4vh,44px)]
-                       max-[980px]:[grid-template-areas:'orb'_'master'_'mix'_'scan'_'tempo'] max-[980px]:grid-cols-1
-                       [grid-template-areas:'master_orb_mix'_'scan_orb_tempo'] [grid-template-columns:1fr_minmax(300px,380px)_1fr]">
-        <LufsMeter lufs={raw.lufs ?? -11.4} target={raw.norms?.lufs || [-9, -7]} read={f('Master')} />
-        <ScoreOrb score={rep.overall ?? 82} genre={(rep.meta?.genre || '—').toUpperCase()} verdict={rep.verdict} />
-        <MixDiagnostics bands={raw.tonal_bands || []} mudHz={raw.mud_peak_hz} read={f('Mix')} />
-        <TextureScanner tells={rep.ai_signals?.tells || []} headline={rep.ai_signals?.headline} />
-        <TempoCell bpm={rep.meta?.bpm ?? 124} keyName={keyShort} truePeak={raw.true_peak_db ?? -0.8} read={f('Tempo')} />
-      </main>
+      {/* app column: header + scrollable content, offset for the fixed sidebar + dock */}
+      <div className="flex min-h-dvh flex-col pb-[118px] lg:ms-[232px]">
+        <Header trackName={trackName} busy={busy} report={rep} />
 
-      <TransportDock curve={raw.energy_curve || []} duration={raw.duration_sec || 0}
-                     audio={audio} trackName={trackName} />
+        <main className="mx-auto w-full max-w-[1060px] flex-1 px-[clamp(16px,3vw,32px)] py-7">
+          {/* ── HERO: master score, anchored ── */}
+          <section className="glasspanel toplight grid items-center gap-6 rounded-2xl border border-white/10 p-6 md:grid-cols-[auto_1fr]">
+            <ScoreOrb compact score={rep.overall ?? 82} genre={(rep.meta?.genre || '—').toUpperCase()} />
+            <div className="min-w-0">
+              <div className="digits mb-2 text-[9px] uppercase tracking-[.26em] text-faint">Master score · producer's read</div>
+              <p className="max-w-[42ch] text-[19px] leading-[1.55] text-ink [text-wrap:balance]">{rep.verdict}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a href="/" className="rounded-full border border-white/10 px-3.5 py-1.5 text-[12px] text-dim transition hover:border-white/25 hover:text-ink">
+                  לדוח המלא ←
+                </a>
+              </div>
+            </div>
+          </section>
+
+          {/* ── GRID: four instruments, two columns, anchored ── */}
+          <div className="mt-5 grid gap-5 md:grid-cols-2">
+            <LufsMeter lufs={raw.lufs ?? -11.4} target={raw.norms?.lufs || [-9, -7]} read={f('Master')} />
+            <MixDiagnostics bands={raw.tonal_bands || []} mudHz={raw.mud_peak_hz} read={f('Mix')} />
+            <TempoCell bpm={rep.meta?.bpm ?? 124} keyName={keyShort} truePeak={raw.true_peak_db ?? -0.8} read={f('Tempo')} />
+            <TextureScanner tells={rep.ai_signals?.tells || []} headline={rep.ai_signals?.headline} />
+          </div>
+        </main>
+
+        <TransportDock curve={raw.energy_curve || []} duration={raw.duration_sec || 0}
+                       audio={audio} trackName={trackName} />
+      </div>
 
       {/* full-screen drop veil */}
       <style>{`body[data-drag]::after{content:"שחרר.";position:fixed;inset:0;z-index:60;display:grid;place-items:center;
         font-size:clamp(40px,7vw,84px);font-weight:650;letter-spacing:-.02em;color:var(--color-ink);
-        background:color-mix(in srgb,var(--color-bg) 82%,transparent);backdrop-filter:blur(10px)}`}</style>
+        background:color-mix(in srgb,#000 82%,transparent);backdrop-filter:blur(10px)}`}</style>
     </div>
   )
 }
