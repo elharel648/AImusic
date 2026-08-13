@@ -16,3 +16,4 @@ sample.wav
 !.claude/skills/
 data/usage_stats.json*
 
+node_modules/

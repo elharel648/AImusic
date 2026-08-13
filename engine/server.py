@@ -469,3 +469,6 @@ def og_image():
 # serve fonts + any static assets from web/
 if (WEB_DIR / "fonts").exists():
     app.mount("/fonts", StaticFiles(directory=str(WEB_DIR / "fonts")), name="fonts")
+    _react = WEB_DIR.parent / "web-react" / "dist"
+    if _react.exists():
+        app.mount("/rack", StaticFiles(directory=str(_react), html=True), name="rack")
