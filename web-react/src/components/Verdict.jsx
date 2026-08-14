@@ -1,0 +1,37 @@
+/** The verdict — typeset, not scored. Opens with what works (Bible law 4),
+ *  ends on the single priority (law 5). The 0-100 stays a marginal note in
+ *  judgment's register — serif, blue, never wearing the ✓. */
+export default function Verdict({ rep, works }) {
+  if (!rep) return null
+  return (
+    <section className="py-[clamp(28px,5vw,52px)]">
+      <div className="mb-4 flex items-baseline gap-3">
+        <span className="lbl">מה שמענו</span>
+        <span className="h-px flex-1 bg-rule" aria-hidden />
+        {typeof rep.overall === 'number' && (
+          <span className="display text-[13px] font-medium text-blue">
+            קריאת מפיק · <span className="val">{rep.overall}/100</span>
+          </span>
+        )}
+      </div>
+
+      <h1 className="display max-w-[26ch] text-[clamp(27px,4.6vw,44px)] font-medium leading-[1.28] [text-wrap:balance]">
+        {rep.verdict}
+      </h1>
+
+      <div className="mt-7 grid gap-x-10 gap-y-3 md:grid-cols-2">
+        {works && (
+          <p className="text-[14.5px] leading-relaxed text-ink2">
+            <span className="val font-semibold text-ok">✓</span>{' '}
+            <b className="font-semibold text-ink">מה שכבר עובד —</b> {works}
+          </p>
+        )}
+        {rep.priority && (
+          <p className="border-s-2 border-red ps-4 text-[14.5px] font-medium leading-relaxed">
+            <b className="font-bold text-red">העדיפות שלך —</b> {rep.priority}
+          </p>
+        )}
+      </div>
+    </section>
+  )
+}
