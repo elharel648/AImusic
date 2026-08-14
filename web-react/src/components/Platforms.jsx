@@ -51,6 +51,13 @@ export default function Platforms({ streaming }) {
           </div>
         )}
       </div>
+      {/* platforms that would leave the track quieter than the room get named */}
+      {(streaming.platforms || []).filter(p => p.mode === 'quiet').map(p => (
+        <p key={p.name} className="mt-2 text-[12.5px] font-medium text-red">
+          <b>{p.name}</b> — {ui('st_w_quiet')(p.gap)}
+        </p>
+      ))}
+      {streaming.note && <p className="mt-3 max-w-[70ch] text-[12px] leading-relaxed text-ink2">{streaming.note}</p>}
     </section>
   )
 }

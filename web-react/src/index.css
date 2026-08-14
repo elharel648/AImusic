@@ -83,6 +83,14 @@ details.fold[open] > summary::before { content: "− "; }
 .wv-bar { opacity: 0; animation: wv-in .3s var(--ease, ease-out) forwards; }
 @keyframes wv-in { from { opacity: 0; transform: scaleY(.2); } to { opacity: .85; transform: none; } }
 
+/* the preview speaks sentence by sentence — confidence first, then the ONE thing */
+.fade-seq { opacity: 0; animation: seq-in .5s ease-out forwards; animation-delay: .4s; }
+.fade-seq.fd2 { animation-delay: 1.4s; }
+.fade-seq.fd3 { animation-delay: 2.4s; }
+.fade-seq.fd4 { animation-delay: 3s; }
+@keyframes seq-in { to { opacity: 1; } }
+.chip.bad { color: var(--color-red); }
+
 @media (prefers-reduced-motion: reduce){
   *{ transition: none !important; animation: none !important; }
   /* the playhead is information — it moves via rAF and stays */

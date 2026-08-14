@@ -8,6 +8,8 @@ import Shell from './shell/Shell.jsx'
 import Analyze from './screens/Analyze.jsx'
 import Report from './screens/Report.jsx'
 import Library from './screens/Library.jsx'
+import Compare from './screens/Compare.jsx'
+import Batch from './screens/Batch.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -19,6 +21,8 @@ createRoot(document.getElementById('root')).render(
               <Route index element={<Analyze />} />
               <Route path="report" element={<Report />} />
               <Route path="library" element={<Library />} />
+              <Route path="compare" element={<Compare />} />
+              <Route path="batch" element={<Batch />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

@@ -3,7 +3,7 @@ import { useLang } from '../i18n/index.jsx'
 /** The verdict — typeset, not scored. Opens with what works (Bible law 4),
  *  ends on the single priority (law 5). The 0-100 stays a marginal note in
  *  judgment's register — serif, blue, never wearing the ✓. */
-export default function Verdict({ rep, works }) {
+export default function Verdict({ rep, works, prio, onHear }) {
   const { ui } = useLang()
   if (!rep) return null
   return (
@@ -30,9 +30,17 @@ export default function Verdict({ rep, works }) {
           </p>
         )}
         {rep.priority && (
-          <p className="border-s-2 border-red ps-4 text-[14.5px] font-medium leading-relaxed">
-            <b className="font-bold text-red">{ui('rk_prio_lead')}</b> {rep.priority}
-          </p>
+          <div className="border-s-2 border-red ps-4">
+            <p className="text-[14.5px] font-medium leading-relaxed">
+              <b className="font-bold text-red">{ui('rk_prio_lead')}</b> {rep.priority}
+            </p>
+            {prio && onHear && (
+              <button onClick={() => onHear(prio)}
+                      className="mt-1.5 text-[12.5px] font-semibold text-red underline decoration-red/40 underline-offset-4 hover:decoration-red">
+                ▸ {ui('hear_it')} <span className="val">{prio.label}</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
     </section>
