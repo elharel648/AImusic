@@ -17,13 +17,13 @@ Read `PRODUCT_BIBLE.md` first. It is the constitution; these are the bylaws.
 7. **Feedback creates energy** — copy must leave the artist believing improvement is possible ("closer than you think"), never defeated. Check every new error/verdict string against this.
 
 ## Engineering conventions
-- **Single-file frontend**: `web/index.html` (CSS + JS inline). Engine: `engine/*.py` (FastAPI, `../.venv/bin/uvicorn server:app --reload --port 8000` from `engine/`).
-- **i18n**: every user-facing string exists in ALL 6 languages (en/he/es/fr/de/pt) in the `UI` object. Anchored python replaces with `assert count==1` are the safe way to edit the giant lang lines.
-- **`.mono` forces LTR in Hebrew** (`:root[dir="rtl"] .mono{direction:ltr}`) — it is for numbers/timecodes ONLY. Never put it on an element containing Hebrew prose.
-- **Timeline direction**: media timelines are always LTR, even in Hebrew (Material Design bidi; Hebrew is called out explicitly). Chrome/labels stay RTL. Time strings get `dir="ltr"`.
-- **Motion**: transform/opacity only; UI moves <300ms; ease-out (`--ease: cubic-bezier(.2,0,0,1)`); hover effects gated to `(hover:hover) and (pointer:fine)`; playhead motion is information — keep it under `prefers-reduced-motion`, kill decoration instead.
-- **`hidden` attribute vs CSS**: any class that sets `display` must also ship `.cls[hidden]{display:none}`.
-- **Verify in a real browser** before claiming done: Playwright is in `.venv` (pattern: upload a synthesized WAV via `set_input_files("#file", ...)`, wait for `#s-report.active`, screenshot + read it). JS syntax check: extract the `<script>` and `node --check`.
+- **Frontend**: `web-react/` — React 19 + Vite + Tailwind 4, served at `/rack` (`/` 308-redirects there). Build: `npm run build` in `web-react/` (FastAPI serves `dist/`; dev: `npm run dev` proxies nothing — use the built dist against :8000). Engine: `engine/*.py` (FastAPI, `../.venv/bin/uvicorn server:app --reload --port 8000` from `engine/`).
+- **State lives in** `src/session.jsx` (the store: analyze/v2/batch/prefs/toasts); the shared player (transport, loops, guided tour, WebAudio A/B) is `src/lib/usePlayer.js`. localStorage keys are the historical `anr_*` names — never rename them (user data).
+- **i18n**: every user-facing string exists in ALL 6 languages (en/he/es/fr/de/pt). `src/i18n/strings.js` is AUTO-EXTRACTED verbatim from the old vanilla UI object — treat as generated. New React-born strings go in `src/i18n/rack.js` (`rk_*` keys), all 6 langs, split-key A/B pattern around measured values. Lookup order: UI → UI_EXTRA → RACK → en.
+- **`.val` forces LTR in Hebrew** (mono font + `direction:ltr; unicode-bidi:isolate`) — numbers/timecodes ONLY, never Hebrew prose. Prose containing numbers goes through `bidiHTML()` (report-utils) which isolates number+unit runs.
+- **Timeline direction**: media timelines are always LTR, even in Hebrew (Material Design bidi). Chrome/labels stay RTL. Time strings get `dir="ltr"` or `.val`.
+- **Motion**: transform/opacity only; UI moves <300ms; ease-out; hover effects gated to `(hover:hover) and (pointer:fine)`; playhead motion is information — keep it under `prefers-reduced-motion`, kill decoration instead.
+- **Verify in a real browser** before claiming done: Playwright is in `.venv` — goto `http://localhost:8000/rack/`, `set_input_files("input[type=file]", wav)`, `wait_for_url("**/rack/report")`, screenshot + assert, `pg.on("pageerror")` must stay empty. Rebuild dist first.
 - **Chapters/markers on the timeline come only from measured anchors** (intro_sec, peak_moment_sec, finding spans). Never invent a "drop" or a section the engine didn't measure.
 
 ## Commit style

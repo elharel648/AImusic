@@ -1,6 +1,15 @@
 # A&R AI — container image. Built for the Hugging Face Spaces free CPU tier
 # (uid-1000 user, app_port 7860) but runs on any Docker host:
 #   docker build -t anr-ai . && docker run -p 7860:7860 anr-ai
+
+# ── stage 1: the React frontend (web-react → dist, served by FastAPI at /rack)
+FROM node:22-slim AS frontend
+WORKDIR /build
+COPY web-react/package.json web-react/package-lock.json ./
+RUN npm ci
+COPY web-react/ ./
+RUN npm run build
+
 FROM python:3.9-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
@@ -26,6 +35,8 @@ RUN pip install --no-cache-dir --user essentia-tensorflow==2.1b6.dev1389 \
  || echo "WARNING: essentia-tensorflow unavailable - ML tagging disabled"
 
 COPY --chown=user . .
+# the built frontend replaces whatever the repo checkout had (dist is gitignored)
+COPY --chown=user --from=frontend /build/dist ./web-react/dist
 
 # bake the Demucs weights (~80 MB) into the image so no user pays the
 # first-analysis download cost

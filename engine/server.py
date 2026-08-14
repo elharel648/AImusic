@@ -434,18 +434,14 @@ def _analyze_sync(tmp_path: str, ext: str, filename: str | None,
 
 
 @app.get("/")
-def index(request: Request):
-    idx = WEB_DIR / "index.html"
-    if not idx.exists():
+def index():
+    # The app lives at /rack. A 308 keeps old share links working: the browser
+    # carries the #r=<report> fragment through the redirect, and the React app
+    # restores it on any route.
+    if not REACT_DIST.exists():
         return JSONResponse({"status": "A&R AI API up. Frontend not built yet."})
-    # og:image / og:url / canonical need ABSOLUTE urls (crawlers don't resolve
-    # relative ones). No domain is baked in: __ORIGIN__ placeholders in the
-    # HTML are filled from the request, so the same build works on any host.
-    scheme = request.headers.get("x-forwarded-proto",
-                                 request.url.scheme).split(",")[0].strip()
-    host = request.headers.get("host") or request.url.netloc
-    html = idx.read_text(encoding="utf-8").replace("__ORIGIN__", f"{scheme}://{host}")
-    return HTMLResponse(html)
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/rack/", status_code=308)
 
 
 @app.get("/og.png")
@@ -459,21 +455,30 @@ def og_image():
 
 
 class SPAStaticFiles(StaticFiles):
-    """StaticFiles that falls back to index.html on 404 — client-side routes
-    (/rack/library, /rack/report) survive a hard refresh."""
+    """StaticFiles for the React app: client-side routes (/rack/library,
+    /rack/report) fall back to index.html on 404, and every index.html serve
+    fills the __ORIGIN__ placeholders (og:url / og:image need ABSOLUTE urls;
+    no domain is baked in, so the same build works on any host)."""
+
+    def _index_html(self, scope):
+        headers = {k.decode(): v.decode() for k, v in scope.get("headers", [])}
+        scheme = headers.get("x-forwarded-proto", scope.get("scheme", "http")).split(",")[0].strip()
+        host = headers.get("host", "")
+        html = (REACT_DIST / "index.html").read_text(encoding="utf-8")
+        return HTMLResponse(html.replace("__ORIGIN__", f"{scheme}://{host}"))
+
     async def get_response(self, path, scope):
         from starlette.exceptions import HTTPException as StarletteHTTPException
+        if path in ("", ".", "index.html"):
+            return self._index_html(scope)
         try:
             return await super().get_response(path, scope)
         except StarletteHTTPException as e:
             if e.status_code == 404:
-                return await super().get_response("index.html", scope)
+                return self._index_html(scope)
             raise
 
 
-# serve fonts + any static assets from web/
-if (WEB_DIR / "fonts").exists():
-    app.mount("/fonts", StaticFiles(directory=str(WEB_DIR / "fonts")), name="fonts")
-    _react = WEB_DIR.parent / "web-react" / "dist"
-    if _react.exists():
-        app.mount("/rack", SPAStaticFiles(directory=str(_react), html=True), name="rack")
+REACT_DIST = WEB_DIR.parent / "web-react" / "dist"
+if REACT_DIST.exists():
+    app.mount("/rack", SPAStaticFiles(directory=str(REACT_DIST), html=True), name="rack")
