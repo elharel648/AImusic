@@ -1,3 +1,5 @@
+import { useLang } from '../i18n/index.jsx'
+
 /** Long-term tonal balance — one ink line over a log axis (30 Hz–16 kHz,
  *  the engine's real band edges). The ONE claimed region gets a highlight
  *  column; the curve segment inside it turns grease-red; the readout sits
@@ -9,6 +11,7 @@ const TICKS = [50, 100, 250, 500, 1000, 2000, 5000, 10000]
 const tickLabel = f => (f >= 1000 ? `${f / 1000}k` : `${f}`)
 
 export default function SpectrumPlot({ bands = [], mud = null }) {
+  const { ui } = useLang()
   if (!bands.length) return null
   const W = 960, H = 210, PAD = 16
   // engine bands: geometric centers of geomspace(30,16000,25)
@@ -29,7 +32,7 @@ export default function SpectrumPlot({ bands = [], mud = null }) {
     <figure className="my-4">
       <div dir="ltr">
         <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img"
-             aria-label="מאזן טונאלי לאורך השיר">
+             aria-label={ui('rk_sp_aria')}>
           {/* frequency grid — hairlines at real octave anchors */}
           {TICKS.map(f => (
             <g key={f}>
@@ -74,7 +77,7 @@ export default function SpectrumPlot({ bands = [], mud = null }) {
         )}
       </div>
       <figcaption className="mt-1 text-[11.5px] text-ink2">
-        אנרגיה ממוצעת לכל רצועת תדר, ביחס לממוצע העקומה — בלתי תלוי בעוצמת המאסטר.
+        {ui('rk_sp_note')}
       </figcaption>
     </figure>
   )

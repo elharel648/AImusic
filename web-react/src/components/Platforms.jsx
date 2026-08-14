@@ -1,10 +1,13 @@
+import { useLang } from '../i18n/index.jsx'
+
 /** Streaming normalization — a ruled table, set like a spec sheet. */
 export default function Platforms({ streaming }) {
+  const { ui } = useLang()
   if (!streaming?.platforms?.length) return null
   return (
     <section className="rule-t py-7">
       <div className="mb-3 flex items-baseline gap-3">
-        <span className="lbl">פלטפורמות סטרימינג</span>
+        <span className="lbl">{ui('st_section')}</span>
         <span className="h-px flex-1 bg-rule" aria-hidden />
       </div>
       <h3 className="max-w-[56ch] text-[16.5px] font-semibold leading-snug">{streaming.headline}</h3>
@@ -13,9 +16,9 @@ export default function Platforms({ streaming }) {
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr className="lbl text-start">
-              <th className="border-b border-ink pb-1.5 text-start font-semibold">פלטפורמה</th>
-              <th className="border-b border-ink pb-1.5 text-start font-semibold">יעד</th>
-              <th className="border-b border-ink pb-1.5 text-start font-semibold">מה יקרה לשיר שלך</th>
+              <th className="border-b border-ink pb-1.5 text-start font-semibold">{ui('st_h_plat')}</th>
+              <th className="border-b border-ink pb-1.5 text-start font-semibold">{ui('st_h_target')}</th>
+              <th className="border-b border-ink pb-1.5 text-start font-semibold">{ui('st_h_result')}</th>
             </tr>
           </thead>
           <tbody>
@@ -24,11 +27,9 @@ export default function Platforms({ streaming }) {
                 <td className="py-1.5"><span dir="ltr" className="inline-block">{p.name}</span></td>
                 <td className="py-1.5"><span className="val">{p.target} LUFS</span></td>
                 <td className="py-1.5 text-ink2">
-                  {p.mode === 'down'
-                    ? <>יונמך ב-<span className="val font-semibold text-ink">{Math.abs(p.delta).toFixed(1)} LU</span></>
-                    : p.mode === 'up'
-                      ? <>יוגבר ב-<span className="val font-semibold text-ink">{Math.abs(p.delta).toFixed(1)} LU</span></>
-                      : 'ללא שינוי'}
+                  {p.mode === 'down' ? ui('rk_pl_down')(Math.abs(p.delta).toFixed(1))
+                    : p.mode === 'up' ? ui('rk_pl_up')(Math.abs(p.delta).toFixed(1))
+                    : ui('rk_pl_asis')}
                 </td>
               </tr>
             ))}

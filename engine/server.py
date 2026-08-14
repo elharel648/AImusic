@@ -448,14 +448,6 @@ def index(request: Request):
     return HTMLResponse(html)
 
 
-@app.get("/studio")
-def studio():
-    """The from-scratch rack UI — same live API, zero legacy CSS."""
-    from fastapi.responses import FileResponse
-    p = WEB_DIR / "studio.html"
-    return FileResponse(str(p)) if p.exists() else JSONResponse({"error": "not built"}, 404)
-
-
 @app.get("/og.png")
 def og_image():
     """Social share card (og:image / twitter:image)."""
@@ -466,9 +458,22 @@ def og_image():
     raise HTTPException(404, "not found")
 
 
+class SPAStaticFiles(StaticFiles):
+    """StaticFiles that falls back to index.html on 404 — client-side routes
+    (/rack/library, /rack/report) survive a hard refresh."""
+    async def get_response(self, path, scope):
+        from starlette.exceptions import HTTPException as StarletteHTTPException
+        try:
+            return await super().get_response(path, scope)
+        except StarletteHTTPException as e:
+            if e.status_code == 404:
+                return await super().get_response("index.html", scope)
+            raise
+
+
 # serve fonts + any static assets from web/
 if (WEB_DIR / "fonts").exists():
     app.mount("/fonts", StaticFiles(directory=str(WEB_DIR / "fonts")), name="fonts")
     _react = WEB_DIR.parent / "web-react" / "dist"
     if _react.exists():
-        app.mount("/rack", StaticFiles(directory=str(_react), html=True), name="rack")
+        app.mount("/rack", SPAStaticFiles(directory=str(_react), html=True), name="rack")

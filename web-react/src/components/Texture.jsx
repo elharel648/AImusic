@@ -1,17 +1,19 @@
 import Tag from './Tag.jsx'
+import { useLang } from '../i18n/index.jsx'
 
 /** Production signature — honest tells, each a measured percentile against the
  *  human corpus, drawn on a 0–100 rule. An indication, never a verdict. */
 export default function Texture({ ai }) {
+  const { ui } = useLang()
   if (!ai?.tells?.length) return null
   return (
     <section className="rule-t py-7">
       <div className="mb-3 flex flex-wrap items-baseline gap-3">
-        <span className="lbl">חתימת הפקה</span>
+        <span className="lbl">{ui('rk_tx_title')}</span>
         <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />
         {ai.benchmark?.n && (
           <span className="text-[11.5px] text-ink2">
-            נמדד מול <span className="val font-semibold text-ink">{ai.benchmark.n.toLocaleString()}</span> שירים אנושיים באורך מלא
+            {ui('rk_tx_benchA')} <span className="val font-semibold text-ink">{ai.benchmark.n.toLocaleString()}</span> {ui('rk_tx_benchB')}
           </span>
         )}
       </div>
@@ -23,7 +25,7 @@ export default function Texture({ ai }) {
           <figcaption className="mb-1.5 flex flex-wrap items-baseline gap-x-4 text-[13.5px]">
             <b className="font-semibold">{tell.t}</b>
             {typeof tell.pct === 'number' && (
-              <span className="text-ink2">אחוזון <span className="val font-semibold text-red">{tell.pct}</span> מול הקורפוס האנושי</span>
+              <span className="text-ink2">{ui('rk_tx_pctA')} <span className="val font-semibold text-red">{tell.pct}</span> {ui('rk_tx_pctB')}</span>
             )}
             <span className="ms-auto"><Tag kind="measured" /></span>
           </figcaption>
@@ -44,7 +46,7 @@ export default function Texture({ ai }) {
 
           {tell.d && (
             <details className="fold mt-1">
-              <summary>מה זה אומר</summary>
+              <summary>{ui('rk_tx_what')}</summary>
               <p className="mt-1 max-w-[62ch] border-s border-rule ps-4 text-[13px] leading-relaxed text-ink2">{tell.d}</p>
             </details>
           )}

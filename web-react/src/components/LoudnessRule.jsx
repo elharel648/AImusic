@@ -1,18 +1,18 @@
+import { useLang } from '../i18n/index.jsx'
+
 /** Loudness vs the reference corridor — Pro-L 2's idea: distance-to-target IS the axis.
  *  Fixed 12 LU span centered on the corridor. Tinted corridor, one 2px needle,
  *  hairline ticks every 1 LU, labels every 3. LTR instrument inside RTL prose. */
 export default function LoudnessRule({ lufs, corridor = [-9, -7] }) {
+  const { ui } = useLang()
   const [lo, hi] = corridor
   const mid = (lo + hi) / 2
   const min = mid - 6, max = mid + 6
   const x = v => `${((v - min) / (max - min)) * 100}%`
   const inside = lufs >= lo && lufs <= hi
   const delta = lufs < lo ? lo - lufs : lufs > hi ? lufs - hi : 0
-  const prose = inside
-    ? 'בתוך מסדרון הייחוס.'
-    : lufs < lo
-      ? `${delta.toFixed(1)} LU מתחת למסדרון הייחוס.`
-      : `${delta.toFixed(1)} LU מעל מסדרון הייחוס.`
+  const prose = inside ? ui('rk_lr_in')
+    : ui(lufs < lo ? 'rk_lr_below' : 'rk_lr_above')(delta.toFixed(1))
 
   const ticks = []
   for (let v = Math.ceil(min); v <= max; v++) ticks.push(v)
@@ -21,7 +21,7 @@ export default function LoudnessRule({ lufs, corridor = [-9, -7] }) {
     <figure className="my-4">
       {/* producer speaks before the meter */}
       <figcaption className="mb-2 text-[13.5px] font-semibold">
-        {prose} <span className="ms-2 font-normal text-ink2">המסדרון: <span className="val">{lo}…{hi} LUFS</span>, נמדד מ-673 שירים משוחררים.</span>
+        {prose} <span className="ms-2 font-normal text-ink2">{ui('rk_lr_corrA')} <span className="val">{lo}…{hi} LUFS</span>{ui('rk_lr_corrB')(673)}</span>
       </figcaption>
 
       <div dir="ltr" className="relative h-[62px] select-none">

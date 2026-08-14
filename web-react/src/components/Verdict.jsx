@@ -1,16 +1,19 @@
+import { useLang } from '../i18n/index.jsx'
+
 /** The verdict — typeset, not scored. Opens with what works (Bible law 4),
  *  ends on the single priority (law 5). The 0-100 stays a marginal note in
  *  judgment's register — serif, blue, never wearing the ✓. */
 export default function Verdict({ rep, works }) {
+  const { ui } = useLang()
   if (!rep) return null
   return (
     <section className="py-[clamp(28px,5vw,52px)]">
       <div className="mb-4 flex items-baseline gap-3">
-        <span className="lbl">מה שמענו</span>
+        <span className="lbl">{ui('rk_heard')}</span>
         <span className="h-px flex-1 bg-rule" aria-hidden />
         {typeof rep.overall === 'number' && (
           <span className="display text-[13px] font-medium text-blue">
-            קריאת מפיק · <span className="val">{rep.overall}/100</span>
+            {ui('tag_read')} · <span className="val">{rep.overall}/100</span>
           </span>
         )}
       </div>
@@ -23,12 +26,12 @@ export default function Verdict({ rep, works }) {
         {works && (
           <p className="text-[14.5px] leading-relaxed text-ink2">
             <span className="val font-semibold text-ok">✓</span>{' '}
-            <b className="font-semibold text-ink">מה שכבר עובד —</b> {works}
+            <b className="font-semibold text-ink">{ui('works_lbl')}</b> {works}
           </p>
         )}
         {rep.priority && (
           <p className="border-s-2 border-red ps-4 text-[14.5px] font-medium leading-relaxed">
-            <b className="font-bold text-red">העדיפות שלך —</b> {rep.priority}
+            <b className="font-bold text-red">{ui('rk_prio_lead')}</b> {rep.priority}
           </p>
         )}
       </div>

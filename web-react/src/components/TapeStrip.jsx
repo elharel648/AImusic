@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLang } from '../i18n/index.jsx'
 
 const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 
@@ -7,6 +8,7 @@ const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2,
  *  Anchors are measured only: intro_sec, peak_moment_sec, duration. Never an invented "drop".
  *  The strip is LTR always — time does not mirror in Hebrew (Material bidi). */
 export default function TapeStrip({ raw = {}, name, audio, selected, onSelect }) {
+  const { ui } = useLang()
   const dur = raw.duration_sec || 0
   const curve = raw.energy_curve || []
   const intro = raw.intro_sec
@@ -46,7 +48,7 @@ export default function TapeStrip({ raw = {}, name, audio, selected, onSelect })
   for (let m = 0; m * 60 < dur; m++) minuteMarks.push(m * 60)
 
   const chapters = intro
-    ? [{ id: 'Intro', label: 'אינטרו', t0: 0, t1: intro }, { id: null, label: 'גוף', t0: intro, t1: dur }]
+    ? [{ id: 'Intro', label: ui('lg_intro'), t0: 0, t1: intro }, { id: null, label: ui('lg_body'), t0: intro, t1: dur }]
     : []
 
   return (
@@ -58,7 +60,7 @@ export default function TapeStrip({ raw = {}, name, audio, selected, onSelect })
           {peak != null && dur > 0 && (
             <button onClick={() => seek(peak)} style={{ left: X(peak) }}
                     className="absolute top-0 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold text-bone/80 transition-colors hover:text-bone">
-              <span className="val">▾</span> שיא <span className="val">{fmt(peak)}</span>
+              <span className="val">▾</span> {ui('rk_peak_short')} <span className="val">{fmt(peak)}</span>
             </button>
           )}
           {intro != null && dur > 0 && (
@@ -122,11 +124,11 @@ export default function TapeStrip({ raw = {}, name, audio, selected, onSelect })
       {/* transport — printed on the strip, not floating anywhere */}
       <div className="flex items-center gap-4 border-t border-bone/15 px-4 py-2.5 sm:px-6">
         <button onClick={toggle} disabled={!audio}
-                title={audio ? '' : 'גרור קובץ שמע כדי להאזין'}
+                title={audio ? '' : ui('rk_need_audio')}
                 className="grid h-[34px] w-[34px] place-items-center border border-bone/40 text-bone transition-colors enabled:hover:border-bone enabled:hover:bg-bone/10 disabled:opacity-30">
           {playing
-            ? <svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor" aria-label="עצור"><rect width="3.6" height="12" /><rect x="7.4" width="3.6" height="12" /></svg>
-            : <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-label="נגן"><path d="M1 0l11 6-11 6z" /></svg>}
+            ? <svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor" aria-label={ui('rk_pause')}><rect width="3.6" height="12" /><rect x="7.4" width="3.6" height="12" /></svg>
+            : <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-label={ui('rk_play')}><path d="M1 0l11 6-11 6z" /></svg>}
         </button>
         <span className="val text-[12px] text-bone/80">{fmt(t)} / {fmt(dur)}</span>
         <span dir="auto" className="min-w-0 flex-1 truncate font-mono text-[12px] text-bone/50">{name}</span>

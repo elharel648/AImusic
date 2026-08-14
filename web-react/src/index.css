@@ -71,7 +71,20 @@ details.fold > summary::before { content: "+ "; color: var(--color-red); font-fa
 details.fold[open] > summary::before { content: "− "; }
 @media (hover:hover) and (pointer:fine) { details.fold > summary:hover { color: var(--color-ink); } }
 
+/* hero accent inside UI strings (<span class="grad">…</span>) — grease pencil, no gradients */
+.grad { color: var(--color-red); }
+
+/* checklist spinner — one rotating mono glyph, printed not glossy */
+.spin { display: inline-block; width: 9px; height: 9px; border: 1.5px solid var(--color-ink2);
+  border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* the waveform reveal — each bar prints in when the pipeline reaches it (honest pacing) */
+.wv-bar { opacity: 0; animation: wv-in .3s var(--ease, ease-out) forwards; }
+@keyframes wv-in { from { opacity: 0; transform: scaleY(.2); } to { opacity: .85; transform: none; } }
+
 @media (prefers-reduced-motion: reduce){
   *{ transition: none !important; animation: none !important; }
   /* the playhead is information — it moves via rAF and stays */
+  .wv-bar { opacity: .85; }
 }

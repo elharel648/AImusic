@@ -1,10 +1,29 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
-import App from './App.jsx'
+import { LangProvider } from './i18n/index.jsx'
+import { SessionProvider } from './session.jsx'
+import Shell from './shell/Shell.jsx'
+import Analyze from './screens/Analyze.jsx'
+import Report from './screens/Report.jsx'
+import Library from './screens/Library.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <LangProvider>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <SessionProvider>
+          <Routes>
+            <Route element={<Shell />}>
+              <Route index element={<Analyze />} />
+              <Route path="report" element={<Report />} />
+              <Route path="library" element={<Library />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </SessionProvider>
+      </BrowserRouter>
+    </LangProvider>
   </StrictMode>,
 )
