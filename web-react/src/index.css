@@ -18,7 +18,9 @@
   --color-bone:  #EDE9E2;
 
   --font-display: "Frank Ruhl Libre", "Times New Roman", serif;
-  --font-sans: "Heebo", -apple-system, "Segoe UI", sans-serif;
+  /* IBM Plex Sans Hebrew — the mono's sibling: one machine-voice family
+     (Plex sans + Plex mono), and a Hebrew that isn't every other site's Heebo */
+  --font-sans: "IBM Plex Sans Hebrew", "Heebo", -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
 }
 
@@ -35,6 +37,14 @@
   font-weight:400; font-display:swap; }
 @font-face{ font-family:"IBM Plex Mono"; src:url("./assets/fonts/PlexMono-latin-600.woff2") format("woff2");
   font-weight:600; font-display:swap; }
+@font-face{ font-family:"IBM Plex Sans Hebrew"; src:url("./assets/fonts/PlexSansHeb-400-hebrew.woff2") format("woff2");
+  font-weight:400; font-display:swap; unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F; }
+@font-face{ font-family:"IBM Plex Sans Hebrew"; src:url("./assets/fonts/PlexSansHeb-400-latin.woff2") format("woff2");
+  font-weight:400; font-display:swap; unicode-range:U+0000-00FF,U+2013-2014,U+2018-201D,U+2026; }
+@font-face{ font-family:"IBM Plex Sans Hebrew"; src:url("./assets/fonts/PlexSansHeb-600-hebrew.woff2") format("woff2");
+  font-weight:500 700; font-display:swap; unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F; }
+@font-face{ font-family:"IBM Plex Sans Hebrew"; src:url("./assets/fonts/PlexSansHeb-600-latin.woff2") format("woff2");
+  font-weight:500 700; font-display:swap; unicode-range:U+0000-00FF,U+2013-2014,U+2018-201D,U+2026; }
 
 html, body { background: var(--color-paper); overflow-x: clip; }
 body { color: var(--color-ink); font-family: var(--font-sans); font-size: 15.5px; line-height: 1.65;
@@ -90,6 +100,14 @@ details.fold[open] > summary::before { content: "− "; }
 /* the waveform reveal — each bar prints in when the pipeline reaches it (honest pacing) */
 .wv-bar { opacity: 0; animation: wv-in .3s var(--ease, ease-out) forwards; }
 @keyframes wv-in { from { opacity: 0; transform: scaleY(.2); } to { opacity: .85; transform: none; } }
+
+/* the specimen breathes — a demo sheet may sway; a measurement may not */
+.spec-bar { transform-origin: bottom; animation: spec-sway 3.4s ease-in-out infinite alternate; }
+@keyframes spec-sway { from { transform: scaleY(.93); } to { transform: scaleY(1.05); } }
+
+/* the engine's pulse — alive, quietly */
+.led-breathe { animation: led-breathe 2.8s ease-in-out infinite; }
+@keyframes led-breathe { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
 
 /* the preview speaks sentence by sentence — confidence first, then the ONE thing */
 .fade-seq { opacity: 0; animation: seq-in .5s ease-out forwards; animation-delay: .35s; }

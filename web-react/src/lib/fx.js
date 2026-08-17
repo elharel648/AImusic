@@ -1,6 +1,7 @@
 // Live A/B chain: src → band (peaking gain 0 = transparent bypass) → 3 fix
 // EQs → makeup → mono → out. Ported verbatim from web/index.html.
 let fxCtx = null, fxSrc = null, fxBand = null, fxFix = [], fxMakeup = null, fxMono = null, fxAudioEl = null
+let fxAnalyser = null, fxData = null
 
 export function fxEnsure(audioEl) {
   if (!audioEl) return false
@@ -14,6 +15,9 @@ export function fxEnsure(audioEl) {
       fxMakeup = fxCtx.createGain(); fxMono = fxCtx.createGain()
       fxBand.connect(fxFix[0]); fxFix[0].connect(fxFix[1]); fxFix[1].connect(fxFix[2])
       fxFix[2].connect(fxMakeup); fxMakeup.connect(fxMono); fxMono.connect(fxCtx.destination)
+      // a passive tap for the live level meter — reads the ACTUAL output signal
+      fxAnalyser = fxCtx.createAnalyser(); fxAnalyser.fftSize = 256
+      fxMono.connect(fxAnalyser); fxData = new Uint8Array(fxAnalyser.fftSize)
     }
     fxSrc = fxCtx.createMediaElementSource(audioEl); fxAudioEl = audioEl
     fxSrc.connect(fxBand)
@@ -35,4 +39,12 @@ export function fxMonoOn() {
 }
 export function fxApplyMoves(moves) {
   moves.forEach((mv, i) => { fxFix[i].frequency.value = mv.f; fxFix[i].Q.value = mv.q; fxFix[i].gain.value = mv.g })
+}
+/** Live RMS of what's actually playing, 0..1 — null until the graph exists. */
+export function fxLevel() {
+  if (!fxAnalyser) return null
+  fxAnalyser.getByteTimeDomainData(fxData)
+  let s = 0
+  for (let i = 0; i < fxData.length; i++) { const v = (fxData[i] - 128) / 128; s += v * v }
+  return Math.min(1, Math.sqrt(s / fxData.length) * 2.8)
 }

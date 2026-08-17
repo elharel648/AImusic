@@ -153,7 +153,8 @@ export default function Analyze() {
           {/* mini tape — the product's signature, printed small */}
           <div dir="ltr" className="relative flex h-[46px] items-end gap-[2px] border-b border-ink bg-tape px-3 pb-1 pt-2" aria-hidden>
             {SPEC_BARS.map((v, i) => (
-              <i key={i} className="w-full bg-bone" style={{ height: `${v}%`, opacity: i < 21 ? 1 : .45 }} />
+              <i key={i} className="spec-bar w-full bg-bone"
+                 style={{ height: `${v}%`, opacity: i < 21 ? 1 : .45, animationDelay: `${(i % 7) * .35}s` }} />
             ))}
             <span className="absolute inset-y-0 w-[2px] bg-red" style={{ left: '70%' }} />
           </div>

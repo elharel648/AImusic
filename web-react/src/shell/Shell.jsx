@@ -83,7 +83,7 @@ export default function Shell() {
             {user ? user.name : ui('auth_login')}
           </button>
           <span className="flex items-center gap-2 text-[11.5px] font-semibold text-ink2">
-            <i className={`inline-block h-[8px] w-[8px] ${engineUp === false ? 'bg-red' : 'bg-ok'}`} aria-hidden />
+            <i className={`inline-block h-[8px] w-[8px] ${engineUp === false ? 'bg-red' : 'led-breathe bg-ok'}`} aria-hidden />
             {ui(engineUp === false ? 'rk_engine_off' : 'rk_engine_live')}
           </span>
           <select value={lang} onChange={e => setLang(e.target.value)} aria-label="Language"

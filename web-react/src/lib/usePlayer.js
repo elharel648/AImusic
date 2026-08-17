@@ -3,7 +3,7 @@
 // sx*/gt*/fx* system: measured notes, loop-a-moment, guided tour, live A/B.
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { sxMoments, sxConclusions, fixChainFromReport, fmt } from './report-utils.js'
-import { fxEnsure, fxReset, fxSolo, fxMonoOn, fxApplyMoves } from './fx.js'
+import { fxEnsure, fxReset, fxSolo, fxMonoOn, fxApplyMoves, fxLevel } from './fx.js'
 
 export function usePlayer({ rep, audio, ui, hasFile }) {
   const raw = rep?._raw || {}
@@ -17,6 +17,7 @@ export function usePlayer({ rep, audio, ui, hasFile }) {
   const loopRef = useRef(null)
   const gtTimer = useRef(null)
   const surfRef = useRef(-1)                          // last self-surfaced note
+  const levelRef = useRef(0)                          // live RMS of the playing signal
 
   const notes = useMemo(() => {
     if (!rep) return []
@@ -39,6 +40,7 @@ export function usePlayer({ rep, audio, ui, hasFile }) {
     const paint = () => {
       const ct = audio.currentTime
       if (loopRef.current && ct > loopRef.current[1]) audio.currentTime = loopRef.current[0]
+      levelRef.current = fxLevel() ?? 0               // the sheet breathes with the signal
       setT(audio.currentTime)
       raf = requestAnimationFrame(paint)
     }
@@ -54,7 +56,7 @@ export function usePlayer({ rep, audio, ui, hasFile }) {
 
   const toggle = useCallback(() => {
     if (!audio) return
-    if (audio.paused) audio.play().catch(() => {})
+    if (audio.paused) { fxEnsure(audio); audio.play().catch(() => {}) }
     else audio.pause()
   }, [audio])
 
@@ -188,7 +190,7 @@ export function usePlayer({ rep, audio, ui, hasFile }) {
 
   return {
     audio, t, dur, playing, caption, notes, reads, activeIdx, fxOn, gtOn, hasFile,
-    fixMoves, fmt,
+    fixMoves, fmt, levelRef,
     toggle, seekTo, activate, loopFinding, soloBand, monoToggle, fixToggle, gtToggle,
     gtStop, clearSel, say,
   }

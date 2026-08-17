@@ -163,6 +163,16 @@ export default function TapeStrip({ rep, name, player, selected, onSelect, slim 
             ? <svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor" aria-label={ui('rk_pause')}><rect width="3.6" height="12" /><rect x="7.4" width="3.6" height="12" /></svg>
             : <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-label={ui('rk_play')}><path d="M1 0l11 6-11 6z" /></svg>}
         </button>
+        {/* live level — the sheet breathes with the ACTUAL playing signal */}
+        {audio && (
+          <span className="hidden h-[30px] shrink-0 flex-col-reverse gap-[2px] sm:flex" aria-hidden>
+            {Array.from({ length: 7 }, (_, i) => {
+              const lit = playing && (player.levelRef?.current || 0) * 7 > i
+              return <i key={i} className="block h-full w-[7px] rounded-[1px] transition-opacity duration-75"
+                        style={{ background: i === 6 ? 'var(--color-red)' : 'var(--color-bone)', opacity: lit ? (i === 6 ? 1 : .9) : .15 }} />
+            })}
+          </span>
+        )}
         <span className="val shrink-0 text-[12px] text-bone/80">{fmt(t)} / {fmt(dur)}</span>
         <span dir="auto" className="min-w-0 flex-1 truncate font-mono text-[12px] text-bone/50">{name}</span>
         {audio && notes.length > 0 && (
