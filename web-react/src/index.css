@@ -109,6 +109,21 @@ details.fold[open] > summary::before { content: "− "; }
 .led-breathe { animation: led-breathe 2.8s ease-in-out infinite; }
 @keyframes led-breathe { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
 
+/* stage → sheet: the lights come up over the printed report */
+.lights-up { position: fixed; inset: 0; z-index: 80; background: #08090B; pointer-events: none;
+  animation: lights-up .7s ease-out .1s forwards; }
+@keyframes lights-up { to { opacity: 0; visibility: hidden; } }
+
+/* the producer's stamp — judgment wears a document's seal, never a gauge */
+.stamp { display: grid; place-items: center; width: 62px; height: 62px; border-radius: 999px;
+  border: 2px solid var(--color-blue); color: var(--color-blue); rotate: -8deg;
+  font-family: var(--font-mono); font-weight: 600; line-height: 1.05; text-align: center; }
+
+/* the priority slip — one physical object on the desk */
+.slip { background: var(--color-sheet); border: 1px solid var(--color-ink);
+  box-shadow: 4px 4px 0 var(--color-rule); }
+:root[dir="rtl"] .slip { box-shadow: -4px 4px 0 var(--color-rule); }
+
 /* the preview speaks sentence by sentence — confidence first, then the ONE thing */
 .fade-seq { opacity: 0; animation: seq-in .5s ease-out forwards; animation-delay: .35s; }
 .fade-seq.fd2 { animation-delay: 1s; }

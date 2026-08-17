@@ -12,7 +12,7 @@ const SEV = {
 /** One editorial finding — Swiss grammar: hairline rule, oversized margin
  *  numeral, claim in producer's voice, evidence visual, lab row, then the
  *  fold: why + fix + prescription + listen buttons (real audio only). */
-export default function FindingBlock({ f, num, prio, selected, provenance, rep, player, children }) {
+export default function FindingBlock({ f, num, prio, selected, provenance, rep, player, bare = false, children }) {
   const { ui, dir } = useLang()
   const sev = SEV[f.sev] || SEV.warn
   const raw = rep?._raw || {}
@@ -40,7 +40,7 @@ export default function FindingBlock({ f, num, prio, selected, provenance, rep, 
   }
 
   return (
-    <article className={`rule-t grid grid-cols-[52px_1fr] gap-x-5 py-7 sm:grid-cols-[76px_1fr] sm:gap-x-7 ${selected ? 'border-t-red' : ''}`}>
+    <article className={`grid grid-cols-[52px_1fr] gap-x-5 sm:grid-cols-[76px_1fr] sm:gap-x-7 ${bare ? 'py-1' : 'rule-t py-7'} ${!bare && selected ? 'border-t-red' : ''}`}>
       <div className={`val text-[38px] font-normal leading-none sm:text-[46px] ${prio || selected ? 'text-red' : 'text-rule'}`}>
         {num}
       </div>

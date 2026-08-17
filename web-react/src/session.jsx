@@ -59,6 +59,7 @@ export function SessionProvider({ children }) {
   const fileRef = useRef(null)
   const isDemoRef = useRef(false)
   const v1Ref = useRef(null)                                   // v1 for the real V2 comparison
+  const justFinishedRef = useRef(false)                        // stage→sheet: the lights-up moment
 
   useEffect(() => { health().then(setEngineUp) }, [])
 
@@ -82,6 +83,7 @@ export function SessionProvider({ children }) {
     setReport(rep); setName(trackName); attachAudio(f); setSelected(null); fxReset()
     v1Ref.current = rep
     setRmode('basic')   // every fresh report opens with the ONE story (Bible law 2)
+    justFinishedRef.current = true
     navigate('/report')
     // deep was requested but didn't produce a vocal read — say WHY
     const ds = rep.deep_status
@@ -230,7 +232,7 @@ export function SessionProvider({ children }) {
     report, name, busy, busyKind, engineUp, audio, selected, setSelected, toasts, toast,
     deep, setDeep, genre, setGenre, plat, setPlat, suite, setSuite, rmode, setRmode,
     arsenal, addPlugins, removePlugin, user, setUser, refTick,
-    cmp, batch, isDemo: isDemoRef, file: fileRef,
+    cmp, batch, isDemo: isDemoRef, file: fileRef, justFinished: justFinishedRef,
     measure, runDemo, routeFiles, openEntry, openBatchItem, runBatch,
     compareUpload, compareDemo, openCompare, uploadReference, clearReference, bumpRef, deepRerun,
   }), [report, name, busy, busyKind, engineUp, audio, selected, toasts, deep, genre, plat,

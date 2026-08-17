@@ -34,6 +34,12 @@ export default function Report() {
   const navigate = useNavigate()
   const stripRef = useRef(null)
   const blockRefs = useRef({})
+  // consume the stage→sheet flag exactly once per mount (StrictMode-safe)
+  const lightsRef = useRef(null)
+  if (lightsRef.current === null) {
+    lightsRef.current = !!session.justFinished.current
+    session.justFinished.current = false
+  }
   const player = usePlayer({ rep, audio, ui, hasFile: !!file.current })
 
   const raw = rep?._raw || {}
@@ -139,6 +145,8 @@ export default function Report() {
 
   return (
     <>
+      {/* the lights come up over the freshly printed sheet (once, after analysis) */}
+      {lightsRef.current && <div className="lights-up" aria-hidden />}
       <Masthead name={name} meta={rep.meta} busy={busy} report={rep} onPick={session.measure} />
       <div key={rep.overall + name} className={`mx-auto max-w-[920px] px-[clamp(18px,4vw,40px)] pb-16 transition-opacity duration-200 ${busy ? 'pointer-events-none opacity-50' : ''}`}>
         <div className="rise">
@@ -180,18 +188,17 @@ export default function Report() {
         {!pro ? (
           <section className="rise r3 mt-8" data-sec="findings">
             {prioFinding && (
-              <>
-                <div className="mb-2 flex items-baseline gap-3">
-                  <span className="lbl">{ui('fix_one')}</span>
+              <div ref={el => { blockRefs.current[prioFinding.id] = el }}
+                   className="slip p-5 sm:p-6">
+                <div className="mb-3 flex items-baseline gap-3">
+                  <span className="text-[12px] font-bold text-red">{ui('fix_one')}</span>
                   <span className="h-px flex-1 bg-rule" aria-hidden />
                 </div>
-                <div ref={el => { blockRefs.current[prioFinding.id] = el }}>
-                  <FindingBlock f={prioFinding} num="01" prio selected={selected === prioFinding.id}
-                                provenance={provenanceFor(prioFinding)} rep={rep} player={player}>
-                    {evidenceFor(prioFinding)}
-                  </FindingBlock>
-                </div>
-              </>
+                <FindingBlock f={prioFinding} num="01" prio bare selected={selected === prioFinding.id}
+                              provenance={provenanceFor(prioFinding)} rep={rep} player={player}>
+                  {evidenceFor(prioFinding)}
+                </FindingBlock>
+              </div>
             )}
 
             {/* hear it — the tape right under the claim (verdict → weakness → hear) */}

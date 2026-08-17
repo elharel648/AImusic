@@ -11,16 +11,19 @@ export default function Verdict({ rep, works, prio, onHear, compact = false }) {
       <div className="mb-4 flex items-baseline gap-3">
         <span className="lbl">{ui('rk_heard')}</span>
         <span className="h-px flex-1 bg-rule" aria-hidden />
+      </div>
+
+      <div className="flex items-start gap-6">
+        <h1 className="display min-w-0 max-w-[24ch] flex-1 text-[clamp(27px,4.6vw,44px)] font-medium leading-[1.28] [text-wrap:balance]">
+          {rep.verdict}
+        </h1>
         {typeof rep.overall === 'number' && (
-          <span className="display text-[13px] font-medium text-blue">
-            {ui('tag_read')} · <span className="val">{rep.overall}/100</span>
+          <span className="mt-2 shrink-0 text-center">
+            <span className="stamp"><span>{rep.overall}<small className="block text-[9px] font-normal opacity-70">/100</small></span></span>
+            <span className="display mt-1.5 block text-[10.5px] text-blue">{ui('tag_read')}</span>
           </span>
         )}
       </div>
-
-      <h1 className="display max-w-[26ch] text-[clamp(27px,4.6vw,44px)] font-medium leading-[1.28] [text-wrap:balance]">
-        {rep.verdict}
-      </h1>
 
       {compact ? null : <div className="mt-7 grid gap-x-10 gap-y-3 md:grid-cols-2">
         {works && (
