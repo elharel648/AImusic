@@ -3,13 +3,13 @@ import { useLang } from '../i18n/index.jsx'
 
 /** Production signature — honest tells, each a measured percentile against the
  *  human corpus, drawn on a 0–100 rule. An indication, never a verdict. */
-export default function Texture({ ai }) {
+export default function Texture({ ai, bare = false }) {
   const { ui } = useLang()
   if (!ai?.tells?.length) return null
   return (
-    <section className="rule-t py-7">
+    <section className={bare ? '' : 'rule-t py-7'}>
       <div className="mb-3 flex flex-wrap items-baseline gap-3">
-        <span className="lbl">{ui('rk_tx_title')}</span>
+        {!bare && <span className="lbl">{ui('rk_tx_title')}</span>}
         <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />
         {ai.benchmark?.n && (
           <span className="text-[11.5px] text-ink2">

@@ -5,7 +5,7 @@ const hz = f => f >= 1000 ? (f / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : St
 
 /** Tonal balance — your long-term curve vs the genre's quartile band (p25–p75,
  *  dashed median). One saturated line: yours. Hover reads band vs range. */
-export default function TonalBalance({ tonal, embedded = false }) {
+export default function TonalBalance({ tonal, embedded = false, bare = false }) {
   const { ui } = useLang()
   const wrapRef = useRef(null)
   const [hover, setHover] = useState(-1)
@@ -33,8 +33,8 @@ export default function TonalBalance({ tonal, embedded = false }) {
   }
 
   return (
-    <section className={embedded ? 'my-4' : 'rule-t py-7'} data-sec={embedded ? undefined : 'tonal'}>
-      {!embedded && (
+    <section className={embedded ? 'my-4' : bare ? '' : 'rule-t py-7'} data-sec={embedded ? undefined : 'tonal'}>
+      {!embedded && !bare && (
         <div className="mb-3 flex flex-wrap items-baseline gap-3">
           <span className="lbl">{ui('tb_section')}</span>
           <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />

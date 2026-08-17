@@ -6,7 +6,7 @@ import { loadRefs, removeRef, MAX_REFS } from '../lib/reference.js'
 /** You vs your references — up to 5 finished tracks you trust, all measured by
  *  the exact same engine. With 2+ refs the min–max across them becomes YOUR
  *  corridor: the sound you're aiming at, measured — never a vibe. */
-export default function RefTrack({ rep }) {
+export default function RefTrack({ rep, bare = false }) {
   const { ui } = useLang()
   const { uploadReference, clearReference, refTick, bumpRef } = useSession()
   const fileRef = useRef(null)
@@ -44,12 +44,14 @@ export default function RefTrack({ rep }) {
     `${i ? 'L' : 'M'}${(i / (arr.length - 1) * 400).toFixed(1)},${(60 - 3 - v * 52).toFixed(1)}`).join('')
 
   return (
-    <section className="rule-t py-7" data-sec="ref">
-      <div className="mb-3 flex flex-wrap items-baseline gap-3">
-        <span className="lbl">{ui('ref_section')}</span>
-        <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />
-        {refs.length > 0 && <span className="val text-[11px] text-ink2">{refs.length}/{MAX_REFS}</span>}
-      </div>
+    <section className={bare ? '' : 'rule-t py-7'} data-sec={bare ? undefined : 'ref'}>
+      {!bare && (
+        <div className="mb-3 flex flex-wrap items-baseline gap-3">
+          <span className="lbl">{ui('ref_section')}</span>
+          <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />
+          {refs.length > 0 && <span className="val text-[11px] text-ink2">{refs.length}/{MAX_REFS}</span>}
+        </div>
+      )}
       <input ref={fileRef} type="file" accept="audio/*" hidden
              onChange={e => { const f = e.target.files?.[0]; if (f) uploadReference(f); e.target.value = '' }} />
 

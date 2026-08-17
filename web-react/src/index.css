@@ -6,12 +6,12 @@
    Borders not shadows. Two voices: human (serif/sans) & machine (mono).
    ═══════════════════════════════════════════════════════════════ */
 @theme {
-  --color-paper: #F4F1EA;
-  --color-sheet: #FCFBF7;
-  --color-ink:   #1B1917;
-  --color-ink2:  #6E6961;
-  --color-rule:  #D8D2C6;
-  --color-red:   #C8431D;   /* grease pencil — attention + interaction */
+  --color-paper: #F7F5F0;
+  --color-sheet: #FCFBF8;
+  --color-ink:   #171614;
+  --color-ink2:  #6D6A64;
+  --color-rule:  #DDD9D1;
+  --color-red:   #B85C3A;   /* muted copper — priority, attention, interaction */
   --color-blue:  #33538C;   /* drafting blue — producer's read (judgment) */
   --color-ok:    #3E6B44;   /* small ✓ flags only */
   --color-tape:  #171512;   /* the one dark element: the tape strip */

@@ -1,15 +1,17 @@
 import { useLang } from '../i18n/index.jsx'
 
 /** Streaming normalization — a ruled table, set like a spec sheet. */
-export default function Platforms({ streaming }) {
+export default function Platforms({ streaming, bare = false }) {
   const { ui } = useLang()
   if (!streaming?.platforms?.length) return null
   return (
-    <section className="rule-t py-7">
-      <div className="mb-3 flex items-baseline gap-3">
-        <span className="lbl">{ui('st_section')}</span>
-        <span className="h-px flex-1 bg-rule" aria-hidden />
-      </div>
+    <section className={bare ? '' : 'rule-t py-7'}>
+      {!bare && (
+        <div className="mb-3 flex items-baseline gap-3">
+          <span className="lbl">{ui('st_section')}</span>
+          <span className="h-px flex-1 bg-rule" aria-hidden />
+        </div>
+      )}
       <h3 className="max-w-[56ch] text-[16.5px] font-semibold leading-snug">{streaming.headline}</h3>
 
       <div className="mt-4 grid gap-x-10 gap-y-6 md:grid-cols-2">

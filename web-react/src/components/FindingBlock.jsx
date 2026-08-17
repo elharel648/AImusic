@@ -57,7 +57,13 @@ export default function FindingBlock({ f, num, prio, selected, provenance, rep, 
         {f.why?.[0] && <p className="mt-1 max-w-[62ch] text-[13.5px] leading-relaxed text-ink2"
             dangerouslySetInnerHTML={{ __html: bidiHTML(f.why[0], dir) }} />}
 
-        {children}
+        {/* the action speaks before the chart (problem → why → what to check) */}
+        {f.fix?.daw && f.sev !== 'good' && (
+          <p className="mt-2 max-w-[62ch] text-[13.5px] leading-relaxed">
+            <span className="lbl me-2">{ui('rk2_action')}</span>
+            <span dangerouslySetInnerHTML={{ __html: bidiHTML(f.fix.daw, dir) }} />
+          </p>
+        )}
 
         {/* lab row */}
         {f.measure?.length > 0 && (
@@ -75,6 +81,9 @@ export default function FindingBlock({ f, num, prio, selected, provenance, rep, 
             <span className="ms-auto">{provenance ?? <Tag kind="measured" />}</span>
           </div>
         )}
+
+        {/* the measurement's chart arrives AFTER the words (brief §47) */}
+        {children}
 
         {/* listen row — hear it, not just read it */}
         {listens.length > 0 && (
@@ -94,7 +103,7 @@ export default function FindingBlock({ f, num, prio, selected, provenance, rep, 
             <summary>{ui('rk_why')}</summary>
             <div className="mt-2 max-w-[62ch] border-s border-rule ps-4 text-[13.5px] leading-relaxed text-ink2">
               {f.why?.slice(1).map(w => <p key={w} className="mb-1" dangerouslySetInnerHTML={{ __html: bidiHTML(w, dir) }} />)}
-              {f.fix?.daw && <p className="mt-2 font-semibold text-ink" dangerouslySetInnerHTML={{ __html: bidiHTML(ui('rk_what')(f.fix.daw), dir) }} />}
+              {f.fix?.daw && f.sev === 'good' && <p className="mt-2 font-semibold text-ink" dangerouslySetInnerHTML={{ __html: bidiHTML(ui('rk_what')(f.fix.daw), dir) }} />}
               {f.fix?.suno && (
                 <p className="mt-1.5 text-[12.5px]">
                   <span className="font-semibold">Suno</span> — {ui('fx_add')}{' '}

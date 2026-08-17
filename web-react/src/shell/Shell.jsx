@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useLang, T, LANGS, LANG_LABELS } from '../i18n/index.jsx'
 import { useSession } from '../session.jsx'
 
@@ -12,9 +12,14 @@ const nav = ({ isActive }) =>
  *  a pile = shoot-out). Toasts print at the floor. */
 export default function Shell() {
   const { lang, setLang, ui } = useLang()
-  const { engineUp, routeFiles, busy, toasts, toast, user, setUser } = useSession()
+  const { engineUp, routeFiles, busy, toasts, toast, user, setUser, report } = useSession()
   const [modal, setModal] = useState(null)   // 'auth' | 'about' | 'privacy' | 'terms'
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const jump = sec => {
+    if (!pathname.endsWith('/report')) navigate('/report')
+    setTimeout(() => document.querySelector(`[data-sec="${sec}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
+  }
 
   useEffect(() => {
     let depth = 0
@@ -71,6 +76,18 @@ export default function Shell() {
         <nav className="flex gap-1 px-1 pb-3 md:block md:space-y-0.5 md:px-0 md:py-4">
           <NavLink to="/" end className={nav}>{ui('rk_nav_analyze')}</NavLink>
           <NavLink to="/report" className={nav}>{ui('rk_nav_report')}</NavLink>
+          {/* the document's table of contents — quiet, desktop, only with a report */}
+          {report && (
+            <div className="hidden md:block">
+              {[['verdict', ui('rk2_bottom')], ['priorities', ui('rk2_fixfirst')], ['ref', ui('ref_nav')],
+                ['tech', ui('rk2_tech')], ['stream', ui('rk2_release')], ['variation', ui('rk2_variation')]].map(([s, l]) => (
+                <button key={s} onClick={() => jump(s)}
+                        className="block w-full px-4 py-[3px] text-start text-[11.5px] text-ink2 transition-colors hover:text-ink">
+                  {l}
+                </button>
+              ))}
+            </div>
+          )}
           <NavLink to="/library" className={nav}>{ui('hist_title')}</NavLink>
         </nav>
 
