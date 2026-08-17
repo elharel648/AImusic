@@ -119,13 +119,23 @@ details.fold[open] > summary::before { content: "− "; }
   .fade-seq { opacity: 1; }
 }
 
-/* ── print = the PDF export: the sheet alone, ink on paper ── */
+/* ── print = the PDF export: the sheet alone, ink on paper ──
+   Hide ALL chrome (sidebar, header actions, toasts, controls); keep only the
+   report content. Folds print open — a PDF cannot be clicked. */
 @media print {
-  aside, nav, .btn, button, input, select, details.fold > summary { display: none !important; }
-  details.fold { display: block; } details.fold > *:not(summary) { display: block !important; }
-  body { background: #fff; font-size: 12px; }
-  .min-h-dvh { display: block !important; }
-  main { max-width: none; }
-  section, figure, table { break-inside: avoid; }
+  aside, header .btn, header button, header label,
+  button, input, select, .fixed,
+  details.fold > summary { display: none !important; }
+  details.fold { display: block; }
+  details.fold > *:not(summary) { display: block !important; }
+  html, body { background: #fff !important; }
+  body { font-size: 11.5px; color: #111; }
+  .min-h-dvh { display: block !important; min-height: 0 !important; }
+  main, .mx-auto { max-width: 100% !important; }
+  section, figure, table, article { break-inside: avoid; }
   a { text-decoration: none; color: inherit; }
+  .rise, .fade-seq, .wv-bar { animation: none !important; opacity: 1 !important; }
+  /* the tape prints as ink on paper, not a dark slab */
+  .bg-tape { background: #fff !important; color: #111 !important; border-color: #111 !important; }
+  .bg-tape .text-bone, .bg-tape [class*="text-bone"] { color: #333 !important; }
 }

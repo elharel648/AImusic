@@ -40,6 +40,19 @@ export default function Shell() {
     return () => removeEventListener('keydown', onEsc)
   }, [])
 
+  // the PDF prints every fold open (a paper sheet cannot be clicked);
+  // afterprint restores exactly the ones we opened
+  useEffect(() => {
+    let opened = []
+    const before = () => {
+      opened = [...document.querySelectorAll('details:not([open])')]
+      opened.forEach(d => d.setAttribute('open', ''))
+    }
+    const after = () => { opened.forEach(d => d.removeAttribute('open')); opened = [] }
+    addEventListener('beforeprint', before); addEventListener('afterprint', after)
+    return () => { removeEventListener('beforeprint', before); removeEventListener('afterprint', after) }
+  }, [])
+
   return (
     <div className="min-h-dvh bg-paper text-ink md:grid md:grid-cols-[218px_1fr]">
       <aside className="border-b border-rule md:sticky md:top-0 md:flex md:h-dvh md:flex-col md:border-b-0 md:border-e">

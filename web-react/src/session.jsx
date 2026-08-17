@@ -81,6 +81,7 @@ export function SessionProvider({ children }) {
     isDemoRef.current = !!demoRun
     setReport(rep); setName(trackName); attachAudio(f); setSelected(null); fxReset()
     v1Ref.current = rep
+    setRmode('basic')   // every fresh report opens with the ONE story (Bible law 2)
     navigate('/report')
     // deep was requested but didn't produce a vocal read — say WHY
     const ds = rep.deep_status

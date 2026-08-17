@@ -491,7 +491,10 @@ class SPAStaticFiles(StaticFiles):
         scheme = headers.get("x-forwarded-proto", scope.get("scheme", "http")).split(",")[0].strip()
         host = headers.get("host", "")
         html = (REACT_DIST / "index.html").read_text(encoding="utf-8")
-        return HTMLResponse(html.replace("__ORIGIN__", f"{scheme}://{host}"))
+        # never let a browser cache the shell: a stale index.html pointing at
+        # rebuilt (deleted) asset hashes renders a broken page
+        return HTMLResponse(html.replace("__ORIGIN__", f"{scheme}://{host}"),
+                            headers={"Cache-Control": "no-cache"})
 
     async def get_response(self, path, scope):
         from starlette.exceptions import HTTPException as StarletteHTTPException
