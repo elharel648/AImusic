@@ -59,17 +59,23 @@ def run_one(job):
         fd, wav = tempfile.mkstemp(suffix=".wav"); os.close(fd)
         subprocess.run(["ffmpeg", "-y", "-i", local, "-ac", "2", "-ar", "44100", wav],
                        check=True, capture_output=True, timeout=120)
-        # production path: same downmix, same resample, same HPSS -> tempogram
-        # octave-grid estimator, same fold (analyze() lines, minus loudness/key)
+        # production path: same downmix, same resample, then Beat This! primary
+        # with the HPSS->tempogram estimator as fallback, same fold — mirrors
+        # analyze() exactly (minus loudness/key)
         from analyze import estimate_tempo
+        import beats as beats_mod
         mono, _, sr = _load(wav)
         m22 = librosa.resample(mono, orig_sr=sr, target_sr=ANALYSIS_SR) \
             if sr != ANALYSIS_SR else mono
-        perc = librosa.effects.percussive(m22)
-        oenv_p = librosa.onset.onset_strength(y=perc, sr=ANALYSIS_SR, hop_length=512)
-        tempo = estimate_tempo(oenv_p, ANALYSIS_SR, 512)
-        if not tempo:
-            tempo, _ = librosa.beat.beat_track(y=m22, sr=ANALYSIS_SR, units="time")
+        bt = beats_mod.beat_this_bpm(m22, ANALYSIS_SR)
+        if bt:
+            tempo = bt[0]
+        else:
+            perc = librosa.effects.percussive(m22)
+            oenv_p = librosa.onset.onset_strength(y=perc, sr=ANALYSIS_SR, hop_length=512)
+            tempo = estimate_tempo(oenv_p, ANALYSIS_SR, 512)
+            if not tempo:
+                tempo, _ = librosa.beat.beat_track(y=m22, sr=ANALYSIS_SR, units="time")
         est = measure_tempo_key(tempo, np.zeros(12))["bpm"]
 
         def within(gt):

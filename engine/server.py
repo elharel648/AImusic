@@ -224,6 +224,32 @@ def genres():
     return {"genres": list(GENRE_NORMS.keys())}
 
 
+@app.get("/api/accuracy")
+def accuracy():
+    """The public error-rate sheet — every number here is a stored validation
+    result or a corpus count from norms_data.json. Nothing is typed by hand:
+    if it wasn't measured, it isn't in this response."""
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "norms_data.json")) as f:
+            d = json.load(f)
+    except Exception:
+        raise HTTPException(503, "norms data unavailable")
+    corpus = {
+        "hits": {g: v.get("n") for g, v in (d.get("hits") or {}).items() if isinstance(v, dict) and v.get("n")},
+        "genres": {g: v.get("n") for g, v in (d.get("genres") or {}).items() if isinstance(v, dict) and v.get("n")},
+        "human_baseline": (d.get("human_baseline") or {}).get("n"),
+        "human_baseline_full": (d.get("human_baseline_full") or {}).get("n"),
+        "ai_baseline": (d.get("ai_baseline") or {}).get("n"),
+        "tonal": {g: v.get("n") for g, v in (d.get("tonal") or {}).items() if isinstance(v, dict) and v.get("n")},
+    }
+    return {
+        "key": d.get("key_validation"),
+        "tempo": d.get("tempo_validation"),
+        "corpus": corpus,
+        "generated": d.get("generated"),
+    }
+
+
 # Fixed measurements for the "Nightdrive" demo track — runs through the SAME
 # build_insights() as a real file, so the demo report is translated identically.
 def _demo_curve(intro_pts: int) -> list:

@@ -41,6 +41,9 @@ COPY --chown=user --from=frontend /build/dist ./web-react/dist
 # bake the Demucs weights (~80 MB) into the image so no user pays the
 # first-analysis download cost
 RUN python -c "from demucs.pretrained import get_model; get_model('htdemucs')"
+# bake the Beat This! checkpoint (~77 MB, MIT; code vendored in engine/vendor)
+RUN python -c "import sys; sys.path.insert(0,'engine/vendor'); \
+from beat_this.inference import Audio2Beats; Audio2Beats(checkpoint_path='final0', device='cpu')"
 
 EXPOSE 7860
 WORKDIR /home/user/app/engine

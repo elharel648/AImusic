@@ -17,6 +17,8 @@ import librosa
 import soundfile as sf
 import pyloudnorm as pyln
 
+import beats as beats_mod
+
 
 # ── genre reference patterns (public-knowledge norms, not a magic hit formula) ──
 # Used only to say "how far are you from what usually works", never "you will chart".
@@ -715,8 +717,16 @@ def analyze(path: str, genre: str = "melodic techno") -> dict:
     except Exception:
         chroma_h = chroma
         tempo = bt_tempo
+    # Beat This! (CPJKU, MIT) is the primary BPM when it can track the file —
+    # median inter-beat interval, validated on GiantSteps Tempo (see
+    # norms_data.json tempo_validation). The tempogram path stays as fallback.
+    tempo_source = "tempogram"
+    _bt = beats_mod.beat_this_bpm(m22, ANALYSIS_SR)
+    if _bt:
+        tempo, tempo_source = _bt[0], "beat_this"
 
-    out = {"duration_sec": duration, "sample_rate": sr, "genre_assumed": genre}
+    out = {"duration_sec": duration, "sample_rate": sr, "genre_assumed": genre,
+           "tempo_source": tempo_source}
     # Pooled harmonic chroma rides along so the server can re-pick the key with
     # the right genre profile after auto-detect resolves (12 floats, negligible).
     out["_chroma_h"] = [round(float(x), 5) for x in

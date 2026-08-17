@@ -8,7 +8,11 @@ numpy==2.0.2
 scipy==1.13.1
 librosa==0.11.0
 soundfile==0.13.1
-pyloudnorm==0.2.0
+pyloudnorm
+# Beat This! (vendored in engine/vendor/beat_this, MIT) inference deps
+einops
+rotary-embedding-torch
+soxr==0.2.0
 
 # deep vocal analysis (optional but shipped): Demucs stem separation
 torch==2.8.0
