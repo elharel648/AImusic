@@ -1,0 +1,64 @@
+# CI — every push runs the same gates a release must pass:
+# engine unit+prose suites, i18n parity, the web build, and a real-browser
+# UI smoke over the demo flow (the demo endpoint needs no ML weights).
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: web-react/package-lock.json }
+
+      - name: i18n parity (6 langs, UI + RACK)
+        working-directory: web-react
+        run: |
+          node --check src/i18n/strings.js
+          node --check src/i18n/rack.js
+          node -e "
+          Promise.all([import('./src/i18n/strings.js'), import('./src/i18n/rack.js')]).then(([s, r]) => {
+            for (const [name, obj] of [['UI', s.UI], ['UI_EXTRA', s.UI_EXTRA], ['RACK', r.RACK]]) {
+              const n = Object.keys(obj.en).length
+              for (const l of ['en','he','es','fr','de','pt'])
+                if (Object.keys(obj[l]).length !== n) { console.error('parity fail', name, l); process.exit(1) }
+              console.log(name, 'parity OK —', n, 'keys ×6')
+            }
+          })"
+
+      - name: web build
+        working-directory: web-react
+        run: npm ci && npm run build
+
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.9', cache: pip }
+
+      - name: system deps
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
+      - name: python deps (CPU torch; separation lib skipped — engine degrades gracefully)
+        run: |
+          pip install torch==2.8.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+
+      - name: cache model checkpoints (beat_this)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/torch/hub/checkpoints
+          key: beatthis-final0
+
+      - name: engine suites (unit + prose invariants, 7 langs)
+        run: python -m pytest tests/ -q
+
+      - name: UI smoke (real browser over the demo flow)
+        run: |
+          pip install playwright && python -m playwright install chromium --with-deps
+          (cd engine && nohup python -m uvicorn server:app --port 8000 &)
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:8000/api/health && break || sleep 1; done
+          BASE=http://127.0.0.1:8000 python tools/ui_smoke.py
