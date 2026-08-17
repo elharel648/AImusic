@@ -4,8 +4,8 @@ import { useLang, T, LANGS, LANG_LABELS } from '../i18n/index.jsx'
 import { useSession } from '../session.jsx'
 
 const nav = ({ isActive }) =>
-  `block px-4 py-2 text-[13.5px] font-semibold transition-colors border-s-2 ${
-    isActive ? 'border-red text-ink' : 'border-transparent text-ink2 hover:text-ink'}`
+  `block px-4 py-2 text-[14px] transition-colors border-s-2 ${
+    isActive ? 'border-red font-semibold text-ink' : 'border-transparent font-medium text-ink2 hover:text-ink'}`
 
 /** The studio shell — brand · nav · profile · language · legal · honesty line.
  *  The whole window stays a drop target on every screen (1 file = report,

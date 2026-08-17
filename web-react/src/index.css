@@ -17,11 +17,11 @@
   --color-tape:  #171512;   /* the one dark element: the tape strip */
   --color-bone:  #EDE9E2;
 
-  --font-display: "Frank Ruhl Libre", "Times New Roman", serif;
-  /* IBM Plex Sans Hebrew — the mono's sibling: one machine-voice family
-     (Plex sans + Plex mono), and a Hebrew that isn't every other site's Heebo */
-  --font-sans: "IBM Plex Sans Hebrew", "Heebo", -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  /* ONE voice — Heebo Variable (100–900, Hebrew+Latin, already self-hosted).
+     Hierarchy comes from scale + weight + spacing, not from switching faces. */
+  --font-display: "Heebo", -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Heebo", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Heebo", -apple-system, "Segoe UI", sans-serif;
 }
 
 /* ── self-hosted faces (OFL) ── */
@@ -60,20 +60,20 @@ body { color: var(--color-ink); font-family: var(--font-sans); font-size: 15.5px
 ::file-selector-button { display: none; }
 
 /* the two voices */
-.display { font-family: var(--font-display); }
+.display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; }
 /* machine voice: every measured value. LTR island — numbers never scramble in Hebrew. */
 .val { font-family: var(--font-mono); direction: ltr; unicode-bidi: isolate;
-  font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  font-variant-numeric: tabular-nums; font-weight: 500; }
 
 /* engraved panel label */
-.lbl { font-size: 11px; font-weight: 600; color: var(--color-ink2); }
+.lbl { font-size: 12px; font-weight: 500; color: var(--color-ink2); }
 
 /* broadsheet rules — the only structure. no cards, no shadows, no radius. */
 .rule-t { border-top: 1px solid var(--color-rule); }
 
 /* quiet ink button — printed, not floating */
 .btn { border: 1px solid var(--color-ink); border-radius: 2px; padding: 7px 16px;
-  font-size: 13px; font-weight: 600; background: transparent; color: var(--color-ink);
+  font-size: 14px; font-weight: 500; background: transparent; color: var(--color-ink);
   transition: background .12s var(--ease,ease-out), color .12s; cursor: pointer; }
 .btn:disabled { opacity: .35; cursor: default; }
 @media (hover:hover) and (pointer:fine) {
