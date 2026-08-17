@@ -78,6 +78,7 @@ export default function Shell() {
             {LANGS.map(l => <option key={l} value={l}>{LANG_LABELS[l]}</option>)}
           </select>
           <p className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-ink2">
+            <NavLink to="/show" className="val underline decoration-rule underline-offset-2 hover:text-ink">SHOW</NavLink>
             <NavLink to="/accuracy" className="underline decoration-rule underline-offset-2 hover:text-ink">{ui('rk_acc_title')}</NavLink>
             <button className="underline decoration-rule underline-offset-2 hover:text-ink" onClick={() => setModal('about')}>{ui('ft_about')}</button>
             <button className="underline decoration-rule underline-offset-2 hover:text-ink" onClick={() => setModal('privacy')}>{ui('ft_privacy')}</button>
