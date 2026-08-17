@@ -27,12 +27,7 @@ COPY --chown=user requirements.txt ./
 # CPU-only torch first: the default PyPI wheel drags in ~5 GB of CUDA libs
 RUN pip install --no-cache-dir --user torch==2.8.0 torchaudio==2.8.0 \
       --index-url https://download.pytorch.org/whl/cpu \
- && grep -v essentia requirements.txt > /tmp/req.txt \
- && pip install --no-cache-dir --user -r /tmp/req.txt
-# essentia ships wheels for a narrow platform set; the engine degrades
-# gracefully without it (ml_available() gate), so don't fail the build
-RUN pip install --no-cache-dir --user essentia-tensorflow==2.1b6.dev1389 \
- || echo "WARNING: essentia-tensorflow unavailable - ML tagging disabled"
+ && pip install --no-cache-dir --user -r requirements.txt
 
 COPY --chown=user . .
 # the built frontend replaces whatever the repo checkout had (dist is gitignored)
@@ -41,6 +36,12 @@ COPY --chown=user --from=frontend /build/dist ./web-react/dist
 # bake the Demucs weights (~80 MB) into the image so no user pays the
 # first-analysis download cost
 RUN python -c "from demucs.pretrained import get_model; get_model('htdemucs')"
+# bake the license-clean ML weights: MS-CLAP 2023 (MIT, ~450 MB via HF) and
+# PANNs CNN14 (CC-BY, ~310 MB; its downloader shells out to wget — pre-fetch)
+RUN python -c "import os,urllib.request; from msclap import CLAP; CLAP(version='2023', use_cuda=False); \
+d=os.path.expanduser('~/panns_data'); os.makedirs(d, exist_ok=True); \
+urllib.request.urlretrieve('http://storage.googleapis.com/us_audioset/youtube_corpus/v1/csv/class_labels_indices.csv', d+'/class_labels_indices.csv'); \
+urllib.request.urlretrieve('https://zenodo.org/record/3987831/files/Cnn14_mAP%3D0.431.pth?download=1', d+'/Cnn14_mAP=0.431.pth')"
 # bake the Beat This! checkpoint (~77 MB, MIT; code vendored in engine/vendor)
 RUN python -c "import sys; sys.path.insert(0,'engine/vendor'); \
 from beat_this.inference import Audio2Beats; Audio2Beats(checkpoint_path='final0', device='cpu')"

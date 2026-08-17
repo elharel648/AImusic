@@ -30,7 +30,10 @@ from analyze import (analyze, GENRE_NORMS, get_norms, measure_vocal_bands,
                      _EDM_GENRES, ANALYSIS_SR, _load)
 from insights import build_insights
 from llm import llm_available, llm_ready, enrich_report
-from ml_tags import ml_available, ml_analyze
+# the license-clean stack (MS-CLAP MIT + PANNs CC-BY) replaced the old
+# essentia(AGPL)+MTG(CC BY-NC) layer — ml_tags.py stays only as an offline
+# A/B reference and is never imported at runtime.
+from ml_clean import ml_available, ml_analyze
 from stems import separate, stems_available
 
 app = FastAPI(title="A&R AI")
@@ -417,11 +420,12 @@ def _analyze_sync(tmp_path: str, ext: str, filename: str | None,
         # and re-measure sibilance/presence on the isolated vocal, mud on the
         # accompaniment.
         # The user's toggle is an explicit "this track has vocals" — so the
-        # classifier only vetoes the 60s Demucs run when it's SURE there are
-        # none (<=0.25; measured: instrumentals ~0.10, real vocal EDM 0.43+).
-        # The separated stem itself then decides, and whatever happened is
-        # reported back as deep_status — a silent skip looks like a broken
-        # feature and violates the honesty promise.
+        # classifier only vetoes the Demucs run when it's SURE there are none.
+        # Clean stack ships its own measured veto (PANNs windowed, bar 0.05 —
+        # vocal tracks min 0.087, instrumental median 0.007); legacy fallback
+        # keeps the old <=0.25 semantics. The separated stem itself then
+        # decides, and whatever happened is reported back as deep_status —
+        # a silent skip looks like a broken feature.
         # A reference upload only feeds the A/B panel — the client reads _raw.
         # Skip the slow narrative layers (Demucs, LLM); measurements stay full.
         if purpose == "reference":
@@ -430,7 +434,7 @@ def _analyze_sync(tmp_path: str, ext: str, filename: str | None,
         if deep == "1":
             if not stems_available():
                 deep_status = "unavailable"
-            elif raw.get("ml_voice_prob", 0) <= 0.25:
+            elif raw.get("ml_voice_veto", raw.get("ml_voice_prob", 0) <= 0.25):
                 deep_status = "no_vocals"
             else:
                 try:
