@@ -117,7 +117,14 @@ export default function Accuracy() {
         ))}
       </div>
 
-      <footer className="rule-t mt-12 flex flex-wrap items-baseline gap-x-6 pt-4 text-[12px] text-ink2">
+      {/* model credits — the license terms we honor, in public */}
+      <p dir="ltr" className="val mt-10 text-[10.5px] leading-relaxed text-ink2">
+        MODELS · beats: Beat This! (CPJKU, MIT) · tags: MS-CLAP 2023 (Microsoft, MIT) ·
+        audio tagging: PANNs CNN14 (Kong et al., CC-BY) · vocal separation: UVR MDX-Net
+        Voc_FT — credit to UVR and its developers (MIT)
+      </p>
+
+      <footer className="rule-t mt-4 flex flex-wrap items-baseline gap-x-6 pt-4 text-[12px] text-ink2">
         <span className="display text-[13px] font-bold text-ink">A&R·AI</span>
         <span>{ui('ft_honest')}</span>
         {d.generated && <span className="val ms-auto">{String(d.generated).slice(0, 10)}</span>}

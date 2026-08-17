@@ -33,9 +33,13 @@ COPY --chown=user . .
 # the built frontend replaces whatever the repo checkout had (dist is gitignored)
 COPY --chown=user --from=frontend /build/dist ./web-react/dist
 
-# bake the Demucs weights (~80 MB) into the image so no user pays the
-# first-analysis download cost
-RUN python -c "from demucs.pretrained import get_model; get_model('htdemucs')"
+# audio-separator: --no-deps (its samplerate==0.1.0 pin ships an x86-only
+# dylib; real deps live in requirements.txt) + bake the Voc_FT model (~66 MB)
+RUN pip install --no-cache-dir --user --no-deps audio-separator==0.18.0 \
+ && python -c "import os; os.makedirs(os.path.expanduser('~/.cache/anr_models/sep'), exist_ok=True); \
+from audio_separator.separator import Separator; \
+s=Separator(model_file_dir=os.path.expanduser('~/.cache/anr_models/sep'), log_level=40); \
+s.load_model('UVR-MDX-NET-Voc_FT.onnx')"
 # bake the license-clean ML weights: MS-CLAP 2023 (MIT, ~450 MB via HF) and
 # PANNs CNN14 (CC-BY, ~310 MB; its downloader shells out to wget — pre-fetch)
 RUN python -c "import os,urllib.request; from msclap import CLAP; CLAP(version='2023', use_cuda=False); \

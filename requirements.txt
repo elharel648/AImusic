@@ -14,10 +14,17 @@ einops
 rotary-embedding-torch
 soxr==0.2.0
 
-# deep vocal analysis (optional but shipped): Demucs stem separation
+# deep vocal analysis (optional but shipped): UVR MDX-Net separation via
+# audio-separator (MIT; model credit: UVR & developers). NOTE: audio-separator
+# 0.18.0 pins a broken x86-only samplerate==0.1.0 — install it with --no-deps
+# (see Dockerfile) and rely on the deps below.
 torch==2.8.0
 torchaudio==2.8.0
-demucs==4.0.1
+onnxruntime==1.19.2
+onnx2torch==1.5.15
+samplerate>=0.2.4
+pydub==0.25.1
+resampy==0.4.3
 
 # ML tagging (genre / vocals / danceability) — optional; engine degrades
 # gracefully when missing (ml_available() gate)
