@@ -53,7 +53,7 @@ export default function Library() {
         </div>
       )}
 
-      <div className="mt-6 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[...h].reverse().map(e => {
           const bits = [
             e.lufs != null ? `${e.lufs} LUFS` : '', e.bpm ? `${e.bpm} BPM` : '',
@@ -61,11 +61,13 @@ export default function Library() {
           ].filter(Boolean).join(' · ')
           return (
             <button key={e.ts} disabled={!e.rep} onClick={() => openEntry(e)}
-                    className="rule-t group py-4 text-start disabled:cursor-default">
-              <span className="val block text-[30px] leading-none text-ink">
-                {e.overall}<small className="text-[13px] text-ink2">/100</small>
+                    className="group border border-rule bg-sheet p-4 text-start transition-colors enabled:hover:border-ink disabled:cursor-default">
+              <span className="flex items-baseline gap-2">
+                <span className="val text-[30px] leading-none text-ink">{e.overall}</span>
+                <span className="val text-[12px] text-ink2">/100</span>
+                <span className="display ms-auto text-[11px] text-blue">{ui('tag_read')}</span>
               </span>
-              <span className={`mt-1 block truncate text-[14px] font-semibold ${e.rep ? 'group-hover:text-red' : ''}`}>
+              <span className={`mt-2 block truncate border-t border-rule pt-2 text-[14px] font-semibold ${e.rep ? 'group-hover:text-red' : ''}`}>
                 <bdi>{e.name}</bdi>
               </span>
               <span className="block text-[12px] text-ink2">{fmtDate(e.ts)}{e.genre ? ` · ${e.genre}` : ''}</span>

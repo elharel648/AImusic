@@ -3,7 +3,7 @@ import { useLang } from '../i18n/index.jsx'
 /** The verdict — typeset, not scored. Opens with what works (Bible law 4),
  *  ends on the single priority (law 5). The 0-100 stays a marginal note in
  *  judgment's register — serif, blue, never wearing the ✓. */
-export default function Verdict({ rep, works, prio, onHear }) {
+export default function Verdict({ rep, works, prio, onHear, compact = false }) {
   const { ui } = useLang()
   if (!rep) return null
   return (
@@ -22,7 +22,7 @@ export default function Verdict({ rep, works, prio, onHear }) {
         {rep.verdict}
       </h1>
 
-      <div className="mt-7 grid gap-x-10 gap-y-3 md:grid-cols-2">
+      {compact ? null : <div className="mt-7 grid gap-x-10 gap-y-3 md:grid-cols-2">
         {works && (
           <p className="text-[14.5px] leading-relaxed text-ink2">
             <span className="val font-semibold text-ok">✓</span>{' '}
@@ -42,7 +42,7 @@ export default function Verdict({ rep, works, prio, onHear }) {
             )}
           </div>
         )}
-      </div>
+      </div>}
     </section>
   )
 }

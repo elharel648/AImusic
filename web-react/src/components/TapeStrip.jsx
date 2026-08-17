@@ -6,7 +6,7 @@ import { fmt } from '../lib/report-utils.js'
  *  Lanes (Logic grammar): numbered pins · energy · chapter regions · ruler.
  *  Below: producer captions, measured conclusions, guided tour, fix preview.
  *  Anchors are measured only — never an invented "drop". Strip is LTR always. */
-export default function TapeStrip({ rep, name, player, selected, onSelect }) {
+export default function TapeStrip({ rep, name, player, selected, onSelect, slim = false }) {
   const { ui } = useLang()
   const raw = rep?._raw || {}
   const dur = raw.duration_sec || 0
@@ -158,7 +158,7 @@ export default function TapeStrip({ rep, name, player, selected, onSelect }) {
       <div className="flex items-center gap-3 border-t border-bone/15 px-4 py-2.5 sm:gap-4 sm:px-6">
         <button onClick={() => { player.gtStop(); player.toggle() }} disabled={!audio}
                 title={audio ? '' : ui('rk_need_audio')}
-                className="grid h-[34px] w-[34px] shrink-0 place-items-center border border-bone/40 text-bone transition-colors enabled:hover:border-bone enabled:hover:bg-bone/10 disabled:opacity-30">
+                className="press grid h-[34px] w-[34px] shrink-0 place-items-center border border-bone/40 text-bone transition-colors enabled:hover:border-bone enabled:hover:bg-bone/10 disabled:opacity-30">
           {playing
             ? <svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor" aria-label={ui('rk_pause')}><rect width="3.6" height="12" /><rect x="7.4" width="3.6" height="12" /></svg>
             : <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-label={ui('rk_play')}><path d="M1 0l11 6-11 6z" /></svg>}
@@ -167,7 +167,7 @@ export default function TapeStrip({ rep, name, player, selected, onSelect }) {
         <span dir="auto" className="min-w-0 flex-1 truncate font-mono text-[12px] text-bone/50">{name}</span>
         {audio && notes.length > 0 && (
           <button onClick={player.gtToggle}
-                  className={`shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition-colors ${gtOn ? 'border-red bg-red text-paper' : 'border-bone/40 text-bone/80 hover:border-bone hover:text-bone'}`}>
+                  className={`press shrink-0 border px-2.5 py-1 text-[11px] font-semibold transition-colors ${gtOn ? 'border-red bg-red text-paper' : 'border-bone/40 text-bone/80 hover:border-bone hover:text-bone'}`}>
             <span className={`me-1.5 inline-block h-[6px] w-[6px] rounded-full ${gtOn ? 'bg-paper' : 'bg-red'}`} aria-hidden />
             {ui('gt_btn')}
           </button>
@@ -182,10 +182,11 @@ export default function TapeStrip({ rep, name, player, selected, onSelect }) {
         </div>
       )}
 
-      {/* measured conclusions — click to hear from that point */}
+      {/* measured conclusions — click to hear from that point.
+          slim (essentials) keeps only the two loudest truths; the studio gets all */}
       {reads.length > 0 && (
         <div dir="auto" className="grid gap-x-6 gap-y-1 border-t border-bone/15 px-4 py-2.5 sm:grid-cols-2 sm:px-6">
-          {reads.map(([sev, html, tt], i) => {
+          {(slim ? reads.slice(0, 2) : reads).map(([sev, html, tt], i) => {
             const inner = (
               <>
                 <span className={`mt-[6px] h-[6px] w-[6px] shrink-0 rounded-full ${sev === 'warn' ? 'bg-red' : 'bg-ok'}`} aria-hidden />
@@ -205,8 +206,8 @@ export default function TapeStrip({ rep, name, player, selected, onSelect }) {
         </div>
       )}
 
-      {/* hear the fix — the prescription's corrective EQ, live on the track */}
-      {hasFile && audio && fixMoves.length > 0 && (
+      {/* hear the fix — the prescription's corrective EQ, live on the track (full studio) */}
+      {!slim && hasFile && audio && fixMoves.length > 0 && (
         <div dir="auto" className="flex flex-wrap items-center gap-3 border-t border-bone/15 px-4 py-2.5 sm:px-6">
           <button onClick={player.fixToggle}
                   className={`border px-2.5 py-1 text-[11px] font-semibold transition-colors ${player.fxOn === 'fix' ? 'border-ok bg-ok text-paper' : 'border-bone/40 text-bone/80 hover:border-bone hover:text-bone'}`}>

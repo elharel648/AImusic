@@ -45,7 +45,11 @@ export default function Report() {
   // confidence before criticism — best good finding opens (never Character)
   const works = useMemo(() => [...findings].filter(f => f.sev === 'good' && f.id !== 'Character')
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0]?.headline, [findings])
-  const shown = pro ? findings : findings.slice(0, 3)
+  // the essentials hierarchy: ONE primary finding · other attention items as a
+  // quiet list · confirmations as one-liners (never five equal cards)
+  const prioFinding = findings.find(f => f.sev !== 'good')
+  const attnRest = findings.filter(f => f.sev !== 'good' && f !== prioFinding)
+  const goods = findings.filter(f => f.sev === 'good')
 
   // the priority's "hear the problem" anchor — weakest finding, measured spot
   const prio = useMemo(() => {
@@ -79,6 +83,8 @@ export default function Report() {
     blockRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
   const evidenceFor = f => {
+    if (f.id === 'Tonal' && rep.tonal)
+      return <TonalBalance tonal={rep.tonal} embedded />
     if (f.id === 'Master' && raw.lufs != null)
       return <LoudnessRule lufs={raw.lufs} corridor={raw.norms?.lufs || [-9, -7]} />
     if (f.id === 'Mix' && raw.tonal_bands?.length)
@@ -134,85 +140,143 @@ export default function Report() {
   return (
     <>
       <Masthead name={name} meta={rep.meta} busy={busy} report={rep} onPick={session.measure} />
-      <div className={`mx-auto max-w-[920px] px-[clamp(18px,4vw,40px)] pb-16 transition-opacity duration-200 ${busy ? 'pointer-events-none opacity-50' : ''}`}>
-        <Verdict rep={rep} works={works} prio={prio} onHear={p => {
-          if (!audio) return
-          if (p.span) player.loopFinding(p.fid, p.span[0], p.span[1])
-          else player.seekTo(p.t)
-          stripRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        }} />
+      <div key={rep.overall + name} className={`mx-auto max-w-[920px] px-[clamp(18px,4vw,40px)] pb-16 transition-opacity duration-200 ${busy ? 'pointer-events-none opacity-50' : ''}`}>
+        <div className="rise">
+          <Verdict rep={rep} works={works} prio={prio} compact={!pro} onHear={p => {
+            if (!audio) return
+            if (p.span) player.loopFinding(p.fid, p.span[0], p.span[1])
+            else player.seekTo(p.t)
+            stripRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }} />
+        </div>
 
-        {/* one story or the whole studio */}
-        <div className="mb-5 flex items-center gap-1 text-[12.5px] font-semibold">
-          <button onClick={() => setRmode('basic')}
-                  className={`border px-3 py-1 transition-colors ${!pro ? 'border-ink bg-ink text-paper' : 'border-rule text-ink2 hover:text-ink'}`}>
-            {ui('mode_basic')}
-          </button>
-          <button onClick={() => setRmode('pro')}
-                  className={`border px-3 py-1 transition-colors ${pro ? 'border-ink bg-ink text-paper' : 'border-rule text-ink2 hover:text-ink'}`}>
-            {ui('mode_pro')}
-          </button>
+        {/* one story or the whole studio — a quiet tab pair, not a control panel */}
+        <div className="rise r1 mb-6 flex items-baseline gap-5 border-b border-rule text-[13px] font-semibold">
+          {[['basic', ui('mode_basic')], ['pro', ui('mode_pro')]].map(([m, label]) => (
+            <button key={m} onClick={() => setRmode(m)}
+                    className={`press -mb-px border-b-2 pb-1.5 transition-colors ${(m === 'pro') === pro ? 'border-red text-ink' : 'border-transparent text-ink2 hover:text-ink'}`}>
+              {label}
+            </button>
+          ))}
         </div>
 
         <VdiffBanner rep={rep} fname={name} />
-        {!isDemo.current && <ProgressStrip fname={name} />}
+        {pro && !isDemo.current && <ProgressStrip fname={name} />}
         {pro && <Patterns rep={rep} />}
 
-        <div ref={stripRef} className="-mx-[clamp(18px,4vw,40px)] mt-5 sm:mx-0">
-          <TapeStrip rep={rep} name={name} player={player} selected={selected} onSelect={selectFinding} />
-        </div>
+        {pro && (
+          <div ref={stripRef} className="rise r2 -mx-[clamp(18px,4vw,40px)] mt-5 sm:mx-0">
+            <TapeStrip rep={rep} name={name} player={player} selected={selected} onSelect={selectFinding} slim={false} />
+          </div>
+        )}
 
         {pro && <Telemetry rep={rep} />}
         {pro && <Bench rep={rep} />}
         {pro && <TonalBalance tonal={rep.tonal} />}
         {pro && <RefTrack rep={rep} />}
 
-        {/* findings — priority first, numbered like their timeline pins */}
-        <section className="mt-8" data-sec="findings">
-          <div className="mb-4 flex flex-wrap items-baseline gap-3">
-            <span className="lbl">{pro ? ui('full_read') : ui('rk_findings_hdr')}</span>
-            <span className="val text-[11px] text-ink2">{ui('findings_n')(rep.findings.length)}</span>
-            <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />
-            <span className="flex items-baseline gap-4 text-[11px] text-ink2">
-              <Tag kind="measured" /><Tag kind="est" /><Tag kind="model" /><Tag kind="read" />
-            </span>
-          </div>
-          {shown.map((f, i) => (
-            <div key={f.id} ref={el => { blockRefs.current[f.id] = el }}>
-              <FindingBlock f={f} num={String(i + 1).padStart(2, '0')}
-                            prio={f.id === priorityId} selected={selected === f.id}
-                            provenance={provenanceFor(f)} rep={rep} player={player}>
-                {evidenceFor(f)}
-              </FindingBlock>
+        {/* ESSENTIALS: one primary finding with its evidence — nothing competes.
+            THE STUDIO: every finding, numbered, with the full lab. */}
+        {!pro ? (
+          <section className="rise r3 mt-8" data-sec="findings">
+            {prioFinding && (
+              <>
+                <div className="mb-2 flex items-baseline gap-3">
+                  <span className="lbl">{ui('fix_one')}</span>
+                  <span className="h-px flex-1 bg-rule" aria-hidden />
+                </div>
+                <div ref={el => { blockRefs.current[prioFinding.id] = el }}>
+                  <FindingBlock f={prioFinding} num="01" prio selected={selected === prioFinding.id}
+                                provenance={provenanceFor(prioFinding)} rep={rep} player={player}>
+                    {evidenceFor(prioFinding)}
+                  </FindingBlock>
+                </div>
+              </>
+            )}
+
+            {/* hear it — the tape right under the claim (verdict → weakness → hear) */}
+            <div ref={stripRef} className="-mx-[clamp(18px,4vw,40px)] mt-4 sm:mx-0">
+              <TapeStrip rep={rep} name={name} player={player} selected={selected} onSelect={selectFinding} slim />
             </div>
-          ))}
-          {!pro && findings.length > 3 && (
-            <button className="btn mt-2 w-full" onClick={() => setRmode('pro')}>
-              {ui('show_full')(findings.length - 3)}
+
+            {/* other attention items — names, not cards; the studio holds the lab */}
+            {attnRest.length > 0 && (
+              <div className="rule-t mt-2 pt-4">
+                <span className="lbl">{ui('rk_sev_warn')}</span>
+                {attnRest.map(f => (
+                  <button key={f.id} onClick={() => { setRmode('pro'); setSelected(f.id) }}
+                          className="group mt-2 flex w-full items-baseline gap-3 text-start">
+                    <span className="val text-[12px] font-semibold text-red">→</span>
+                    <span className="text-[13.5px] font-semibold group-hover:text-red">{f.k}</span>
+                    <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink2">{f.headline}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* confirmations — quiet one-liners, never five equal cards */}
+            {goods.length > 0 && (
+              <div className="rule-t mt-4 pt-4">
+                <span className="lbl">{ui('works_lbl')}</span>
+                <div className="mt-2 grid gap-x-10 gap-y-1.5 md:grid-cols-2">
+                  {goods.map(f => (
+                    <p key={f.id} className="flex items-baseline gap-2.5 text-[13px] leading-snug text-ink2">
+                      <span className="val font-semibold text-ok">✓</span>
+                      <span className="min-w-0">{f.headline}</span>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button className="btn mt-6 w-full" onClick={() => setRmode('pro')}>
+              {ui('show_full')(Math.max(0, rep.findings.length - 1))}
             </button>
-          )}
-        </section>
+          </section>
+        ) : (
+          <section className="rise r3 mt-8" data-sec="findings">
+            <div className="mb-4 flex flex-wrap items-baseline gap-3">
+              <span className="lbl">{ui('full_read')}</span>
+              <span className="val text-[11px] text-ink2">{ui('findings_n')(rep.findings.length)}</span>
+              <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />
+              <span className="flex items-baseline gap-4 text-[11px] text-ink2">
+                <Tag kind="measured" /><Tag kind="est" /><Tag kind="model" /><Tag kind="read" />
+              </span>
+            </div>
+            {findings.map((f, i) => (
+              <div key={f.id} ref={el => { blockRefs.current[f.id] = el }}>
+                <FindingBlock f={f} num={String(i + 1).padStart(2, '0')}
+                              prio={f.id === priorityId} selected={selected === f.id}
+                              provenance={provenanceFor(f)} rep={rep} player={player}>
+                  {evidenceFor(f)}
+                </FindingBlock>
+              </div>
+            ))}
+          </section>
+        )}
 
         {pro && <Arsenal rep={rep} />}
         {pro && <div data-sec="ai"><Texture ai={rep.ai_signals} /></div>}
         {pro && <div data-sec="stream"><Platforms streaming={rep.streaming} /></div>}
         {pro && <LabelMoment rep={rep} />}
 
-        <PromptBox rep={rep} />
+        <PromptBox rep={rep} chips={pro} />
         <Regen rep={rep} name={name} />
 
-        {/* vocal critique — live: deep re-runs THIS track on the spot */}
-        <section className="rule-t py-6">
-          <div className="mb-2 flex items-baseline gap-3">
-            <span className="lbl">{ui('whats_new')}</span>
-            <span className="h-px flex-1 bg-rule" aria-hidden />
-            <span className="val text-[10.5px] font-semibold text-ok">● {ui('live_badge')}</span>
-          </div>
-          <button onClick={vocalLive} className="group block w-full text-start">
-            <T k="lock_vocal" as="span"
-               className="block text-[14px] font-semibold leading-snug transition-colors group-hover:text-red [&_small]:mt-0.5 [&_small]:block [&_small]:text-[12.5px] [&_small]:font-normal [&_small]:text-ink2" />
-          </button>
-        </section>
+        {/* vocal critique — live: deep re-runs THIS track on the spot (full studio) */}
+        {pro && (
+          <section className="rule-t py-6">
+            <div className="mb-2 flex items-baseline gap-3">
+              <span className="lbl">{ui('whats_new')}</span>
+              <span className="h-px flex-1 bg-rule" aria-hidden />
+              <span className="val text-[10.5px] font-semibold text-ok">● {ui('live_badge')}</span>
+            </div>
+            <button onClick={vocalLive} className="group block w-full text-start">
+              <T k="lock_vocal" as="span"
+                 className="block text-[14px] font-semibold leading-snug transition-colors group-hover:text-red [&_small]:mt-0.5 [&_small]:block [&_small]:text-[12.5px] [&_small]:font-normal [&_small]:text-ink2" />
+            </button>
+          </section>
+        )}
 
         <footer className="rule-t flex flex-wrap items-baseline gap-x-6 gap-y-1 pt-5 text-[12px] text-ink2">
           <span className="display text-[13px] font-bold text-ink">A&R·AI</span>

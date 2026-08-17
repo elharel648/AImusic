@@ -82,7 +82,7 @@ export default function FindingBlock({ f, num, prio, selected, provenance, rep, 
             <span className="lbl">{ui('lsn_lbl')}</span>
             {listens.map(b => (
               <button key={b.k} type="button" onClick={e => { e.stopPropagation(); b.act() }}
-                      className={`val border px-2 py-0.5 text-[11.5px] font-semibold transition-colors ${b.on ? 'border-red bg-red text-paper' : 'border-rule text-ink2 hover:border-ink hover:text-ink'}`}>
+                      className={`press val border px-2 py-0.5 text-[11.5px] font-semibold transition-colors ${b.on ? 'border-red bg-red text-paper' : 'border-rule text-ink2 hover:border-ink hover:text-ink'}`}>
                 {b.label}
               </button>
             ))}

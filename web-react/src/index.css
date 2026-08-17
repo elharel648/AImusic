@@ -41,6 +41,14 @@ body { color: var(--color-ink); font-family: var(--font-sans); font-size: 15.5px
   -webkit-font-smoothing: antialiased; }
 ::selection { background: var(--color-ink); color: var(--color-paper); }
 
+/* keyboard focus — a printed register mark, same grammar everywhere */
+:focus-visible { outline: 2px solid var(--color-red); outline-offset: 2px; border-radius: 1px; }
+
+/* pressed physics — printed controls give one honest millimeter of click.
+   Uses the standalone `translate` property so it composes with any transform. */
+.press:not(:disabled):active { translate: 0 1px; }
+::file-selector-button { display: none; }
+
 /* the two voices */
 .display { font-family: var(--font-display); }
 /* machine voice: every measured value. LTR island — numbers never scramble in Hebrew. */
@@ -84,15 +92,40 @@ details.fold[open] > summary::before { content: "− "; }
 @keyframes wv-in { from { opacity: 0; transform: scaleY(.2); } to { opacity: .85; transform: none; } }
 
 /* the preview speaks sentence by sentence — confidence first, then the ONE thing */
-.fade-seq { opacity: 0; animation: seq-in .5s ease-out forwards; animation-delay: .4s; }
-.fade-seq.fd2 { animation-delay: 1.4s; }
-.fade-seq.fd3 { animation-delay: 2.4s; }
-.fade-seq.fd4 { animation-delay: 3s; }
+.fade-seq { opacity: 0; animation: seq-in .5s ease-out forwards; animation-delay: .35s; }
+.fade-seq.fd2 { animation-delay: 1s; }
+.fade-seq.fd3 { animation-delay: 1.7s; }
+.fade-seq.fd4 { animation-delay: 2.2s; }
 @keyframes seq-in { to { opacity: 1; } }
 .chip.bad { color: var(--color-red); }
+
+/* ── the report prints itself: one orchestrated entrance, then stillness ──
+   each block rises once (<300ms, transform/opacity only); killed under
+   prefers-reduced-motion by the global reset above */
+.rise  { animation: rise .28s var(--ease, ease-out) both; }
+.rise.r1 { animation-delay: .06s; } .rise.r2 { animation-delay: .12s; }
+.rise.r3 { animation-delay: .18s; } .rise.r4 { animation-delay: .24s; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+
+/* letterhead double rule — the masthead grammar of a printed sheet */
+.dbl-rule { border-bottom: 2px solid var(--color-ink); position: relative; }
+.dbl-rule::after { content: ""; position: absolute; inset-inline: 0; bottom: -5px;
+  border-bottom: 1px solid var(--color-ink); }
 
 @media (prefers-reduced-motion: reduce){
   *{ transition: none !important; animation: none !important; }
   /* the playhead is information — it moves via rAF and stays */
   .wv-bar { opacity: .85; }
+  .fade-seq { opacity: 1; }
+}
+
+/* ── print = the PDF export: the sheet alone, ink on paper ── */
+@media print {
+  aside, nav, .btn, button, input, select, details.fold > summary { display: none !important; }
+  details.fold { display: block; } details.fold > *:not(summary) { display: block !important; }
+  body { background: #fff; font-size: 12px; }
+  .min-h-dvh { display: block !important; }
+  main { max-width: none; }
+  section, figure, table { break-inside: avoid; }
+  a { text-decoration: none; color: inherit; }
 }

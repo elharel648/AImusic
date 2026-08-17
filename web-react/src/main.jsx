@@ -10,6 +10,8 @@ import Report from './screens/Report.jsx'
 import Library from './screens/Library.jsx'
 import Compare from './screens/Compare.jsx'
 import Batch from './screens/Batch.jsx'
+import Accuracy from './screens/Accuracy.jsx'
+import Show from './screens/Show.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -17,12 +19,14 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter basename={import.meta.env.BASE_URL}>
         <SessionProvider>
           <Routes>
+            <Route path="show" element={<Show />} />
             <Route element={<Shell />}>
               <Route index element={<Analyze />} />
               <Route path="report" element={<Report />} />
               <Route path="library" element={<Library />} />
               <Route path="compare" element={<Compare />} />
               <Route path="batch" element={<Batch />} />
+              <Route path="accuracy" element={<Accuracy />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

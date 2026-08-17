@@ -32,12 +32,19 @@ export default function Masthead({ name, meta, busy, report, onPick }) {
             <i className={`inline-block h-[9px] w-[9px] ${busy ? 'bg-red' : 'bg-ok'}`} aria-hidden />
             {ui(busy ? 'rk_measuring' : 'rk_done_badge')}
           </span>
+          <button onClick={exportReport} disabled={!report}
+                  className="text-[12px] font-semibold text-ink2 underline decoration-rule underline-offset-4 transition-colors hover:text-ink disabled:opacity-40">
+            {ui('rk_export')}
+          </button>
+          <button onClick={() => window.print()} disabled={!report}
+                  className="val text-[12px] font-semibold text-ink2 underline decoration-rule underline-offset-4 transition-colors hover:text-ink disabled:opacity-40">
+            PDF
+          </button>
           <label className="btn" role="button" tabIndex={0}>
             {ui('rk_measure_btn')}
             <input type="file" accept="audio/*" hidden
                    onChange={e => e.target.files?.[0] && onPick(e.target.files[0])} />
           </label>
-          <button className="btn" onClick={exportReport} disabled={!report}>{ui('rk_export')}</button>
         </span>
       </div>
     </header>

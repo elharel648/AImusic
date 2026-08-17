@@ -26,13 +26,19 @@ export default function Regen({ rep, name }) {
       <p className="mx-auto mt-2 max-w-[52ch] text-[13.5px] leading-relaxed text-ink2">{ui('regen_p')}</p>
       <input ref={fileRef} type="file" accept="audio/*" hidden
              onChange={e => { const f = e.target.files?.[0]; if (f) compareUpload(f); e.target.value = '' }} />
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-        <button className="btn bg-ink text-paper"
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+        <button className="btn bg-ink !px-6 !py-2.5 text-paper hover:bg-ink/85"
                 onClick={() => isDemo.current ? compareDemo() : fileRef.current?.click()}>
           {ui('regen_upload')}
         </button>
-        <button className="btn" onClick={share}>{ui('regen_skip')}</button>
-        <button className="btn" onClick={() => downloadCard(rep, name, ui, dir === 'rtl', () => toast(ui('card_dl')))}>PNG</button>
+        <button onClick={share}
+                className="text-[13px] font-semibold text-ink2 underline decoration-rule underline-offset-4 transition-colors hover:text-ink">
+          {ui('regen_skip')}
+        </button>
+        <button onClick={() => downloadCard(rep, name, ui, dir === 'rtl', () => toast(ui('card_dl')))}
+                className="val text-[12px] font-semibold text-ink2 underline decoration-rule underline-offset-4 transition-colors hover:text-ink">
+          PNG
+        </button>
       </div>
     </section>
   )

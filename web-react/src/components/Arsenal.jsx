@@ -43,7 +43,7 @@ export default function Arsenal({ rep }) {
         {Object.entries(SUITES).map(([k, name]) => (
           <button key={k} type="button"
                   onClick={() => { setSuite(k); addPlugins(SUITE_SEED[k].join(',')) }}
-                  className="border border-rule px-2 py-0.5 text-[11.5px] text-ink2 transition-colors hover:border-ink hover:text-ink">
+                  className="press border border-rule px-2 py-0.5 text-[11.5px] text-ink2 transition-colors hover:border-ink hover:text-ink">
             {name}
           </button>
         ))}

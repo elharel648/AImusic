@@ -43,9 +43,12 @@ export default function Shell() {
   return (
     <div className="min-h-dvh bg-paper text-ink md:grid md:grid-cols-[218px_1fr]">
       <aside className="border-b border-rule md:sticky md:top-0 md:flex md:h-dvh md:flex-col md:border-b-0 md:border-e">
-        <div className="flex items-baseline gap-4 px-5 pb-3 pt-5 md:block">
-          <NavLink to="/" className="display block text-[21px] font-bold tracking-tight">A&R·AI</NavLink>
-          <span className="lbl">{ui('rk_sheet')}</span>
+        <div className="flex items-baseline gap-4 px-5 pb-3 pt-5 md:block md:pb-0">
+          <NavLink to="/" className="display block text-[22px] font-bold tracking-tight">A&R·AI</NavLink>
+          <span className="lbl md:hidden">{ui('rk_sheet')}</span>
+          <div className="dbl-rule mb-4 hidden pb-2.5 md:block">
+            <span className="lbl">{ui('rk_sheet')}</span>
+          </div>
           <select value={lang} onChange={e => setLang(e.target.value)} aria-label="Language"
                   className="ms-auto border border-rule bg-sheet px-1.5 py-1 text-[12px] md:hidden">
             {LANGS.map(l => <option key={l} value={l}>{LANG_LABELS[l]}</option>)}
@@ -75,6 +78,7 @@ export default function Shell() {
             {LANGS.map(l => <option key={l} value={l}>{LANG_LABELS[l]}</option>)}
           </select>
           <p className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-ink2">
+            <NavLink to="/accuracy" className="underline decoration-rule underline-offset-2 hover:text-ink">{ui('rk_acc_title')}</NavLink>
             <button className="underline decoration-rule underline-offset-2 hover:text-ink" onClick={() => setModal('about')}>{ui('ft_about')}</button>
             <button className="underline decoration-rule underline-offset-2 hover:text-ink" onClick={() => setModal('privacy')}>{ui('ft_privacy')}</button>
             <button className="underline decoration-rule underline-offset-2 hover:text-ink" onClick={() => setModal('terms')}>{ui('ft_terms')}</button>

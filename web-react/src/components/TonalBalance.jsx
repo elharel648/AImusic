@@ -5,7 +5,7 @@ const hz = f => f >= 1000 ? (f / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : St
 
 /** Tonal balance — your long-term curve vs the genre's quartile band (p25–p75,
  *  dashed median). One saturated line: yours. Hover reads band vs range. */
-export default function TonalBalance({ tonal }) {
+export default function TonalBalance({ tonal, embedded = false }) {
   const { ui } = useLang()
   const wrapRef = useRef(null)
   const [hover, setHover] = useState(-1)
@@ -33,17 +33,21 @@ export default function TonalBalance({ tonal }) {
   }
 
   return (
-    <section className="rule-t py-7" data-sec="tonal">
-      <div className="mb-3 flex flex-wrap items-baseline gap-3">
-        <span className="lbl">{ui('tb_section')}</span>
-        <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />
-        {genre.n && <span className="val text-[11px] text-ink2">n={genre.n}</span>}
-      </div>
+    <section className={embedded ? 'my-4' : 'rule-t py-7'} data-sec={embedded ? undefined : 'tonal'}>
+      {!embedded && (
+        <div className="mb-3 flex flex-wrap items-baseline gap-3">
+          <span className="lbl">{ui('tb_section')}</span>
+          <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />
+          {genre.n && <span className="val text-[11px] text-ink2">n={genre.n}</span>}
+        </div>
+      )}
 
       {/* producer speaks before the plot */}
-      <h3 className={`max-w-[56ch] text-[15px] font-semibold leading-snug ${readout.sev === 'warn' ? 'text-red' : ''}`}>
-        {readout.text}
-      </h3>
+      {!embedded && (
+        <h3 className={`max-w-[56ch] text-[15px] font-semibold leading-snug ${readout.sev === 'warn' ? 'text-red' : ''}`}>
+          {readout.text}
+        </h3>
+      )}
 
       <div ref={wrapRef} dir="ltr" className="relative mt-3 cursor-crosshair"
            onPointerMove={onMove} onPointerLeave={() => setHover(-1)}>

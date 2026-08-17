@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, useCal
 import { useNavigate } from 'react-router-dom'
 import { analyze, demo, health, MAX_UPLOAD } from './lib/api.js'
 import { saveHistoryEntry } from './lib/history.js'
-import { saveRefTrack, clearRefTrack } from './lib/reference.js'
+import { addRef, clearRefs } from './lib/reference.js'
 import { matchPlugin, normPl } from './lib/report-utils.js'
 import { parseSharedHash } from './lib/share.js'
 import { fxReset } from './lib/fx.js'
@@ -177,12 +177,13 @@ export function SessionProvider({ children }) {
     setRefTick(t => t + 1000)      // ref section shows "measuring…" via odd tick
     try {
       const rep = await analyze(f, { genre, lang, purpose: 'reference' })
-      saveRefTrack(f.name.replace(/\.[^.]+$/, ''), rep._raw || {})
+      addRef(f.name.replace(/\.[^.]+$/, ''), rep._raw || {})
       toast(ui('ref_saved'))
     } catch (err) { toast(typeof err === 'string' ? err : ui('ref_err'), true) }
     setRefTick(t => Math.floor(t % 1000) + 1)
   }
-  const clearReference = () => { clearRefTrack(); setRefTick(t => Math.floor(t % 1000) + 1) }
+  const bumpRef = () => setRefTick(t => Math.floor(t % 1000) + 1)
+  const clearReference = () => { clearRefs(); bumpRef() }
 
   // deep re-run of the SAME file (vocal card): replaces the desk entry, no vdiff
   const deepRerun = () => {
@@ -230,7 +231,7 @@ export function SessionProvider({ children }) {
     arsenal, addPlugins, removePlugin, user, setUser, refTick,
     cmp, batch, isDemo: isDemoRef, file: fileRef,
     measure, runDemo, routeFiles, openEntry, openBatchItem, runBatch,
-    compareUpload, compareDemo, openCompare, uploadReference, clearReference, deepRerun,
+    compareUpload, compareDemo, openCompare, uploadReference, clearReference, bumpRef, deepRerun,
   }), [report, name, busy, busyKind, engineUp, audio, selected, toasts, deep, genre, plat,
        suite, rmode, arsenal, user, refTick, cmp, batch, lang]) // eslint-disable-line react-hooks/exhaustive-deps
 

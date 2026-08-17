@@ -22,7 +22,7 @@ export function promptText(rep, plat) {
 }
 
 /** Paste this into Suno/Udio/… to regenerate — the fixes as a prompt. */
-export default function PromptBox({ rep }) {
+export default function PromptBox({ rep, chips = true }) {
   const { ui } = useLang()
   const { plat, setPlat, toast } = useSession()
   const [copied, setCopied] = useState(false)
@@ -42,10 +42,10 @@ export default function PromptBox({ rep }) {
         <span className="h-px min-w-8 flex-1 bg-rule" aria-hidden />
         <button className="btn !py-1 text-[12px]" onClick={copy}>{copied ? `✓ ${ui('copied')}` : ui('copy')}</button>
       </div>
-      <div className="mb-3 flex flex-wrap gap-2">
+      <div className={`mb-3 flex-wrap gap-2 ${chips ? 'flex' : 'hidden'}`}>
         {Object.entries(GEN_PLATFORMS).map(([k, c]) => (
           <button key={k} type="button" onClick={() => setPlat(k)}
-                  className={`border px-2 py-0.5 text-[11.5px] transition-colors ${k === plat ? 'border-ink bg-ink text-paper' : 'border-rule text-ink2 hover:border-ink hover:text-ink'}`}>
+                  className={`press border px-2 py-0.5 text-[11.5px] transition-colors ${k === plat ? 'border-ink bg-ink text-paper' : 'border-rule text-ink2 hover:border-ink hover:text-ink'}`}>
             {k === 'generic' ? ui('plat_other') : c.name}
           </button>
         ))}
